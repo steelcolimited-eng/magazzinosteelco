@@ -238,6 +238,10 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 21V9m0 0l-4 4m4-4l4 4M4 3h16"/></svg>Importa
     </button>
     <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+    <button onclick="document.getElementById('distintaFile').click()" title="Carica una distinta pacchi da Excel/CSV">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M8 4v16"/></svg>Importa distinta
+    </button>
+    <input type="file" id="distintaFile" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleDistintaFile(event)">
   </div>
 </header>
 
@@ -323,6 +327,60 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
     <div class="modal-foot">
       <button class="btn-ghost" onclick="closeSell()">Annulla</button>
       <button class="btn-confirm" onclick="confirmSell()">Conferma vendita</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ IMPORTA DISTINTA MODAL ============ -->
+<div class="overlay" id="distintaOverlay">
+  <div class="modal wide">
+    <div class="modal-head">
+      <div><h2>Importa distinta pacchi</h2><div class="sub" id="distintaSub">Carica un file Excel/CSV con l'elenco dei pacchi</div></div>
+      <button class="x" onclick="closeDistinta()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="section-label">Dati comuni a tutti i pacchi importati</div>
+      <div class="field-row">
+        <div class="field"><label>Fornitore</label><input type="text" id="dFornitore" placeholder="es. TECNOSID"></div>
+        <div class="field"><label>Destinazione</label>
+          <select id="dDestinazione"><option value="stock">A magazzino</option><option value="sailing">In navigazione</option></select>
+        </div>
+      </div>
+      <div class="field-row-3">
+        <div class="field"><label>Rivestimento (vuoto = dal file)</label><input type="text" id="dRivestimento" placeholder="es. TFS"></div>
+        <div class="field"><label>Durezza (vuoto = dal file)</label><input type="text" id="dDurezza" placeholder="es. DR8"></div>
+        <div class="field"><label>Scelta</label>
+          <select id="dScelta"><option value="">—</option><option value="PRIMA">Prima</option><option value="SECONDA">Seconda</option><option value="TERZA">Terza</option><option value="QUINTA">Quinta</option><option value="BOTOLA">Botola</option></select>
+        </div>
+      </div>
+      <div class="field"><label>Nota comune (es. lotto, DDT, causale)</label><input type="text" id="dNota" placeholder="es. Lotto SC1 · reso c/lavoro DDT 648-650"></div>
+
+      <div class="section-label">Costo (opzionale, applicato a ogni pacco importato)</div>
+      <div class="field-row-3">
+        <div class="field"><label>Prezzo fattura /t</label><input type="number" id="dPrezzoFattura" value="0" oninput="calcDistintaTotals()"></div>
+        <div class="field"><label>Valuta</label><select id="dValuta" onchange="calcDistintaTotals()"><option value="EUR">EUR</option><option value="USD">USD</option></select></div>
+        <div class="field"><label>Cambio (se USD)</label><input type="number" id="dCambio" step="0.0001" value="0" oninput="calcDistintaTotals()"></div>
+      </div>
+      <div class="field-row-3">
+        <div class="field"><label>Dazio/cambio €/t</label><input type="number" id="dDazio" value="0" oninput="calcDistintaTotals()"></div>
+        <div class="field"><label>Trasporto €/t</label><input type="number" id="dTrasporto" value="0" oninput="calcDistintaTotals()"></div>
+        <div class="field"><label>Taglio €/t</label><input type="number" id="dTaglio" value="0" oninput="calcDistintaTotals()"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>CBAM €/t</label><input type="number" id="dCbam" value="0" oninput="calcDistintaTotals()"></div>
+        <div class="field"><label>Altro €/t</label><input type="number" id="dAltro" value="0" oninput="calcDistintaTotals()"></div>
+      </div>
+
+      <div class="section-label">Anteprima pacchi rilevati (<span id="distintaCount">0</span>)</div>
+      <div id="distintaPreviewWrap" class="bulk-list" style="max-height:280px"></div>
+      <div class="calc-preview" style="margin-top:12px">
+        <div class="r"><span>Peso totale</span><span class="mono" id="distintaTotW">0 t</span></div>
+        <div class="r total"><span>Valore totale stimato</span><span class="mono" id="distintaTotV">€0</span></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-ghost" onclick="closeDistinta()">Annulla</button>
+      <button class="btn-confirm" onclick="confirmDistintaImport()" id="distintaConfirmBtn">Importa pacchi</button>
     </div>
   </div>
 </div>
@@ -430,6 +488,7 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
 </div>
 
 <!-- Firebase SDK (compat) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -987,6 +1046,150 @@ function importData(e){
     saveState(); render(); showToast('Dati importati');
   }catch(err){ alert('File non valido. Usa un backup esportato da questa app.'); } };
   r.readAsText(file); e.target.value='';
+}
+
+/* ---------- IMPORTA DISTINTA (Excel/CSV) ---------- */
+let distintaRows=[]; // {include, collo, spessore, larghezza, lunghezza, rivestimento, durezza, pesoT, nota}
+const DISTINTA_ALIASES={
+  spessore:['sp','spessore','thickness','spess'],
+  larghezza:['la','larghezza','width','largh'],
+  lunghezza:['lu','lunghezza','length','lungh'],
+  peso:['kg','peso','pesokg','pesonetto','weight'],
+  rivestimento:['cop','coating','rivestimento'],
+  durezza:['d','durezza','temper','hardness'],
+  collo:['annvarie','ann.varie','ann varie','riferimento','rif','ndocumento','collo','ncollo','pr'],
+  nota:['note','nota','notes']
+};
+function normHeader(s){ return String(s||'').toLowerCase().trim().replace(/\s+/g,' '); }
+function aliasPriority(field,headerNorm){
+  const list=DISTINTA_ALIASES[field];
+  const clean=headerNorm.replace(/\./g,'');
+  return list.findIndex(a=>headerNorm===a||clean===a.replace(/\./g,''));
+}
+function buildColMap(headerRow){
+  // per ogni campo, scegli la colonna il cui header matcha l'alias più specifico (priorità = indice nella lista alias)
+  const best={}; // field -> {ci, pr}
+  headerRow.forEach((cell,ci)=>{
+    const hn=normHeader(cell);
+    for(const field in DISTINTA_ALIASES){
+      const pr=aliasPriority(field,hn);
+      if(pr===-1) continue;
+      if(!best[field]||pr<best[field].pr) best[field]={ci,pr};
+    }
+  });
+  const map={}; for(const f in best) map[f]=best[f].ci;
+  return map;
+}
+function handleDistintaFile(e){
+  const file=e.target.files[0]; if(!file) return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      const data=new Uint8Array(ev.target.result);
+      const wb=XLSX.read(data,{type:'array'});
+      let best=[];
+      // scansiona tutti i fogli, tiene quello con più pacchi riconosciuti (utile per PDF-derivati con più tabelle)
+      wb.SheetNames.forEach(name=>{
+        const rows=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,raw:true,defval:''});
+        const parsed=parseDistintaRows(rows);
+        if(parsed.length>best.length) best=parsed;
+      });
+      distintaRows=best;
+      if(!distintaRows.length){
+        alert('Non ho trovato righe pacco riconoscibili nel file (servono almeno le colonne spessore, larghezza, lunghezza, peso/kg).');
+        e.target.value=''; return;
+      }
+      document.getElementById('distintaSub').textContent=file.name+' · '+distintaRows.length+' pacchi rilevati';
+      renderDistintaPreview();
+      document.getElementById('distintaOverlay').classList.add('show');
+    }catch(err){ console.error(err); alert('Impossibile leggere il file. Formati supportati: .xlsx, .xls, .csv'); }
+    e.target.value='';
+  };
+  r.readAsArrayBuffer(file);
+}
+function parseDistintaRows(rows){
+  // trova la riga di intestazione: quella con più alias riconosciuti
+  let headerIdx=-1, colMap={}, bestScore=0;
+  for(let i=0;i<Math.min(rows.length,15);i++){
+    const map=buildColMap(rows[i]);
+    const score=Object.keys(map).length;
+    if(score>bestScore && map.spessore!==undefined && map.peso!==undefined){ bestScore=score; headerIdx=i; colMap=map; }
+  }
+  if(headerIdx===-1) return [];
+  const out=[];
+  for(let i=headerIdx+1;i<rows.length;i++){
+    const row=rows[i]; if(!row||!row.length) continue;
+    const sp=parseFloat(String(row[colMap.spessore]).replace(',','.'));
+    const pesoRaw=parseFloat(String(row[colMap.peso]).replace(',','.'));
+    if(!isFinite(sp)||!isFinite(pesoRaw)||pesoRaw<=0) continue; // riga vuota o non un pacco
+    out.push({
+      include:true,
+      collo: colMap.collo!==undefined ? String(row[colMap.collo]||'').trim() : '',
+      spessore: sp,
+      larghezza: colMap.larghezza!==undefined ? parseFloat(String(row[colMap.larghezza]).replace(',','.'))||0 : 0,
+      lunghezza: colMap.lunghezza!==undefined ? parseFloat(String(row[colMap.lunghezza]).replace(',','.'))||0 : 0,
+      rivestimento: colMap.rivestimento!==undefined ? String(row[colMap.rivestimento]||'').trim() : '',
+      durezza: colMap.durezza!==undefined ? String(row[colMap.durezza]||'').trim() : '',
+      pesoT: pesoRaw/1000, // le distinte riportano il peso in KG per pacco
+      nota: colMap.nota!==undefined ? String(row[colMap.nota]||'').trim() : ''
+    });
+  }
+  return out;
+}
+function renderDistintaPreview(){
+  const wrap=document.getElementById('distintaPreviewWrap');
+  wrap.innerHTML=distintaRows.map((r,i)=>`
+    <div class="bi">
+      <span class="mono"><input type="checkbox" ${r.include?'checked':''} onchange="distintaRows[${i}].include=this.checked;calcDistintaTotals()" style="margin-right:8px;vertical-align:middle">
+      ${r.collo||('#'+(i+1))} · ${r.spessore}×${r.larghezza}×${r.lunghezza} ${r.rivestimento||''} ${r.durezza||''}</span>
+      <span class="mono">${(r.pesoT*1000).toLocaleString('it-IT')} kg</span>
+    </div>`).join('');
+  document.getElementById('distintaCount').textContent=distintaRows.length;
+  calcDistintaTotals();
+}
+function calcDistintaTotals(){
+  const g=id=>+document.getElementById(id).value||0;
+  const valuta=document.getElementById('dValuta').value, cambio=g('dCambio'), fattRaw=g('dPrezzoFattura');
+  const fattEur=(valuta==='USD'&&cambio>0)?fattRaw/cambio:fattRaw;
+  const finale=fattEur+g('dDazio')+g('dTrasporto')+g('dTaglio')+g('dCbam')+g('dAltro');
+  const included=distintaRows.filter(r=>r.include);
+  const w=included.reduce((a,r)=>a+r.pesoT,0);
+  document.getElementById('distintaTotW').textContent=w.toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2})+' t';
+  document.getElementById('distintaTotV').textContent=fmtEur(finale*w);
+  document.getElementById('distintaConfirmBtn').textContent=`Importa ${included.length} pacchi`;
+}
+function closeDistinta(){ document.getElementById('distintaOverlay').classList.remove('show'); distintaRows=[]; }
+function confirmDistintaImport(){
+  const included=distintaRows.filter(r=>r.include);
+  if(!included.length){ alert('Nessun pacco selezionato.'); return; }
+  const forn=document.getElementById('dFornitore').value.trim();
+  if(!forn){ const el=document.getElementById('dFornitore'); el.style.outline='2px solid var(--rust)'; el.focus(); setTimeout(()=>el.style.outline='',1200); return; }
+  const dest=document.getElementById('dDestinazione').value;
+  const rivCommon=document.getElementById('dRivestimento').value.trim();
+  const durCommon=document.getElementById('dDurezza').value.trim();
+  const scelta=document.getElementById('dScelta').value;
+  const notaCommon=document.getElementById('dNota').value.trim();
+  const g=id=>+document.getElementById(id).value||0;
+  const valuta=document.getElementById('dValuta').value, cambio=g('dCambio'), fattRaw=g('dPrezzoFattura');
+  const fattEur=(valuta==='USD'&&cambio>0)?fattRaw/cambio:fattRaw;
+  const dazio=g('dDazio'),trasporto=g('dTrasporto'),taglio=g('dTaglio'),cbam=g('dCbam'),altro=g('dAltro');
+  const finale=fattEur+dazio+trasporto+taglio+cbam+altro;
+  let base=nextId();
+  included.forEach((r,i)=>{
+    const rec={
+      id:base+i, status:dest, fornitore:forn,
+      collo:r.collo||'', spessore:r.spessore, larghezza:r.larghezza, lunghezza:r.lunghezza,
+      rivestimento:rivCommon||r.rivestimento||'', durezza:durCommon||r.durezza||'', scelta,
+      peso:r.pesoT, prezzoFatturaRaw:fattRaw, valuta, cambio, prezzoFattura:fattEur,
+      dazioCambio:dazio, trasporto, taglio, cbam, altro,
+      prezzoAcqFinale:finale, valoreTotale:finale*r.pesoT,
+      nota:[notaCommon,r.nota].filter(Boolean).join(' · ')
+    };
+    state[dest].push(rec);
+  });
+  saveState(); closeDistinta(); clearSel();
+  showToast(`${included.length} pacchi importati (${dest==='sailing'?'in navigazione':'a magazzino'})`);
+  render();
 }
 
 function showToast(msg){ document.getElementById('toastMsg').textContent=msg; const t=document.getElementById('toast'); t.classList.add('show'); clearTimeout(window._tt); window._tt=setTimeout(()=>t.classList.remove('show'),3200); }
