@@ -529,7 +529,7 @@ let sortKey = null, sortDir = 1; // 1 = crescente, -1 = decrescente
 
 const fmtEur = n=>'€'+Math.round(n).toLocaleString('it-IT');
 const fmtEur2 = n=>'€'+n.toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2});
-const fmtT = n=>n.toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtT = n=>n.toLocaleString('it-IT',{minimumFractionDigits:3,maximumFractionDigits:3});
 const sceltaLabel = s=>({PRIMA:'Prima',SECONDA:'Seconda',TERZA:'Terza',QUINTA:'Quinta',BOTOLA:'Botola'}[s]||s);
 
 /* ---------- FIREBASE: STATO CONDIVISO IN CLOUD ---------- */
@@ -1354,7 +1354,7 @@ function calcDistintaTotals(){
   const finale=fattEur+g('dDazio')+g('dTrasporto')+g('dTaglio')+g('dCbam')+g('dAltro');
   const included=distintaRows.filter(r=>r.include);
   const w=included.reduce((a,r)=>a+r.pesoT,0);
-  document.getElementById('distintaTotW').textContent=w.toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2})+' t';
+  document.getElementById('distintaTotW').textContent=w.toLocaleString('it-IT',{minimumFractionDigits:3,maximumFractionDigits:3})+' t';
   document.getElementById('distintaTotV').textContent=fmtEur(finale*w);
   document.getElementById('distintaConfirmBtn').textContent=`Importa ${included.length} pacchi`;
 }
