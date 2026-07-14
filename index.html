@@ -349,6 +349,34 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
   </div>
 </div>
 
+<!-- ============ MODIFICA VENDITA MODAL ============ -->
+<div class="overlay" id="editSaleOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <div><h2>Modifica vendita</h2><div class="sub" id="editSaleSub"></div></div>
+      <button class="x" onclick="closeEditSale()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="field"><label>Cliente</label><input type="text" id="esCliente" oninput="calcEditSalePreview()"></div>
+      <div class="field-row">
+        <div class="field"><label>N. Fattura / DDT</label><input type="text" id="esFattura"></div>
+        <div class="field"><label>Data vendita</label><input type="date" id="esData"></div>
+      </div>
+      <div class="field-row-3">
+        <div class="field"><label>Prezzo vendita (€/t)</label><input type="number" id="esPrezzo" oninput="calcEditSalePreview()"></div>
+        <div class="field"><label>Costo taglio (€/t)</label><input type="number" id="esTaglio" oninput="calcEditSalePreview()"></div>
+        <div class="field"><label>Costo consegna (€/t)</label><input type="number" id="esConsegna" oninput="calcEditSalePreview()"></div>
+      </div>
+      <div class="field"><label>Scarto (%) — riduce il peso fatturabile</label><input type="number" id="esScarto" step="0.1" oninput="calcEditSalePreview()"></div>
+      <div class="calc-preview" id="editSalePreview"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-ghost" onclick="closeEditSale()">Annulla</button>
+      <button class="btn-confirm" onclick="confirmEditSale()">Salva correzioni</button>
+    </div>
+  </div>
+</div>
+
 <!-- ============ IMPORTA DISTINTA MODAL ============ -->
 <div class="overlay" id="distintaOverlay">
   <div class="modal wide">
@@ -829,6 +857,7 @@ function renderSold(t){
       <td class="num mono ${c.margine>=0?'mg-pos':'mg-neg'}">${fmtEur(c.margine||0)}</td>
       <td class="num mono ${c.margine>=0?'mg-pos':'mg-neg'}">${(c.marginePct||0).toFixed(1)}%</td>
       <td class="actions-cell">
+        <button class="mini-btn" onclick="openEditSale(${c.id})" title="Correggi i dati di questa vendita">Modifica</button>
         <button class="mini-btn danger" onclick="restoreCoil(${c.id})" title="Riporta a magazzino">Annulla</button>
         <button class="mini-btn danger" onclick="deleteCoil(${c.id})" title="Elimina definitivamente">Elimina</button>
       </td>
@@ -949,7 +978,7 @@ function calcMargin(){
   const costoExtra=(taglio+consegna)*peso;
   const costoTot=costoAcq+costoExtra;
   const margine=ricavo-costoTot;
-  const pct=costoTot>0?(margine/costoTot)*100:0;
+  const pct=ricavo>0?(margine/ricavo)*100:0;
   document.getElementById('calcPreview').innerHTML=`
     <div class="r"><span>Peso netto (scarto ${scarto}%)</span><span class="mono">${fmtT(pesoNetto)} t</span></div>
     <div class="r"><span>Ricavo</span><span class="mono">${fmtEur2(ricavo)}</span></div>
@@ -978,12 +1007,73 @@ function confirmSell(){
     const rec={...c,status:'sold',cliente,fatturaVendita:fattura,dataVendita:data,
       prezzoVendita:prezzo,pesoVenduto:pesoNetto,scartoPct:scarto,
       costoTaglioVendita:taglio,costoConsegnaVendita:consegna,
-      ricavo,costoTotVendita:costoTot,margine,marginePct:costoTot>0?(margine/costoTot)*100:0};
+      ricavo,costoTotVendita:costoTot,margine,marginePct:ricavo>0?(margine/ricavo)*100:0};
     state.stock=state.stock.filter(x=>x.id!==c.id);
     state.sold.push(rec);
   });
   saveState(); closeSell(); clearSel();
   showToast(coils.length>1?`${coils.length} coil venduti a ${cliente} — spostati nello storico`:`Coil ${coils[0].collo||''} venduto a ${cliente}`);
+  render();
+}
+
+/* ---------- MODIFICA VENDITA (correggi uno storico già registrato) ---------- */
+let editSaleId=null;
+function openEditSale(id){
+  const c=state.sold.find(x=>x.id===id); if(!c) return;
+  editSaleId=id;
+  document.getElementById('editSaleSub').textContent=`${c.fornitore||''} · ${c.collo||'—'} · ${fmtT(c.peso||0)} t originali`;
+  document.getElementById('esCliente').value=c.cliente||'';
+  document.getElementById('esFattura').value=c.fatturaVendita||'';
+  document.getElementById('esData').value=c.dataVendita||'';
+  document.getElementById('esPrezzo').value=c.prezzoVendita||0;
+  document.getElementById('esTaglio').value=c.costoTaglioVendita||0;
+  document.getElementById('esConsegna').value=c.costoConsegnaVendita||0;
+  document.getElementById('esScarto').value=c.scartoPct||0;
+  calcEditSalePreview();
+  document.getElementById('editSaleOverlay').classList.add('show');
+}
+function closeEditSale(){ document.getElementById('editSaleOverlay').classList.remove('show'); editSaleId=null; }
+function calcEditSalePreview(){
+  const c=state.sold.find(x=>x.id===editSaleId); if(!c) return;
+  const prezzo=+document.getElementById('esPrezzo').value||0;
+  const taglio=+document.getElementById('esTaglio').value||0;
+  const consegna=+document.getElementById('esConsegna').value||0;
+  const scarto=+document.getElementById('esScarto').value||0;
+  const peso=c.peso||0;
+  const pesoNetto=peso*(1-scarto/100);
+  const ricavo=prezzo*pesoNetto;
+  const costoAcq=(c.prezzoAcqFinale||0)*peso;
+  const costoExtra=(taglio+consegna)*peso;
+  const costoTot=costoAcq+costoExtra;
+  const margine=ricavo-costoTot;
+  const pct=ricavo>0?(margine/ricavo)*100:0;
+  document.getElementById('editSalePreview').innerHTML=`
+    <div class="r"><span>Peso netto (scarto ${scarto}%)</span><span class="mono">${fmtT(pesoNetto)} t</span></div>
+    <div class="r"><span>Ricavo</span><span class="mono">${fmtEur2(ricavo)}</span></div>
+    <div class="r"><span>Costo acquisto</span><span class="mono">−${fmtEur2(costoAcq)}</span></div>
+    <div class="r"><span>Taglio + consegna</span><span class="mono">−${fmtEur2(costoExtra)}</span></div>
+    <div class="r total"><span>Margine</span><span class="mono ${margine>=0?'':'mg-neg'}">${fmtEur2(margine)} · ${pct.toFixed(1)}%</span></div>`;
+}
+function confirmEditSale(){
+  const i=state.sold.findIndex(x=>x.id===editSaleId); if(i<0) return;
+  const c=state.sold[i];
+  const cliente=document.getElementById('esCliente').value.trim();
+  if(!cliente){ const el=document.getElementById('esCliente'); el.style.outline='2px solid var(--rust)'; el.focus(); setTimeout(()=>el.style.outline='',1200); return; }
+  const prezzo=+document.getElementById('esPrezzo').value||0;
+  const taglio=+document.getElementById('esTaglio').value||0;
+  const consegna=+document.getElementById('esConsegna').value||0;
+  const scarto=+document.getElementById('esScarto').value||0;
+  const peso=c.peso||0;
+  const pesoNetto=peso*(1-scarto/100);
+  const ricavo=prezzo*pesoNetto;
+  const costoTot=(c.prezzoAcqFinale||0)*peso+(taglio+consegna)*peso;
+  const margine=ricavo-costoTot;
+  state.sold[i]={...c,cliente,fatturaVendita:document.getElementById('esFattura').value.trim(),
+    dataVendita:document.getElementById('esData').value,prezzoVendita:prezzo,pesoVenduto:pesoNetto,
+    scartoPct:scarto,costoTaglioVendita:taglio,costoConsegnaVendita:consegna,
+    ricavo,costoTotVendita:costoTot,margine,marginePct:ricavo>0?(margine/ricavo)*100:0};
+  saveState(); closeEditSale();
+  showToast('Vendita corretta');
   render();
 }
 
@@ -1395,6 +1485,7 @@ function confirmDistintaImport(){
 function showToast(msg){ document.getElementById('toastMsg').textContent=msg; const t=document.getElementById('toast'); t.classList.add('show'); clearTimeout(window._tt); window._tt=setTimeout(()=>t.classList.remove('show'),3200); }
 
 document.getElementById('sellOverlay').addEventListener('click',e=>{if(e.target.id==='sellOverlay')closeSell()});
+document.getElementById('editSaleOverlay').addEventListener('click',e=>{if(e.target.id==='editSaleOverlay')closeEditSale()});
 document.getElementById('editOverlay').addEventListener('click',e=>{if(e.target.id==='editOverlay')closeEdit()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSell();closeEdit();}});
 
