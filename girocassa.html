@@ -248,6 +248,7 @@
         <button class="gc-btn-ghost" id="mAddCosto" style="margin-bottom:10px;">+ Aggiungi costo accessorio</button>
 
         <button class="gc-btn" id="gcAddMov">+ Aggiungi movimento</button>
+        <button class="gc-btn-ghost" id="gcCancelEdit" style="display:none; margin-top:6px;">Annulla modifica</button>
       </div>
     </div>
 
@@ -540,14 +541,14 @@
       const table = document.createElement('table');
       table.className = 'gc-table';
       table.innerHTML = `<thead><tr>
-        <th>Data</th><th>Movimento</th><th>Categoria</th><th style="text-align:right;">Importo</th><th style="text-align:right;">Saldo progressivo</th><th>Stato</th><th></th>
+        <th>Data</th><th>Movimento</th><th>Categoria</th><th style="text-align:right;">Importo</th><th style="text-align:right;">Saldo progressivo</th><th>Stato</th><th></th><th></th>
       </tr></thead>`;
       const tbody = document.createElement('tbody');
       timeline.forEach(r => {
         const tr = document.createElement('tr');
         if (r.isBalance) {
           tr.innerHTML = `<td class="gc-mono">Oggi</td><td colspan="3"><strong>Liquidità disponibile</strong></td>
-            <td style="text-align:right;" class="gc-running">${fmt(r.running)}</td><td></td><td></td>`;
+            <td style="text-align:right;" class="gc-running">${fmt(r.running)}</td><td></td><td></td><td></td>`;
         } else {
           const m = r.m;
           if (r.running < (parseFloat(state.threshold)||0)) tr.classList.add('gc-row-danger');
@@ -569,6 +570,7 @@
                 <option value="completato" ${m.stato==='completato'?'selected':''}>Completato</option>
               </select>`}
             </td>
+            <td>${m.synthetic ? '' : `<button class="gc-btn-ghost" style="padding:4px 8px; font-size:11px;" data-editid="${m.id}">Modifica</button>`}</td>
             <td>${m.synthetic ? '' : `<button class="gc-del-x" data-delid="${m.id}">×</button>`}</td>`;
         }
         tbody.appendChild(tr);
@@ -581,6 +583,13 @@
           const id = e.target.getAttribute('data-id');
           const mv = state.movements.find(x => x.id === id);
           if (mv) { mv.stato = e.target.value; scheduleSave(); render(); }
+        };
+      });
+      wrap.querySelectorAll('[data-editid]').forEach(btn => {
+        btn.onclick = (e) => {
+          const id = e.target.getAttribute('data-editid');
+          const mv = state.movements.find(x => x.id === id);
+          if (mv) startEdit(mv);
         };
       });
       wrap.querySelectorAll('[data-delid]').forEach(btn => {
@@ -623,6 +632,48 @@
 
   // costi accessori builder in the form
   let costi = [];
+  let editingId = null;
+
+  function startEdit(mv) {
+    editingId = mv.id;
+    $('mTipo').value = mv.tipo;
+    $('mCategoria').value = mv.categoria;
+    $('mDesc').value = mv.desc || '';
+    $('mControparte').value = mv.controparte || '';
+    $('mImporto').value = mv.importo;
+    $('mValuta').value = mv.valuta;
+    $('mData').value = mv.data;
+    updateFiscaleVisibility();
+    if (mv.valuta === 'USD') $('mRateOverride').value = mv.rate || state.rate;
+    if (mv.categoria === 'Vendita merce') {
+      const ivaLine = (mv.costi || []).find(c => c.nome && c.nome.startsWith('IVA vendita'));
+      if (ivaLine) {
+        const m = ivaLine.nome.match(/(\d+(\.\d+)?)/);
+        if (m) $('mIvaVendita').value = m[1];
+      }
+    }
+    // Le voci auto-generate (dazio/IVA vendita) si ricalcolano da sole al salvataggio;
+    // qui riportiamo nel form solo quelle manuali/da spedizioniere, così non si duplicano.
+    costi = (mv.costi || [])
+      .filter(c => !(mv.categoria === 'Vendita merce' && c.nome && c.nome.startsWith('IVA vendita')))
+      .map(c => ({ ...c }));
+    renderCosti();
+    $('gcAddMov').textContent = 'Salva modifiche';
+    $('gcCancelEdit').style.display = 'block';
+    document.querySelector('.gc-panel h2 + .gc-form-2col') && document.getElementById('mDesc').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function resetForm() {
+    editingId = null;
+    $('mDesc').value=''; $('mControparte').value=''; $('mImporto').value=''; $('mData').value=''; $('mRateOverride').value='';
+    costi = []; renderCosti();
+    updateFiscaleVisibility();
+    $('gcAddMov').textContent = '+ Aggiungi movimento';
+    $('gcCancelEdit').style.display = 'none';
+  }
+
+  $('gcCancelEdit').onclick = resetForm;
+
   function renderCosti() {
     const wrap = $('mCostiList');
     wrap.innerHTML = '';
@@ -752,8 +803,7 @@
     const rate = valuta === 'USD' ? (parseFloat($('mRateOverride').value) || state.rate) : null;
     const autoLines = fiscalCostLines();
     const manualLines = costi.filter(c => c.nome && c.importo).map(c => ({...c, ivaTag: c.ivaTag || null}));
-    state.movements.push({
-      id: 'm'+Date.now(),
+    const payload = {
       tipo: $('mTipo').value,
       categoria: $('mCategoria').value,
       desc,
@@ -762,12 +812,15 @@
       valuta,
       rate,
       data,
-      stato: 'pianificato',
       costi: [...autoLines, ...manualLines]
-    });
-    $('mDesc').value=''; $('mControparte').value=''; $('mImporto').value=''; $('mData').value=''; $('mRateOverride').value='';
-    costi = []; renderCosti();
-    updateFiscaleVisibility();
+    };
+    if (editingId) {
+      const idx = state.movements.findIndex(x => x.id === editingId);
+      if (idx > -1) state.movements[idx] = { ...state.movements[idx], ...payload };
+    } else {
+      state.movements.push({ id: 'm'+Date.now(), stato: 'pianificato', ...payload });
+    }
+    resetForm();
     scheduleSave(); render();
   };
 
