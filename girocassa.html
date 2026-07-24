@@ -227,18 +227,49 @@
               <option value="ue-italia">Italia / UE</option>
             </select>
           </div>
-          <div class="gc-desc-sub" style="margin-bottom:8px;">Aggiungi qui i costi reali che ti darà lo spedizioniere — dazio (se lo pagherai), deposito doganale/stallo container se la merce resta in sospensione, IVA che verserà per tuo conto. Importi da inserire quando li conosci.</div>
-          <div id="mQuickAddWrap" style="display:flex; flex-wrap:wrap; gap:6px;"></div>
+
+          <div id="mExtraUeBlock">
+            <div class="gc-desc-sub" style="margin-bottom:8px;">Aggiungi qui i costi reali che ti darà lo spedizioniere — dazio (se lo pagherai), deposito doganale/stallo container se la merce resta in sospensione, IVA che verserà per tuo conto. Importi da inserire quando li conosci.</div>
+            <div id="mQuickAddWrap" style="display:flex; flex-wrap:wrap; gap:6px;"></div>
+          </div>
+
+          <div id="mDomesticIvaBlock" style="display:none;">
+            <div class="gc-form-2col">
+              <div class="gc-form-row"><label>Importo inserito sopra è</label>
+                <select class="gc-select" id="mIvaInclusa">
+                  <option value="inclusa" selected>IVA inclusa (totale fattura)</option>
+                  <option value="esclusa">IVA esclusa (imponibile)</option>
+                </select>
+              </div>
+              <div class="gc-form-row"><label>Aliquota IVA</label>
+                <select class="gc-select" id="mIvaAcquistoAliquota">
+                  <option value="22" selected>22%</option>
+                  <option value="10">10%</option>
+                  <option value="4">4%</option>
+                  <option value="0">0% (non imponibile)</option>
+                </select>
+              </div>
+            </div>
+            <div id="mFiscalePreviewAcquisto" class="gc-desc-sub"></div>
+          </div>
         </div>
 
         <div id="mFiscaleVendita" style="display:none; background:var(--panel-2); border:1px solid var(--line); border-radius:8px; padding:12px; margin-bottom:12px;">
-          <div class="gc-form-row"><label>IVA su questa vendita</label>
-            <select class="gc-select" id="mIvaVendita">
-              <option value="22" selected>22%</option>
-              <option value="10">10%</option>
-              <option value="4">4%</option>
-              <option value="0">0% (export / non imponibile)</option>
-            </select>
+          <div class="gc-form-2col">
+            <div class="gc-form-row"><label>Importo inserito sopra è</label>
+              <select class="gc-select" id="mIvaInclusaVendita">
+                <option value="inclusa" selected>IVA inclusa (totale fattura)</option>
+                <option value="esclusa">IVA esclusa (imponibile)</option>
+              </select>
+            </div>
+            <div class="gc-form-row"><label>IVA su questa vendita</label>
+              <select class="gc-select" id="mIvaVendita">
+                <option value="22" selected>22%</option>
+                <option value="10">10%</option>
+                <option value="4">4%</option>
+                <option value="0">0% (dichiarazione d'intento / esente)</option>
+              </select>
+            </div>
           </div>
           <div id="mFiscalePreviewVendita" class="gc-desc-sub"></div>
         </div>
@@ -643,19 +674,40 @@
     $('mImporto').value = mv.importo;
     $('mValuta').value = mv.valuta;
     $('mData').value = mv.data;
+    const ivaAcquistoLine = (mv.costi || []).find(c => c.nome && c.nome.startsWith('IVA acquisto'));
+    if (mv.tipo === 'uscita' && (mv.categoria === 'Acquisto merce' || mv.categoria === 'Taglio/logistica')) {
+      mOrigineTouched = true;
+      $('mOrigine').value = ivaAcquistoLine ? 'ue-italia' : 'extra-ue';
+    }
     updateFiscaleVisibility();
     if (mv.valuta === 'USD') $('mRateOverride').value = mv.rate || state.rate;
     if (mv.categoria === 'Vendita merce') {
       const ivaLine = (mv.costi || []).find(c => c.nome && c.nome.startsWith('IVA vendita'));
+      // L'importo salvato è già l'imponibile — in modifica lo trattiamo sempre come
+      // "IVA esclusa" così non si scorpora una seconda volta (vale anche per lo 0%).
+      $('mIvaInclusaVendita').value = 'esclusa';
       if (ivaLine) {
         const m = ivaLine.nome.match(/(\d+(\.\d+)?)/);
         if (m) $('mIvaVendita').value = m[1];
+      } else {
+        $('mIvaVendita').value = '0';
       }
+      updateFiscalePreviewVendita();
     }
-    // Le voci auto-generate (dazio/IVA vendita) si ricalcolano da sole al salvataggio;
-    // qui riportiamo nel form solo quelle manuali/da spedizioniere, così non si duplicano.
+    if (ivaAcquistoLine) {
+      // L'importo salvato è già l'imponibile (l'IVA fu scorporata al salvataggio) —
+      // in modifica lo trattiamo come "IVA esclusa" così non si scorpora una seconda volta.
+      $('mIvaInclusa').value = 'esclusa';
+      const m = ivaAcquistoLine.nome.match(/(\d+(\.\d+)?)/);
+      if (m) $('mIvaAcquistoAliquota').value = m[1];
+      updateFiscalePreviewAcquisto();
+    }
+    // Le voci auto-generate (IVA vendita / IVA acquisto) si ricalcolano da sole al
+    // salvataggio; qui riportiamo nel form solo quelle manuali/da spedizioniere,
+    // così non si duplicano.
     costi = (mv.costi || [])
       .filter(c => !(mv.categoria === 'Vendita merce' && c.nome && c.nome.startsWith('IVA vendita')))
+      .filter(c => !(c.nome && c.nome.startsWith('IVA acquisto')))
       .map(c => ({ ...c }));
     renderCosti();
     $('gcAddMov').textContent = 'Salva modifiche';
@@ -728,43 +780,90 @@
     const tipo = $('mTipo').value;
     const cat = $('mCategoria').value;
     const valuta = $('mValuta').value;
-    const isAcquisto = tipo === 'uscita' && cat === 'Acquisto merce';
+    const isAcquisto = tipo === 'uscita' && (cat === 'Acquisto merce' || cat === 'Taglio/logistica');
     const isVendita = tipo === 'entrata' && cat === 'Vendita merce';
     $('mFiscaleAcquisto').style.display = isAcquisto ? 'block' : 'none';
     $('mFiscaleVendita').style.display = isVendita ? 'block' : 'none';
     $('mRateRow').style.display = valuta === 'USD' ? 'block' : 'none';
     if (valuta === 'USD' && !$('mRateOverride').value) $('mRateOverride').value = state.rate;
-    if (isAcquisto) renderQuickAdd();
+    if (isAcquisto) {
+      if (cat === 'Taglio/logistica' && !mOrigineTouched) $('mOrigine').value = 'ue-italia';
+      const extraUe = $('mOrigine').value === 'extra-ue';
+      $('mExtraUeBlock').style.display = extraUe ? 'block' : 'none';
+      $('mDomesticIvaBlock').style.display = extraUe ? 'none' : 'block';
+      if (extraUe) renderQuickAdd();
+      updateFiscalePreviewAcquisto();
+    }
     updateFiscalePreviewVendita();
   }
 
-  function updateFiscalePreviewVendita() {
-    if ($('mFiscaleVendita').style.display !== 'block') return;
+  function updateFiscalePreviewAcquisto() {
+    if ($('mFiscaleAcquisto').style.display !== 'block' || $('mOrigine').value === 'extra-ue') return;
     const importo = parseFloat($('mImporto').value) || 0;
     const valuta = $('mValuta').value;
     const rate = valuta === 'USD' ? (parseFloat($('mRateOverride').value) || state.rate) : null;
     const importoEUR = toEUR(importo, valuta, rate);
-    const ivaPct = parseFloat($('mIvaVendita').value) || 0;
-    const ivaEUR = importoEUR * ivaPct / 100;
-    $('mFiscalePreviewVendita').textContent = importoEUR > 0
-      ? `IVA ${ivaPct}% su ${fmt(importoEUR)} = ${fmt(ivaEUR)} a debito · incasso totale ${fmt(importoEUR+ivaEUR)}`
+    const ivaPct = parseFloat($('mIvaAcquistoAliquota').value) || 0;
+    const inclusa = $('mIvaInclusa').value === 'inclusa';
+    let imponibile, iva;
+    if (inclusa) {
+      imponibile = importoEUR / (1 + ivaPct / 100);
+      iva = importoEUR - imponibile;
+    } else {
+      imponibile = importoEUR;
+      iva = importoEUR * ivaPct / 100;
+    }
+    $('mFiscalePreviewAcquisto').textContent = importoEUR > 0
+      ? `Imponibile ${fmt(imponibile)} + IVA ${ivaPct}% (${fmt(iva)}) = esborso totale ${fmt(imponibile + iva)}`
+      : 'Inserisci l\'importo per vedere il calcolo';
+  }
+
+  ['mIvaInclusa','mIvaAcquistoAliquota'].forEach(id => $(id).addEventListener('input', updateFiscalePreviewAcquisto));
+
+  function updateFiscalePreviewVendita() {
+    if ($('mFiscaleVendita').style.display !== 'block') return;
+    const { imponibileOrig, ivaEUR, ivaPct } = ivaSplit('mIvaInclusaVendita', 'mIvaVendita');
+    const valuta = $('mValuta').value;
+    const rate = valuta === 'USD' ? (parseFloat($('mRateOverride').value) || state.rate) : null;
+    const imponibileEUR = toEUR(imponibileOrig, valuta, rate);
+    $('mFiscalePreviewVendita').textContent = imponibileOrig > 0
+      ? `Imponibile ${fmt(imponibileEUR)} + IVA ${ivaPct}% (${fmt(ivaEUR)}) = incasso totale ${fmt(imponibileEUR + ivaEUR)}`
       : 'Inserisci l\'importo per vedere il calcolo';
   }
 
   ['mTipo','mCategoria','mValuta'].forEach(id => $(id).addEventListener('change', updateFiscaleVisibility));
-  $('mOrigine').addEventListener('change', renderQuickAdd);
-  ['mIvaVendita','mImporto','mRateOverride'].forEach(id => $(id).addEventListener('input', updateFiscalePreviewVendita));
+  let mOrigineTouched = false;
+  $('mOrigine').addEventListener('change', () => { mOrigineTouched = true; updateFiscaleVisibility(); });
+  ['mIvaVendita','mIvaInclusaVendita','mImporto','mRateOverride'].forEach(id => $(id).addEventListener('input', updateFiscalePreviewVendita));
+
+  // Scorpora IVA (inclusa o esclusa) usando i due select passati, nella valuta originale del movimento.
+  function ivaSplit(inclusaSelectId, aliquotaSelectId) {
+    const importo = parseFloat($('mImporto').value) || 0;
+    const ivaPct = parseFloat($(aliquotaSelectId).value) || 0;
+    const inclusa = $(inclusaSelectId).value === 'inclusa';
+    let imponibileOrig, ivaOrig;
+    if (inclusa) {
+      imponibileOrig = importo / (1 + ivaPct / 100);
+      ivaOrig = importo - imponibileOrig;
+    } else {
+      imponibileOrig = importo;
+      ivaOrig = importo * ivaPct / 100;
+    }
+    const valuta = $('mValuta').value;
+    const rate = valuta === 'USD' ? (parseFloat($('mRateOverride').value) || state.rate) : null;
+    return { imponibileOrig, ivaEUR: toEUR(ivaOrig, valuta, rate), ivaPct };
+  }
+  function domesticIvaSplit() { return ivaSplit('mIvaInclusa', 'mIvaAcquistoAliquota'); }
 
   function fiscalCostLines() {
     const lines = [];
     if ($('mFiscaleVendita').style.display === 'block') {
-      const importo = parseFloat($('mImporto').value) || 0;
-      const valuta = $('mValuta').value;
-      const rate = valuta === 'USD' ? (parseFloat($('mRateOverride').value) || state.rate) : null;
-      const importoEUR = toEUR(importo, valuta, rate);
-      const ivaPct = parseFloat($('mIvaVendita').value) || 0;
-      const ivaEUR = importoEUR * ivaPct / 100;
+      const { ivaEUR, ivaPct } = ivaSplit('mIvaInclusaVendita', 'mIvaVendita');
       if (ivaEUR > 0) lines.push({ nome: `IVA vendita ${ivaPct}%`, importo: ivaEUR.toFixed(2), valuta: 'EUR', ivaTag: 'debito' });
+    }
+    if ($('mFiscaleAcquisto').style.display === 'block' && $('mOrigine').value !== 'extra-ue') {
+      const { ivaEUR, ivaPct } = domesticIvaSplit();
+      if (ivaEUR > 0) lines.push({ nome: `IVA acquisto ${ivaPct}%`, importo: ivaEUR.toFixed(2), valuta: 'EUR', ivaTag: 'credito' });
     }
     return lines;
   }
@@ -796,13 +895,20 @@
 
   $('gcAddMov').onclick = () => {
     const desc = $('mDesc').value.trim();
-    const importo = parseFloat($('mImporto').value);
+    let importo = parseFloat($('mImporto').value);
     const data = $('mData').value;
     const valuta = $('mValuta').value;
     if (!desc || !importo || !data) return;
     const rate = valuta === 'USD' ? (parseFloat($('mRateOverride').value) || state.rate) : null;
+    const isDomesticAcquisto = $('mFiscaleAcquisto').style.display === 'block' && $('mOrigine').value !== 'extra-ue';
+    const isVendita = $('mFiscaleVendita').style.display === 'block';
     const autoLines = fiscalCostLines();
     const manualLines = costi.filter(c => c.nome && c.importo).map(c => ({...c, ivaTag: c.ivaTag || null}));
+    // Scorporiamo l'IVA in una voce costo a parte (sopra) — quindi l'importo principale
+    // del movimento diventa il solo imponibile, altrimenti l'IVA verrebbe contata due
+    // volte nel totale del movimento.
+    if (isDomesticAcquisto) importo = domesticIvaSplit().imponibileOrig;
+    if (isVendita) importo = ivaSplit('mIvaInclusaVendita', 'mIvaVendita').imponibileOrig;
     const payload = {
       tipo: $('mTipo').value,
       categoria: $('mCategoria').value,
