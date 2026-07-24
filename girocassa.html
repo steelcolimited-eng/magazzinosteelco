@@ -675,7 +675,7 @@
     $('mValuta').value = mv.valuta;
     $('mData').value = mv.data;
     const ivaAcquistoLine = (mv.costi || []).find(c => c.nome && c.nome.startsWith('IVA acquisto'));
-    if (mv.tipo === 'uscita' && (mv.categoria === 'Acquisto merce' || mv.categoria === 'Taglio/logistica')) {
+    if (mv.tipo === 'uscita' && mv.categoria !== 'Linea di credito') {
       mOrigineTouched = true;
       $('mOrigine').value = ivaAcquistoLine ? 'ue-italia' : 'extra-ue';
     }
@@ -780,14 +780,14 @@
     const tipo = $('mTipo').value;
     const cat = $('mCategoria').value;
     const valuta = $('mValuta').value;
-    const isAcquisto = tipo === 'uscita' && (cat === 'Acquisto merce' || cat === 'Taglio/logistica');
+    const isAcquisto = tipo === 'uscita' && cat !== 'Linea di credito';
     const isVendita = tipo === 'entrata' && cat === 'Vendita merce';
     $('mFiscaleAcquisto').style.display = isAcquisto ? 'block' : 'none';
     $('mFiscaleVendita').style.display = isVendita ? 'block' : 'none';
     $('mRateRow').style.display = valuta === 'USD' ? 'block' : 'none';
     if (valuta === 'USD' && !$('mRateOverride').value) $('mRateOverride').value = state.rate;
     if (isAcquisto) {
-      if (cat === 'Taglio/logistica' && !mOrigineTouched) $('mOrigine').value = 'ue-italia';
+      if (cat !== 'Acquisto merce' && !mOrigineTouched) $('mOrigine').value = 'ue-italia';
       const extraUe = $('mOrigine').value === 'extra-ue';
       $('mExtraUeBlock').style.display = extraUe ? 'block' : 'none';
       $('mDomesticIvaBlock').style.display = extraUe ? 'none' : 'block';
