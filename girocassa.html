@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Girocassa — Steelco</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>
+  html, body { margin: 0; padding: 0; background: #10141A; }
+</style>
+</head>
+<body>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Work+Sans:wght@400;500;600&display=swap');
+
+  * { box-sizing: border-box; }
+
+  .gc-root {
+    --ink: #EDEEF0;
+    --ink-dim: #8B92A0;
+    --ink-faint: #565D6B;
+    --bg: #10141A;
+    --panel: #171C24;
+    --panel-2: #1D232D;
+    --line: #2A3140;
+    --amber: #D6A452;
+    --green: #4FB286;
+    --red: #D1574F;
+    --blue: #6E9FD6;
+    font-family: 'Work Sans', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    padding: 28px;
+    border-radius: 14px;
+    min-height: 100vh;
+  }
+  .gc-root h1, .gc-root h2, .gc-root h3 { font-family: 'Space Grotesk', sans-serif; margin: 0; }
+  .gc-mono { font-family: 'IBM Plex Mono', monospace; }
+
+  .gc-header {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    border-bottom: 1px solid var(--line); padding-bottom: 18px; margin-bottom: 22px;
+    flex-wrap: wrap; gap: 14px;
+  }
+  .gc-title { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+  .gc-subtitle { color: var(--ink-dim); font-size: 13px; margin-top: 4px; }
+  .gc-rate-box { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-dim); }
+  .gc-rate-box input {
+    width: 72px; background: var(--panel-2); border: 1px solid var(--line); color: var(--ink);
+    border-radius: 6px; padding: 5px 8px; font-family: 'IBM Plex Mono', monospace; font-size: 13px;
+  }
+
+  .gc-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 22px; }
+  .gc-card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; }
+  .gc-card-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); margin-bottom: 8px; }
+  .gc-card-value { font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 500; }
+  .gc-card-sub { font-size: 12px; color: var(--ink-dim); margin-top: 4px; }
+  .gc-card.warn { border-color: rgba(209,87,79,0.5); background: linear-gradient(180deg, rgba(209,87,79,0.08), var(--panel)); }
+  .gc-card.warn .gc-card-value { color: var(--red); }
+  .gc-card.ok .gc-card-value { color: var(--green); }
+
+  .gc-spark { width: 100%; height: 64px; margin-top: 10px; }
+
+  .gc-grid { display: grid; grid-template-columns: 340px 1fr; gap: 18px; align-items: start; }
+  @media (max-width: 820px) { .gc-grid { grid-template-columns: 1fr; } }
+
+  .gc-panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px; }
+  .gc-panel h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-dim); margin-bottom: 14px; }
+
+  .gc-acct-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+  .gc-acct-row:last-child { border-bottom: none; }
+  .gc-acct-name { font-weight: 500; }
+  .gc-acct-ccy { color: var(--ink-faint); font-size: 11px; margin-left: 6px; }
+  .gc-acct-val { font-family: 'IBM Plex Mono', monospace; }
+  .gc-acct-del { background: none; border: none; color: var(--ink-faint); cursor: pointer; font-size: 15px; padding: 0 0 0 10px; }
+  .gc-acct-del:hover { color: var(--red); }
+
+  .gc-form-row { display: grid; gap: 6px; margin-bottom: 10px; }
+  .gc-form-row label { font-size: 11px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.04em; }
+  .gc-form-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .gc-input, .gc-select {
+    background: var(--panel-2); border: 1px solid var(--line); color: var(--ink);
+    border-radius: 7px; padding: 8px 10px; font-size: 13px; font-family: inherit; width: 100%;
+  }
+  .gc-input:focus, .gc-select:focus { outline: none; border-color: var(--blue); }
+  .gc-btn {
+    background: var(--amber); color: #1A1408; border: none; border-radius: 7px;
+    padding: 9px 14px; font-size: 13px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 4px;
+  }
+  .gc-btn:hover { filter: brightness(1.08); }
+  .gc-btn-ghost {
+    background: transparent; border: 1px solid var(--line); color: var(--ink-dim);
+    border-radius: 7px; padding: 6px 10px; font-size: 12px; cursor: pointer;
+  }
+  .gc-btn-ghost:hover { color: var(--ink); border-color: var(--ink-faint); }
+
+  .gc-costi-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 6px; }
+  .gc-costo-item { display: grid; grid-template-columns: 1fr 85px 1fr 22px; gap: 6px; align-items: center; }
+  .gc-costo-item input, .gc-costo-item select { font-size: 12px; padding: 6px 8px; }
+  .gc-costo-del { background: none; border: none; color: var(--ink-faint); cursor: pointer; font-size: 14px; }
+
+  table.gc-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.gc-table th {
+    text-align: left; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--ink-faint); padding: 6px 10px; border-bottom: 1px solid var(--line); font-weight: 500;
+  }
+  table.gc-table td { padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  table.gc-table tr:last-child td { border-bottom: none; }
+  .gc-tag { font-size: 10.5px; padding: 2px 7px; border-radius: 20px; display: inline-block; border: 1px solid var(--line); color: var(--ink-dim); }
+  .gc-amt-out { color: var(--red); font-family: 'IBM Plex Mono', monospace; }
+  .gc-amt-in { color: var(--green); font-family: 'IBM Plex Mono', monospace; }
+  .gc-running { font-family: 'IBM Plex Mono', monospace; font-weight: 500; }
+  .gc-running.neg { color: var(--red); }
+  .gc-row-danger td { background: rgba(209,87,79,0.06); }
+  .gc-orig { font-size: 11px; color: var(--ink-faint); }
+  .gc-desc-sub { font-size: 11.5px; color: var(--ink-dim); margin-top: 2px; }
+  .gc-del-x { background: none; border: none; color: var(--ink-faint); cursor: pointer; font-size: 14px; }
+  .gc-del-x:hover { color: var(--red); }
+  .gc-empty { color: var(--ink-faint); font-size: 13px; padding: 24px; text-align: center; }
+
+  .gc-status-select { font-size: 11px; padding: 3px 6px; }
+</style>
+
+<div class="gc-root" id="gcRoot">
+  <div class="gc-header">
+    <div>
+      <div class="gc-title">Girocassa</div>
+      <div class="gc-subtitle">Liquidità, scadenze e potere d'acquisto proiettato</div>
+      <div id="gcSaveStatus" style="font-size:11px; color:var(--ink-faint); margin-top:4px;"></div>
+    </div>
+    <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+      <div class="gc-rate-box">
+        <span>Cambio EUR→USD</span>
+        <input type="number" step="0.0001" id="gcRate" />
+        <button class="gc-btn-ghost" id="gcSaveRate">Salva</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="gc-summary" id="gcSummary"></div>
+
+  <div class="gc-grid">
+    <div style="display:flex; flex-direction:column; gap:18px;">
+      <div class="gc-panel">
+        <h2>Conti / liquidità</h2>
+        <div id="gcAccounts"></div>
+        <div style="margin-top:14px; border-top:1px solid var(--line); padding-top:14px;">
+          <div class="gc-form-row"><label>Nome conto</label><input class="gc-input" id="gcAcctName" placeholder="es. Conto corrente" /></div>
+          <div class="gc-form-2col">
+            <div class="gc-form-row"><label>Valuta</label>
+              <select class="gc-select" id="gcAcctCcy"><option value="EUR">EUR</option><option value="USD">USD</option></select>
+            </div>
+            <div class="gc-form-row"><label>Saldo</label><input class="gc-input" id="gcAcctBal" type="number" step="0.01" /></div>
+          </div>
+          <button class="gc-btn" id="gcAddAcct">+ Aggiungi conto</button>
+        </div>
+      </div>
+
+      <div class="gc-panel">
+        <h2>Finanziamenti / rate</h2>
+        <div class="gc-desc-sub" style="margin-bottom:10px;">Per i soldi ricevuti a prestito che restano dentro un conto ma non sono liquidità tua — genera da solo le rate future nella proiezione.</div>
+        <div id="gcFinancings"></div>
+        <div style="margin-top:14px; border-top:1px solid var(--line); padding-top:14px;">
+          <div class="gc-form-row"><label>Nome</label><input class="gc-input" id="finNome" placeholder="es. Finanziamento UniCredit" /></div>
+          <div class="gc-form-2col">
+            <div class="gc-form-row"><label>Debito residuo (€)</label><input class="gc-input" id="finResiduo" type="number" step="0.01" /></div>
+            <div class="gc-form-row"><label>Rata mensile (€)</label><input class="gc-input" id="finRata" type="number" step="0.01" /></div>
+          </div>
+          <div class="gc-form-2col">
+            <div class="gc-form-row"><label>Prossima rata</label><input class="gc-input" id="finProssima" type="date" /></div>
+            <div class="gc-form-row"><label>Ultima rata</label><input class="gc-input" id="finFine" type="date" /></div>
+          </div>
+          <button class="gc-btn" id="gcAddFin">+ Aggiungi finanziamento</button>
+        </div>
+      </div>
+
+      <div class="gc-panel">
+        <h2>Soglia di sicurezza</h2>
+        <div class="gc-form-row">
+          <label>Saldo minimo desiderato (EUR)</label>
+          <input class="gc-input" id="gcThreshold" type="number" step="100" />
+        </div>
+        <button class="gc-btn" id="gcSaveThreshold">Salva soglia</button>
+      </div>
+
+      <div class="gc-panel">
+        <h2>Nuovo movimento</h2>
+        <div class="gc-form-2col">
+          <div class="gc-form-row"><label>Tipo</label>
+            <select class="gc-select" id="mTipo">
+              <option value="uscita">Uscita (acquisto)</option>
+              <option value="entrata">Entrata (vendita/incasso)</option>
+            </select>
+          </div>
+          <div class="gc-form-row"><label>Categoria</label>
+            <select class="gc-select" id="mCategoria">
+              <option>Acquisto merce</option>
+              <option>Vendita merce</option>
+              <option>IVA doganale</option>
+              <option>Dazio/dogana</option>
+              <option>Taglio/logistica</option>
+              <option>Linea di credito</option>
+              <option>Altro</option>
+            </select>
+          </div>
+        </div>
+        <div class="gc-form-row"><label>Descrizione</label><input class="gc-input" id="mDesc" placeholder="es. Titan ordine 122054" /></div>
+        <div class="gc-form-row"><label>Controparte</label><input class="gc-input" id="mControparte" placeholder="es. Titan Steel Corp" /></div>
+        <div class="gc-form-2col">
+          <div class="gc-form-row"><label>Importo fattura</label><input class="gc-input" id="mImporto" type="number" step="0.01" /></div>
+          <div class="gc-form-row"><label>Valuta</label>
+            <select class="gc-select" id="mValuta"><option value="EUR">EUR</option><option value="USD">USD</option></select>
+          </div>
+        </div>
+        <div class="gc-form-row" id="mRateRow" style="display:none;">
+          <label>Tasso di cambio applicato (es. cambio reale fatto su Revolut)</label>
+          <input class="gc-input" id="mRateOverride" type="number" step="0.0001" />
+        </div>
+        <div class="gc-form-row"><label>Data scadenza / incasso previsto</label><input class="gc-input" id="mData" type="date" /></div>
+
+        <div id="mFiscaleAcquisto" style="display:none; background:var(--panel-2); border:1px solid var(--line); border-radius:8px; padding:12px; margin-bottom:12px;">
+          <div class="gc-form-row"><label>Provenienza</label>
+            <select class="gc-select" id="mOrigine">
+              <option value="extra-ue">Extra-UE</option>
+              <option value="ue-italia">Italia / UE</option>
+            </select>
+          </div>
+          <div class="gc-desc-sub" style="margin-bottom:8px;">Aggiungi qui i costi reali che ti darà lo spedizioniere — dazio (se lo pagherai), deposito doganale/stallo container se la merce resta in sospensione, IVA che verserà per tuo conto. Importi da inserire quando li conosci.</div>
+          <div id="mQuickAddWrap" style="display:flex; flex-wrap:wrap; gap:6px;"></div>
+        </div>
+
+        <div id="mFiscaleVendita" style="display:none; background:var(--panel-2); border:1px solid var(--line); border-radius:8px; padding:12px; margin-bottom:12px;">
+          <div class="gc-form-row"><label>IVA su questa vendita</label>
+            <select class="gc-select" id="mIvaVendita">
+              <option value="22" selected>22%</option>
+              <option value="10">10%</option>
+              <option value="4">4%</option>
+              <option value="0">0% (export / non imponibile)</option>
+            </select>
+          </div>
+          <div id="mFiscalePreviewVendita" class="gc-desc-sub"></div>
+        </div>
+
+        <div class="gc-form-row"><label>Costi accessori (spedizioniere, dogana, taglio, trasporto...)</label></div>
+        <div class="gc-costi-list" id="mCostiList"></div>
+        <button class="gc-btn-ghost" id="mAddCosto" style="margin-bottom:10px;">+ Aggiungi costo accessorio</button>
+
+        <button class="gc-btn" id="gcAddMov">+ Aggiungi movimento</button>
+      </div>
+    </div>
+
+    <div class="gc-panel">
+      <h2>Proiezione — movimenti pianificati</h2>
+      <div id="gcTimelineWrap"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const $ = (id) => document.getElementById(id);
+  let state = {
+    rate: 1.14,
+    threshold: 0,
+    accounts: [],
+    movements: [], // {id, tipo, categoria, desc, controparte, importo, valuta, data, stato, costi:[{nome, importo, valuta, nota}]}
+    financings: [], // {id, nome, residuo, rata, dataProssima, dataFine}
+    loaded: false
+  };
+
+  // --- Firestore setup ---------------------------------------------------
+  // Same Firebase project as il Magazzino (magazzino-steelcoltd), ma una
+  // collezione dati completamente separata: nessun documento in comune.
+  const firebaseConfig = {
+    apiKey: "AIzaSyB3kVGPrTewCAoyullrvyZEjRPkNZf5DXY",
+    authDomain: "magazzino-steelcoltd.firebaseapp.com",
+    projectId: "magazzino-steelcoltd"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  try { db.enablePersistence({ synchronizeTabs: true }); } catch(e) { /* già abilitata o non supportata dal browser */ }
+  const docRef = db.collection('girocassa').doc('state');
+
+  function setStatus(text, color) {
+    const el = $('gcSaveStatus');
+    if (el) { el.textContent = text; el.style.color = color || 'var(--ink-faint)'; }
+  }
+
+  let firstSnapshot = true;
+  function attachListener() {
+    // Ascolto in tempo reale: se modifichi da un altro dispositivo, questa
+    // finestra si aggiorna da sola — stesso comportamento del Magazzino.
+    docRef.onSnapshot((doc) => {
+      if (doc.exists) {
+        const data = doc.data();
+        state = Object.assign(state, data);
+      }
+      state.loaded = true;
+      render();
+      setStatus(firstSnapshot ? 'Dati caricati da Firestore.' : 'Aggiornato ' + new Date().toLocaleTimeString('it-IT'));
+      firstSnapshot = false;
+    }, (err) => {
+      console.error('Errore di sincronizzazione', err);
+      setStatus('Connessione a Firestore non riuscita — controlla la rete. I dati inseriti restano comunque in questa sessione e verranno inviati appena la connessione torna.', 'var(--amber)');
+      state.loaded = true;
+      render();
+    });
+  }
+
+  setStatus('Connessione…');
+  firebase.auth().signInAnonymously()
+    .then(attachListener)
+    .catch((err) => {
+      console.error('Errore di autenticazione Firebase', err);
+      setStatus('Errore di autenticazione — verifica che il provider "Anonimo" sia attivo su Firebase (Authentication → Sign-in method).', 'var(--red)');
+      state.loaded = true;
+      render();
+    });
+
+  let saveTimer = null;
+  function scheduleSave() {
+    if (saveTimer) clearTimeout(saveTimer);
+    setStatus('Modifiche in attesa di sincronizzazione…');
+    saveTimer = setTimeout(doSave, 500);
+  }
+
+  function doSave() {
+    docRef.set({
+      rate: state.rate, threshold: state.threshold,
+      accounts: state.accounts, movements: state.movements, financings: state.financings
+    }).then(() => {
+      setStatus('Sincronizzato ' + new Date().toLocaleTimeString('it-IT'));
+    }).catch((e) => {
+      console.error('Errore salvataggio Firestore', e);
+      setStatus('Salvataggio in coda — Firestore lo scriverà appena possibile (funziona anche offline).', 'var(--amber)');
+    });
+  }
+
+  function toEUR(amount, ccy, customRate) {
+    if (ccy === 'EUR') return amount;
+    return amount / (customRate || state.rate);
+  }
+
+  function fmt(n) {
+    return new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
+  }
+  function fmtOrig(n, ccy) {
+    return new Intl.NumberFormat('it-IT', { style: 'currency', currency: ccy, maximumFractionDigits: 0 }).format(n);
+  }
+  function fmtDate(d) {
+    if (!d) return '—';
+    const dt = new Date(d + 'T00:00:00');
+    return dt.toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
+  function liquidityTotalEUR() {
+    return state.accounts.reduce((sum, a) => sum + toEUR(parseFloat(a.saldo) || 0, a.valuta), 0);
+  }
+
+  function movementEURTotal(m) {
+    let total = toEUR(parseFloat(m.importo) || 0, m.valuta, m.rate);
+    (m.costi || []).forEach(c => { total += toEUR(parseFloat(c.importo) || 0, c.valuta, m.rate); });
+    return total;
+  }
+
+  function addMonths(dateStr, n) {
+    const d = new Date(dateStr + 'T00:00:00');
+    d.setMonth(d.getMonth() + n);
+    return d.toISOString().slice(0,10);
+  }
+
+  function financingInstallments() {
+    const rows = [];
+    state.financings.forEach(f => {
+      if (!f.dataProssima || !f.rata) return;
+      let d = f.dataProssima;
+      let n = 1;
+      const fine = f.dataFine || f.dataProssima;
+      let guard = 0;
+      while (d <= fine && guard < 240) {
+        rows.push({
+          synthetic: true,
+          tipo: 'uscita',
+          categoria: 'Finanziamento',
+          desc: `Rata ${n} — ${f.nome}`,
+          controparte: f.nome,
+          importo: parseFloat(f.rata),
+          valuta: 'EUR',
+          rate: null,
+          data: d,
+          stato: 'pianificato',
+          costi: []
+        });
+        d = addMonths(d, 1);
+        n++; guard++;
+      }
+    });
+    return rows;
+  }
+
+  function totalResidualDebt() {
+    return state.financings.reduce((s,f) => s + (parseFloat(f.residuo) || 0), 0);
+  }
+
+  function buildTimeline() {
+    const pending = state.movements.filter(m => m.stato !== 'completato');
+    const allRows = pending.concat(financingInstallments());
+    const sorted = allRows.slice().sort((a,b) => (a.data || '9999').localeCompare(b.data || '9999'));
+    let running = liquidityTotalEUR();
+    const rows = [];
+    rows.push({ isBalance: true, label: 'Liquidità disponibile oggi', running });
+    sorted.forEach(m => {
+      const eurAmt = movementEURTotal(m);
+      const signed = m.tipo === 'uscita' ? -eurAmt : eurAmt;
+      running += signed;
+      rows.push({ m, eurAmt, signed, running });
+    });
+    return rows;
+  }
+
+  function render() {
+    if (!state.loaded) return;
+    $('gcRate').value = state.rate;
+    $('gcThreshold').value = state.threshold;
+
+    // Accounts
+    const accWrap = $('gcAccounts');
+    accWrap.innerHTML = '';
+    if (state.accounts.length === 0) {
+      accWrap.innerHTML = '<div class="gc-empty" style="padding:10px 0;">Nessun conto ancora aggiunto</div>';
+    }
+    state.accounts.forEach(a => {
+      const row = document.createElement('div');
+      row.className = 'gc-acct-row';
+      row.innerHTML = `
+        <span class="gc-acct-name">${a.nome}<span class="gc-acct-ccy">${a.valuta}</span></span>
+        <span style="display:flex;align-items:center;">
+          <span class="gc-acct-val">${fmtOrig(parseFloat(a.saldo)||0, a.valuta)}</span>
+          <button class="gc-acct-del" data-id="${a.id}">×</button>
+        </span>`;
+      row.querySelector('.gc-acct-del').onclick = () => {
+        state.accounts = state.accounts.filter(x => x.id !== a.id);
+        scheduleSave(); render();
+      };
+      accWrap.appendChild(row);
+    });
+
+    // Financings
+    const finWrap = $('gcFinancings');
+    finWrap.innerHTML = '';
+    if (state.financings.length === 0) {
+      finWrap.innerHTML = '<div class="gc-empty" style="padding:10px 0;">Nessun finanziamento ancora aggiunto</div>';
+    }
+    state.financings.forEach(f => {
+      const row = document.createElement('div');
+      row.className = 'gc-acct-row';
+      row.innerHTML = `
+        <span class="gc-acct-name">${f.nome}<div class="gc-desc-sub">rata ${fmtOrig(parseFloat(f.rata)||0,'EUR')}/mese fino al ${fmtDate(f.dataFine)}</div></span>
+        <span style="display:flex;align-items:center;">
+          <span class="gc-acct-val">${fmtOrig(parseFloat(f.residuo)||0,'EUR')}</span>
+          <button class="gc-acct-del" data-id="${f.id}">×</button>
+        </span>`;
+      row.querySelector('.gc-acct-del').onclick = () => {
+        state.financings = state.financings.filter(x => x.id !== f.id);
+        scheduleSave(); render();
+      };
+      finWrap.appendChild(row);
+    });
+
+    // Summary cards
+    const timeline = buildTimeline();
+    const totalLiq = liquidityTotalEUR();
+    let minRunning = totalLiq, minRow = null;
+    timeline.forEach(r => { if (r.running < minRunning) { minRunning = r.running; minRow = r; } });
+    const belowThreshold = minRow && minRow.m && minRunning < (parseFloat(state.threshold) || 0);
+    const goesNegative = minRunning < 0;
+
+    const summary = $('gcSummary');
+    summary.innerHTML = '';
+    const card1 = document.createElement('div');
+    card1.className = 'gc-card';
+    card1.innerHTML = `<div class="gc-card-label">Liquidità totale oggi</div><div class="gc-card-value">${fmt(totalLiq)}</div><div class="gc-card-sub">${state.accounts.length} cont${state.accounts.length===1?'o':'i'}</div>`;
+    summary.appendChild(card1);
+
+    const residuo = totalResidualDebt();
+    if (residuo > 0) {
+      const card1b = document.createElement('div');
+      card1b.className = 'gc-card';
+      card1b.innerHTML = `<div class="gc-card-label">Liquidità netta (al netto finanziamenti)</div><div class="gc-card-value">${fmt(totalLiq - residuo)}</div><div class="gc-card-sub">debito residuo ${fmt(residuo)}</div>`;
+      summary.appendChild(card1b);
+    }
+
+    const card2 = document.createElement('div');
+    card2.className = 'gc-card ' + (goesNegative ? 'warn' : (belowThreshold ? 'warn' : 'ok'));
+    card2.innerHTML = `<div class="gc-card-label">Punto minimo proiettato</div><div class="gc-card-value">${fmt(minRunning)}</div><div class="gc-card-sub">${minRow && minRow.m ? fmtDate(minRow.m.data) + ' — ' + minRow.m.desc : 'nessun movimento pianificato'}</div>`;
+    summary.appendChild(card2);
+
+    const card3 = document.createElement('div');
+    card3.className = 'gc-card';
+    const finRows = financingInstallments();
+    const pendingOut = state.movements.filter(m => m.stato !== 'completato' && m.tipo === 'uscita').reduce((s,m)=>s+movementEURTotal(m),0)
+      + finRows.reduce((s,m)=>s+movementEURTotal(m),0);
+    const pendingIn = state.movements.filter(m => m.stato !== 'completato' && m.tipo === 'entrata').reduce((s,m)=>s+movementEURTotal(m),0);
+    card3.innerHTML = `<div class="gc-card-label">Uscite / entrate pianificate</div><div class="gc-card-value" style="font-size:16px;"><span style="color:var(--red)">-${fmt(pendingOut)}</span> &nbsp;/&nbsp; <span style="color:var(--green)">+${fmt(pendingIn)}</span></div>`;
+    summary.appendChild(card3);
+
+    // Posizione IVA: somma di tutti i costi/voci taggati come credito o debito, su tutti i movimenti (anche completati)
+    let ivaCredito = 0, ivaDebito = 0;
+    state.movements.forEach(m => {
+      (m.costi || []).forEach(c => {
+        const eurAmt = toEUR(parseFloat(c.importo) || 0, c.valuta);
+        if (c.ivaTag === 'credito') ivaCredito += eurAmt;
+        if (c.ivaTag === 'debito') ivaDebito += eurAmt;
+      });
+    });
+    const ivaNetta = ivaCredito - ivaDebito;
+    const card4 = document.createElement('div');
+    card4.className = 'gc-card';
+    card4.innerHTML = `<div class="gc-card-label">Posizione IVA (credito − debito)</div>
+      <div class="gc-card-value" style="font-size:18px; color:${ivaNetta>=0?'var(--blue)':'var(--amber)'}">${fmt(ivaNetta)}</div>
+      <div class="gc-card-sub">credito ${fmt(ivaCredito)} · debito ${fmt(ivaDebito)}</div>`;
+    summary.appendChild(card4);
+
+    // sparkline
+    const sparkCard = document.createElement('div');
+    sparkCard.className = 'gc-card';
+    sparkCard.style.gridColumn = 'span 1';
+    sparkCard.innerHTML = `<div class="gc-card-label">Andamento saldo proiettato</div>`;
+    const svg = buildSpark(timeline, parseFloat(state.threshold) || 0);
+    sparkCard.appendChild(svg);
+    summary.appendChild(sparkCard);
+
+    // Timeline table
+    const wrap = $('gcTimelineWrap');
+    if (timeline.length <= 1) {
+      wrap.innerHTML = '<div class="gc-empty">Aggiungi un movimento per vedere la proiezione del girocassa</div>';
+    } else {
+      const table = document.createElement('table');
+      table.className = 'gc-table';
+      table.innerHTML = `<thead><tr>
+        <th>Data</th><th>Movimento</th><th>Categoria</th><th style="text-align:right;">Importo</th><th style="text-align:right;">Saldo progressivo</th><th>Stato</th><th></th>
+      </tr></thead>`;
+      const tbody = document.createElement('tbody');
+      timeline.forEach(r => {
+        const tr = document.createElement('tr');
+        if (r.isBalance) {
+          tr.innerHTML = `<td class="gc-mono">Oggi</td><td colspan="3"><strong>Liquidità disponibile</strong></td>
+            <td style="text-align:right;" class="gc-running">${fmt(r.running)}</td><td></td><td></td>`;
+        } else {
+          const m = r.m;
+          if (r.running < (parseFloat(state.threshold)||0)) tr.classList.add('gc-row-danger');
+          const costiHtml = (m.costi||[]).length ? `<div class="gc-desc-sub">+ ${m.costi.map(c=>c.nome+' '+fmtOrig(parseFloat(c.importo)||0,c.valuta)+(c.nota?` (${c.nota})`:'')).join(', ')}</div>` : '';
+          tr.innerHTML = `
+            <td class="gc-mono">${fmtDate(m.data)}</td>
+            <td><strong>${m.desc||'—'}</strong>${m.controparte?`<div class="gc-desc-sub">${m.controparte}</div>`:''}${costiHtml}</td>
+            <td><span class="gc-tag">${m.categoria}</span></td>
+            <td style="text-align:right;">
+              <span class="${m.tipo==='uscita'?'gc-amt-out':'gc-amt-in'}">${m.tipo==='uscita'?'-':'+'}${fmt(r.eurAmt)}</span>
+              ${m.valuta!=='EUR'?`<div class="gc-orig">${fmtOrig(parseFloat(m.importo)||0,m.valuta)} · cambio ${(m.rate||state.rate).toFixed(4)}</div>`:''}
+            </td>
+            <td style="text-align:right;" class="gc-running ${r.running<0?'neg':''}">${fmt(r.running)}</td>
+            <td>${m.synthetic
+              ? '<span class="gc-tag">rata automatica</span>'
+              : `<select class="gc-select gc-status-select" data-id="${m.id}">
+                <option value="pianificato" ${m.stato==='pianificato'?'selected':''}>Pianificato</option>
+                <option value="confermato" ${m.stato==='confermato'?'selected':''}>Confermato</option>
+                <option value="completato" ${m.stato==='completato'?'selected':''}>Completato</option>
+              </select>`}
+            </td>
+            <td>${m.synthetic ? '' : `<button class="gc-del-x" data-delid="${m.id}">×</button>`}</td>`;
+        }
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+      wrap.innerHTML = '';
+      wrap.appendChild(table);
+      wrap.querySelectorAll('.gc-status-select').forEach(sel => {
+        sel.onchange = (e) => {
+          const id = e.target.getAttribute('data-id');
+          const mv = state.movements.find(x => x.id === id);
+          if (mv) { mv.stato = e.target.value; scheduleSave(); render(); }
+        };
+      });
+      wrap.querySelectorAll('[data-delid]').forEach(btn => {
+        btn.onclick = (e) => {
+          const id = e.target.getAttribute('data-delid');
+          state.movements = state.movements.filter(x => x.id !== id);
+          scheduleSave(); render();
+        };
+      });
+    }
+  }
+
+  function buildSpark(timeline, threshold) {
+    const w = 260, h = 60, pad = 4;
+    const values = timeline.map(r => r.running);
+    const min = Math.min(...values, threshold, 0);
+    const max = Math.max(...values, threshold, 1);
+    const range = (max - min) || 1;
+    const stepX = values.length > 1 ? (w - pad*2) / (values.length - 1) : 0;
+    const toY = (v) => h - pad - ((v - min) / range) * (h - pad*2);
+    let path = '';
+    values.forEach((v, i) => {
+      const x = pad + i * stepX;
+      const y = toY(v);
+      path += (i===0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1) + ' ';
+    });
+    const thY = toY(threshold);
+    const zeroY = toY(0);
+    const svgNS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(svgNS, 'svg');
+    svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+    svg.setAttribute('class', 'gc-spark');
+    svg.innerHTML = `
+      <line x1="0" y1="${zeroY}" x2="${w}" y2="${zeroY}" stroke="#565D6B" stroke-width="1" stroke-dasharray="2,3" />
+      <line x1="0" y1="${thY}" x2="${w}" y2="${thY}" stroke="#D6A452" stroke-width="1" stroke-dasharray="2,3" />
+      <path d="${path}" fill="none" stroke="#6E9FD6" stroke-width="2" />
+    `;
+    return svg;
+  }
+
+  // costi accessori builder in the form
+  let costi = [];
+  function renderCosti() {
+    const wrap = $('mCostiList');
+    wrap.innerHTML = '';
+    costi.forEach((c, idx) => {
+      const row = document.createElement('div');
+      row.className = 'gc-costo-item';
+      row.innerHTML = `
+        <input class="gc-input" placeholder="es. IVA doganale" value="${c.nome}" data-f="nome" />
+        <input class="gc-input" type="number" step="0.01" placeholder="importo €" value="${c.importo}" data-f="importo" />
+        <input class="gc-input" placeholder="nota (es. cambio bolletta 1,142)" value="${c.nota||''}" data-f="nota" />
+        <button class="gc-costo-del">×</button>`;
+      row.querySelectorAll('[data-f]').forEach(inp => {
+        inp.oninput = (e) => { costi[idx][e.target.getAttribute('data-f')] = e.target.value; };
+      });
+      row.querySelector('.gc-costo-del').onclick = () => { costi.splice(idx,1); renderCosti(); };
+      wrap.appendChild(row);
+    });
+  }
+  $('mAddCosto').onclick = () => { costi.push({nome:'', importo:'', valuta:'EUR', nota:''}); renderCosti(); };
+
+
+  const QUICK_ADD = {
+    'extra-ue': [
+      { label: '+ Deposito doganale / stallo container', nome: 'Deposito doganale / stallo container', ivaTag: null },
+      { label: '+ Dazio doganale', nome: 'Dazio doganale', ivaTag: null },
+      { label: '+ IVA doganale (versata dallo spedizioniere)', nome: 'IVA doganale', ivaTag: 'credito' },
+      { label: '+ Spese spedizioniere', nome: 'Spese spedizioniere', ivaTag: null }
+    ],
+    'ue-italia': [
+      { label: '+ IVA fattura', nome: 'IVA fattura', ivaTag: 'credito' },
+      { label: '+ Trasporto', nome: 'Trasporto', ivaTag: null }
+    ]
+  };
+
+  function renderQuickAdd() {
+    const wrap = $('mQuickAddWrap');
+    wrap.innerHTML = '';
+    const origine = $('mOrigine').value;
+    (QUICK_ADD[origine] || []).forEach(qa => {
+      const btn = document.createElement('button');
+      btn.className = 'gc-btn-ghost';
+      btn.textContent = qa.label;
+      btn.onclick = () => {
+        costi.push({ nome: qa.nome, importo: '', valuta: 'EUR', ivaTag: qa.ivaTag });
+        renderCosti();
+      };
+      wrap.appendChild(btn);
+    });
+  }
+
+  function updateFiscaleVisibility() {
+    const tipo = $('mTipo').value;
+    const cat = $('mCategoria').value;
+    const valuta = $('mValuta').value;
+    const isAcquisto = tipo === 'uscita' && cat === 'Acquisto merce';
+    const isVendita = tipo === 'entrata' && cat === 'Vendita merce';
+    $('mFiscaleAcquisto').style.display = isAcquisto ? 'block' : 'none';
+    $('mFiscaleVendita').style.display = isVendita ? 'block' : 'none';
+    $('mRateRow').style.display = valuta === 'USD' ? 'block' : 'none';
+    if (valuta === 'USD' && !$('mRateOverride').value) $('mRateOverride').value = state.rate;
+    if (isAcquisto) renderQuickAdd();
+    updateFiscalePreviewVendita();
+  }
+
+  function updateFiscalePreviewVendita() {
+    if ($('mFiscaleVendita').style.display !== 'block') return;
+    const importo = parseFloat($('mImporto').value) || 0;
+    const valuta = $('mValuta').value;
+    const rate = valuta === 'USD' ? (parseFloat($('mRateOverride').value) || state.rate) : null;
+    const importoEUR = toEUR(importo, valuta, rate);
+    const ivaPct = parseFloat($('mIvaVendita').value) || 0;
+    const ivaEUR = importoEUR * ivaPct / 100;
+    $('mFiscalePreviewVendita').textContent = importoEUR > 0
+      ? `IVA ${ivaPct}% su ${fmt(importoEUR)} = ${fmt(ivaEUR)} a debito · incasso totale ${fmt(importoEUR+ivaEUR)}`
+      : 'Inserisci l\'importo per vedere il calcolo';
+  }
+
+  ['mTipo','mCategoria','mValuta'].forEach(id => $(id).addEventListener('change', updateFiscaleVisibility));
+  $('mOrigine').addEventListener('change', renderQuickAdd);
+  ['mIvaVendita','mImporto','mRateOverride'].forEach(id => $(id).addEventListener('input', updateFiscalePreviewVendita));
+
+  function fiscalCostLines() {
+    const lines = [];
+    if ($('mFiscaleVendita').style.display === 'block') {
+      const importo = parseFloat($('mImporto').value) || 0;
+      const valuta = $('mValuta').value;
+      const rate = valuta === 'USD' ? (parseFloat($('mRateOverride').value) || state.rate) : null;
+      const importoEUR = toEUR(importo, valuta, rate);
+      const ivaPct = parseFloat($('mIvaVendita').value) || 0;
+      const ivaEUR = importoEUR * ivaPct / 100;
+      if (ivaEUR > 0) lines.push({ nome: `IVA vendita ${ivaPct}%`, importo: ivaEUR.toFixed(2), valuta: 'EUR', ivaTag: 'debito' });
+    }
+    return lines;
+  }
+
+  $('gcSaveRate').onclick = () => { state.rate = parseFloat($('gcRate').value) || state.rate; scheduleSave(); render(); };
+  $('gcSaveThreshold').onclick = () => { state.threshold = parseFloat($('gcThreshold').value) || 0; scheduleSave(); render(); };
+
+  $('gcAddFin').onclick = () => {
+    const nome = $('finNome').value.trim();
+    const residuo = parseFloat($('finResiduo').value) || 0;
+    const rata = parseFloat($('finRata').value) || 0;
+    const dataProssima = $('finProssima').value;
+    const dataFine = $('finFine').value;
+    if (!nome || !rata || !dataProssima || !dataFine) return;
+    state.financings.push({ id: 'f'+Date.now(), nome, residuo, rata, dataProssima, dataFine });
+    $('finNome').value=''; $('finResiduo').value=''; $('finRata').value=''; $('finProssima').value=''; $('finFine').value='';
+    scheduleSave(); render();
+  };
+
+  $('gcAddAcct').onclick = () => {
+    const nome = $('gcAcctName').value.trim();
+    const valuta = $('gcAcctCcy').value;
+    const saldo = parseFloat($('gcAcctBal').value) || 0;
+    if (!nome) return;
+    state.accounts.push({ id: 'a'+Date.now(), nome, valuta, saldo });
+    $('gcAcctName').value=''; $('gcAcctBal').value='';
+    scheduleSave(); render();
+  };
+
+  $('gcAddMov').onclick = () => {
+    const desc = $('mDesc').value.trim();
+    const importo = parseFloat($('mImporto').value);
+    const data = $('mData').value;
+    const valuta = $('mValuta').value;
+    if (!desc || !importo || !data) return;
+    const rate = valuta === 'USD' ? (parseFloat($('mRateOverride').value) || state.rate) : null;
+    const autoLines = fiscalCostLines();
+    const manualLines = costi.filter(c => c.nome && c.importo).map(c => ({...c, ivaTag: c.ivaTag || null}));
+    state.movements.push({
+      id: 'm'+Date.now(),
+      tipo: $('mTipo').value,
+      categoria: $('mCategoria').value,
+      desc,
+      controparte: $('mControparte').value.trim(),
+      importo,
+      valuta,
+      rate,
+      data,
+      stato: 'pianificato',
+      costi: [...autoLines, ...manualLines]
+    });
+    $('mDesc').value=''; $('mControparte').value=''; $('mImporto').value=''; $('mData').value=''; $('mRateOverride').value='';
+    costi = []; renderCosti();
+    updateFiscaleVisibility();
+    scheduleSave(); render();
+  };
+
+  renderCosti();
+  updateFiscaleVisibility();
+})();
+</script>
+</body>
+</html>
