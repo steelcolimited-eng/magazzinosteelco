@@ -103,6 +103,8 @@ main{max-width:1500px;margin:0 auto;padding:22px 20px 60px}
 .bulkbar .b-sell:hover{background:#255a40}
 .bulkbar .b-clear{background:rgba(255,255,255,.12);color:#fff}
 .bulkbar .b-clear:hover{background:rgba(255,255,255,.22)}
+.bulkbar .b-export{background:var(--steel-2);color:#fff}
+.bulkbar .b-export:hover{background:var(--steel)}
 
 .table-wrap{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}
 .table-scroll{overflow-x:auto}
@@ -313,6 +315,7 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
     <span class="bw" id="bulkW"></span>
     <div class="sp"></div>
     <button class="b-clear" onclick="clearSel()">Deseleziona</button>
+    <button class="b-export" id="bulkExportBtn" onclick="exportSelezione()">Esporta selezione ↓</button>
     <button class="b-sell" id="bulkSellBtn" onclick="openBulkSell()">Vendi selezionati →</button>
     <button class="b-sell" id="bulkArriveBtn" style="display:none;background:var(--sail)" onclick="bulkArrive()">Sposta a magazzino →</button>
   </div>
@@ -339,7 +342,11 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
         <div class="field"><label>Costo taglio (€/t)</label><input type="number" id="fTaglio" value="0" oninput="calcMargin()"></div>
         <div class="field"><label>Costo consegna (€/t)</label><input type="number" id="fConsegna" value="0" oninput="calcMargin()"></div>
       </div>
-      <div class="field"><label>Scarto (%) — riduce il peso fatturabile</label><input type="number" id="fScarto" value="0" step="0.1" oninput="calcMargin()"></div>
+      <div class="field-row-3">
+        <div class="field"><label>Costo selezione (€/t)</label><input type="number" id="fSelezione" value="0" oninput="calcMargin()"></div>
+        <div class="field"><label>Costo rifilo (€/t)</label><input type="number" id="fCostoRifilo" value="0" oninput="calcMargin()"></div>
+        <div class="field"><label>Rifila a (mm) — vuoto = nessun rifilo</label><input type="number" id="fRifiloLarghezza" placeholder="es. 800" oninput="calcMargin()"></div>
+      </div>
       <div class="calc-preview" id="calcPreview"></div>
     </div>
     <div class="modal-foot">
@@ -367,7 +374,11 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
         <div class="field"><label>Costo taglio (€/t)</label><input type="number" id="esTaglio" oninput="calcEditSalePreview()"></div>
         <div class="field"><label>Costo consegna (€/t)</label><input type="number" id="esConsegna" oninput="calcEditSalePreview()"></div>
       </div>
-      <div class="field"><label>Scarto (%) — riduce il peso fatturabile</label><input type="number" id="esScarto" step="0.1" oninput="calcEditSalePreview()"></div>
+      <div class="field-row-3">
+        <div class="field"><label>Costo selezione (€/t)</label><input type="number" id="esSelezione" oninput="calcEditSalePreview()"></div>
+        <div class="field"><label>Costo rifilo (€/t)</label><input type="number" id="esCostoRifilo" oninput="calcEditSalePreview()"></div>
+        <div class="field"><label>Rifila a (mm) — vuoto = nessun rifilo</label><input type="number" id="esRifiloLarghezza" placeholder="es. 800" oninput="calcEditSalePreview()"></div>
+      </div>
       <div class="calc-preview" id="editSalePreview"></div>
     </div>
     <div class="modal-foot">
@@ -387,7 +398,7 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
     <div class="modal-body">
       <div class="section-label">Dati comuni a tutti i pacchi importati</div>
       <div class="field-row">
-        <div class="field"><label>Fornitore</label><input type="text" id="dFornitore" placeholder="es. TECNOSID"></div>
+        <div class="field"><label>Fornitore comune (usato se il pacco non ne ha uno proprio)</label><input type="text" id="dFornitore" placeholder="es. TECNOSID"></div>
         <div class="field"><label>Destinazione</label>
           <select id="dDestinazione"><option value="stock">A magazzino</option><option value="sailing">In navigazione</option></select>
         </div>
@@ -401,9 +412,9 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
       </div>
       <div class="field"><label>Nota comune (es. lotto, DDT, causale)</label><input type="text" id="dNota" placeholder="es. Lotto SC1 · reso c/lavoro DDT 648-650"></div>
 
-      <div class="section-label">Costo (opzionale, applicato a ogni pacco importato)</div>
+      <div class="section-label">Costo comune (usato per i pacchi che non hanno un prezzo proprio nel file)</div>
       <div class="field-row-3">
-        <div class="field"><label>Prezzo fattura /t</label><input type="number" id="dPrezzoFattura" value="0" oninput="calcDistintaTotals()"></div>
+        <div class="field"><label>Prezzo fattura comune /t</label><input type="number" id="dPrezzoFattura" value="0" oninput="calcDistintaTotals()"></div>
         <div class="field"><label>Valuta</label><select id="dValuta" onchange="calcDistintaTotals()"><option value="EUR">EUR</option><option value="USD">USD</option></select></div>
         <div class="field"><label>Cambio (se USD)</label><input type="number" id="dCambio" step="0.0001" value="0" oninput="calcDistintaTotals()"></div>
       </div>
@@ -901,11 +912,11 @@ function syncSelAll(){ const a=document.getElementById('selAll'); if(!a) return;
 function clearSel(){ selected.clear(); updateBulkbar(); const t=document.getElementById('mainTable'); if(t) render(); }
 function updateBulkbar(){
   const bar=document.getElementById('bulkbar');
-  const sellBtn=document.getElementById('bulkSellBtn'), arriveBtn=document.getElementById('bulkArriveBtn');
+  const sellBtn=document.getElementById('bulkSellBtn'), arriveBtn=document.getElementById('bulkArriveBtn'), exportBtn=document.getElementById('bulkExportBtn');
   if(currentTab==='stock'){
     const ids=[...selected].filter(id=>state.stock.some(c=>c.id===id));
     if(ids.length){
-      bar.classList.add('show'); sellBtn.style.display=''; arriveBtn.style.display='none';
+      bar.classList.add('show'); sellBtn.style.display=''; arriveBtn.style.display='none'; exportBtn.style.display='';
       document.getElementById('bulkN').textContent=ids.length;
       const w=ids.reduce((a,id)=>{const c=state.stock.find(x=>x.id===id);return a+(c?.peso||0)},0);
       document.getElementById('bulkW').textContent=fmtT(w)+' t · valore '+fmtEur(ids.reduce((a,id)=>{const c=state.stock.find(x=>x.id===id);return a+(c?.valoreTotale||0)},0));
@@ -913,7 +924,7 @@ function updateBulkbar(){
   } else if(currentTab==='sailing'){
     const ids=[...selected].filter(id=>state.sailing.some(c=>c.id===id));
     if(ids.length){
-      bar.classList.add('show'); sellBtn.style.display='none'; arriveBtn.style.display='';
+      bar.classList.add('show'); sellBtn.style.display='none'; arriveBtn.style.display=''; exportBtn.style.display='none';
       document.getElementById('bulkN').textContent=ids.length;
       const w=ids.reduce((a,id)=>{const c=state.sailing.find(x=>x.id===id);return a+(c?.peso||0)},0);
       document.getElementById('bulkW').textContent=fmtT(w)+' t · valore '+fmtEur(ids.reduce((a,id)=>{const c=state.sailing.find(x=>x.id===id);return a+(c?.valoreTotale||0)},0));
@@ -930,6 +941,27 @@ function bulkArrive(){
   saveState(); clearSel();
   showToast(`${ids.length} coil spostati a magazzino`);
   render();
+}
+function exportSelezione(){
+  const ids=[...selected].filter(id=>state.stock.some(c=>c.id===id));
+  if(!ids.length){ alert('Seleziona almeno un coil a magazzino da esportare.'); return; }
+  const coils=ids.map(id=>state.stock.find(c=>c.id===id)).filter(Boolean);
+  const data=coils.map(c=>({
+    'SPESSORE':c.spessore||'',
+    'LARGHEZZA':c.larghezza||'',
+    'TAGLIO':c.lunghezza||'',
+    'COPERTURA':c.rivestimento||'',
+    'TEMPERA':c.durezza||'',
+    'QUANTITÀ (t)':+((c.peso||0).toFixed(3)),
+    'DATA CONSEGNA':'',
+    'PREZZO (€/t)':''
+  }));
+  const ws=XLSX.utils.json_to_sheet(data);
+  ws['!cols']=[{wch:10},{wch:10},{wch:10},{wch:14},{wch:10},{wch:12},{wch:14},{wch:12}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Proposta');
+  XLSX.writeFile(wb,`Proposta_vendita_${new Date().toISOString().slice(0,10)}.xlsx`);
+  showToast(`${coils.length} posizioni esportate`);
 }
 
 /* ---------- SELL (single + bulk) ---------- */
@@ -957,35 +989,60 @@ function openSell(ids){
   document.getElementById('fPrezzo').value='';
   document.getElementById('fTaglio').value=0;
   document.getElementById('fConsegna').value=0;
-  document.getElementById('fScarto').value=0;
+  document.getElementById('fSelezione').value=0;
+  document.getElementById('fCostoRifilo').value=0;
+  document.getElementById('fRifiloLarghezza').value='';
   calcMargin();
   document.getElementById('sellOverlay').classList.add('show');
 }
 function openBulkSell(){ openSell([...selected]); }
 function closeSell(){ document.getElementById('sellOverlay').classList.remove('show'); sellingIds=[]; }
 
+// Data una larghezza originale e una larghezza di rifilo, calcola lo scarto % (mai negativo)
+function scartoDaRifilo(larghezzaOrig,larghezzaRifilo){
+  if(!(larghezzaRifilo>0) || !(larghezzaOrig>0)) return 0;
+  return Math.max(0,((larghezzaOrig-larghezzaRifilo)/larghezzaOrig)*100);
+}
 function calcMargin(){
   const coils=sellingIds.map(id=>state.stock.find(c=>c.id===id)).filter(Boolean);
   if(!coils.length) return;
   const prezzo=+document.getElementById('fPrezzo').value||0;
   const taglio=+document.getElementById('fTaglio').value||0;
   const consegna=+document.getElementById('fConsegna').value||0;
-  const scarto=+document.getElementById('fScarto').value||0;
-  let peso=coils.reduce((a,c)=>a+(c.peso||0),0);
-  const pesoNetto=peso*(1-scarto/100);
+  const selezione=+document.getElementById('fSelezione').value||0;
+  const costoRifilo=+document.getElementById('fCostoRifilo').value||0;
+  const rifiloLarghezza=+document.getElementById('fRifiloLarghezza').value||0;
+
+  let peso=0,pesoNetto=0;
+  coils.forEach(c=>{
+    const p=c.peso||0;
+    const sc=scartoDaRifilo(c.larghezza,rifiloLarghezza);
+    peso+=p; pesoNetto+=p*(1-sc/100);
+  });
+  const scartoMedio=peso>0?((peso-pesoNetto)/peso)*100:0;
   const ricavo=prezzo*pesoNetto;
   const costoAcq=coils.reduce((a,c)=>a+(c.prezzoAcqFinale||0)*(c.peso||0),0);
-  const costoExtra=(taglio+consegna)*peso;
+  const costoAcqOrigT=peso>0?costoAcq/peso:0;
+  const costoAcqEffT=pesoNetto>0?costoAcq/pesoNetto:0;
+  const costoExtra=(taglio+consegna+selezione+costoRifilo)*peso;
   const costoTot=costoAcq+costoExtra;
   const margine=ricavo-costoTot;
   const pct=ricavo>0?(margine/ricavo)*100:0;
+
+  let rifiloBlock='';
+  if(rifiloLarghezza>0){
+    rifiloBlock=`
+    <div class="r"><span>Scarto rifilo → ${rifiloLarghezza} mm</span><span class="mono">${scartoMedio.toFixed(1)}%</span></div>
+    <div class="r"><span>Peso netto post-rifilo</span><span class="mono">${fmtT(pesoNetto)} t</span></div>
+    <div class="r"><span>Costo acquisto effettivo (€/t)</span><span class="mono" style="color:var(--rust);font-weight:700">${fmtEur2(costoAcqEffT)} <small style="color:var(--muted);font-weight:400">(era ${fmtEur2(costoAcqOrigT)})</small></span></div>`;
+  }
   document.getElementById('calcPreview').innerHTML=`
-    <div class="r"><span>Peso netto (scarto ${scarto}%)</span><span class="mono">${fmtT(pesoNetto)} t</span></div>
+    ${rifiloBlock}
     <div class="r"><span>Ricavo</span><span class="mono">${fmtEur2(ricavo)}</span></div>
     <div class="r"><span>Costo acquisto</span><span class="mono">−${fmtEur2(costoAcq)}</span></div>
-    <div class="r"><span>Taglio + consegna</span><span class="mono">−${fmtEur2(costoExtra)}</span></div>
+    <div class="r"><span>Taglio+consegna+selezione+rifilo</span><span class="mono">−${fmtEur2(costoExtra)}</span></div>
     <div class="r total"><span>Margine</span><span class="mono ${margine>=0?'':'mg-neg'}">${fmtEur2(margine)} · ${pct.toFixed(1)}%</span></div>`;
-  return {prezzo,peso,pesoNetto,taglio,consegna,scarto,ricavo,costoAcq,costoTot,margine,pct};
+  return {prezzo,peso,pesoNetto,taglio,consegna,selezione,costoRifilo,rifiloLarghezza,scartoMedio,ricavo,costoAcq,costoTot,margine,pct};
 }
 function confirmSell(){
   const coils=sellingIds.map(id=>state.stock.find(c=>c.id===id)).filter(Boolean);
@@ -995,18 +1052,24 @@ function confirmSell(){
   const prezzo=+document.getElementById('fPrezzo').value||0;
   const taglio=+document.getElementById('fTaglio').value||0;
   const consegna=+document.getElementById('fConsegna').value||0;
-  const scarto=+document.getElementById('fScarto').value||0;
+  const selezione=+document.getElementById('fSelezione').value||0;
+  const costoRifilo=+document.getElementById('fCostoRifilo').value||0;
+  const rifiloLarghezza=+document.getElementById('fRifiloLarghezza').value||0;
   const fattura=document.getElementById('fFattura').value.trim();
   const data=document.getElementById('fData').value;
   // allocate per-coil so the sold history keeps one row per coil
   coils.forEach(c=>{
-    const pesoNetto=(c.peso||0)*(1-scarto/100);
+    const peso=c.peso||0;
+    const scarto=scartoDaRifilo(c.larghezza,rifiloLarghezza);
+    const pesoNetto=peso*(1-scarto/100);
     const ricavo=prezzo*pesoNetto;
-    const costoTot=(c.prezzoAcqFinale||0)*(c.peso||0)+(taglio+consegna)*(c.peso||0);
+    const costoTot=(c.prezzoAcqFinale||0)*peso+(taglio+consegna+selezione+costoRifilo)*peso;
     const margine=ricavo-costoTot;
     const rec={...c,status:'sold',cliente,fatturaVendita:fattura,dataVendita:data,
       prezzoVendita:prezzo,pesoVenduto:pesoNetto,scartoPct:scarto,
+      larghezzaRifilo:rifiloLarghezza||null,
       costoTaglioVendita:taglio,costoConsegnaVendita:consegna,
+      costoSelezioneVendita:selezione,costoRifiloVendita:costoRifilo,
       ricavo,costoTotVendita:costoTot,margine,marginePct:ricavo>0?(margine/ricavo)*100:0};
     state.stock=state.stock.filter(x=>x.id!==c.id);
     state.sold.push(rec);
@@ -1028,30 +1091,51 @@ function openEditSale(id){
   document.getElementById('esPrezzo').value=c.prezzoVendita||0;
   document.getElementById('esTaglio').value=c.costoTaglioVendita||0;
   document.getElementById('esConsegna').value=c.costoConsegnaVendita||0;
-  document.getElementById('esScarto').value=c.scartoPct||0;
+  document.getElementById('esSelezione').value=c.costoSelezioneVendita||0;
+  document.getElementById('esCostoRifilo').value=c.costoRifiloVendita||0;
+  document.getElementById('esRifiloLarghezza').value=c.larghezzaRifilo||'';
+  // vendite storiche registrate prima dell'introduzione del rifilo a misura: conserva la % scarto originale
+  document.getElementById('esRifiloLarghezza').dataset.legacyScarto=c.larghezzaRifilo?'':(c.scartoPct||0);
   calcEditSalePreview();
   document.getElementById('editSaleOverlay').classList.add('show');
 }
 function closeEditSale(){ document.getElementById('editSaleOverlay').classList.remove('show'); editSaleId=null; }
+function esScartoCorrente(c){
+  const rifiloLarghezza=+document.getElementById('esRifiloLarghezza').value||0;
+  if(rifiloLarghezza>0) return scartoDaRifilo(c.larghezza,rifiloLarghezza);
+  return +document.getElementById('esRifiloLarghezza').dataset.legacyScarto||0;
+}
 function calcEditSalePreview(){
   const c=state.sold.find(x=>x.id===editSaleId); if(!c) return;
   const prezzo=+document.getElementById('esPrezzo').value||0;
   const taglio=+document.getElementById('esTaglio').value||0;
   const consegna=+document.getElementById('esConsegna').value||0;
-  const scarto=+document.getElementById('esScarto').value||0;
+  const selezione=+document.getElementById('esSelezione').value||0;
+  const costoRifilo=+document.getElementById('esCostoRifilo').value||0;
+  const rifiloLarghezza=+document.getElementById('esRifiloLarghezza').value||0;
+  const scarto=esScartoCorrente(c);
   const peso=c.peso||0;
   const pesoNetto=peso*(1-scarto/100);
   const ricavo=prezzo*pesoNetto;
   const costoAcq=(c.prezzoAcqFinale||0)*peso;
-  const costoExtra=(taglio+consegna)*peso;
+  const costoAcqOrigT=peso>0?costoAcq/peso:0;
+  const costoAcqEffT=pesoNetto>0?costoAcq/pesoNetto:0;
+  const costoExtra=(taglio+consegna+selezione+costoRifilo)*peso;
   const costoTot=costoAcq+costoExtra;
   const margine=ricavo-costoTot;
   const pct=ricavo>0?(margine/ricavo)*100:0;
+  let rifiloBlock='';
+  if(scarto>0){
+    rifiloBlock=`
+    <div class="r"><span>Scarto${rifiloLarghezza>0?` rifilo → ${rifiloLarghezza} mm`:''}</span><span class="mono">${scarto.toFixed(1)}%</span></div>
+    <div class="r"><span>Peso netto</span><span class="mono">${fmtT(pesoNetto)} t</span></div>
+    <div class="r"><span>Costo acquisto effettivo (€/t)</span><span class="mono" style="color:var(--rust);font-weight:700">${fmtEur2(costoAcqEffT)} <small style="color:var(--muted);font-weight:400">(era ${fmtEur2(costoAcqOrigT)})</small></span></div>`;
+  }
   document.getElementById('editSalePreview').innerHTML=`
-    <div class="r"><span>Peso netto (scarto ${scarto}%)</span><span class="mono">${fmtT(pesoNetto)} t</span></div>
+    ${rifiloBlock}
     <div class="r"><span>Ricavo</span><span class="mono">${fmtEur2(ricavo)}</span></div>
     <div class="r"><span>Costo acquisto</span><span class="mono">−${fmtEur2(costoAcq)}</span></div>
-    <div class="r"><span>Taglio + consegna</span><span class="mono">−${fmtEur2(costoExtra)}</span></div>
+    <div class="r"><span>Taglio+consegna+selezione+rifilo</span><span class="mono">−${fmtEur2(costoExtra)}</span></div>
     <div class="r total"><span>Margine</span><span class="mono ${margine>=0?'':'mg-neg'}">${fmtEur2(margine)} · ${pct.toFixed(1)}%</span></div>`;
 }
 function confirmEditSale(){
@@ -1062,15 +1146,20 @@ function confirmEditSale(){
   const prezzo=+document.getElementById('esPrezzo').value||0;
   const taglio=+document.getElementById('esTaglio').value||0;
   const consegna=+document.getElementById('esConsegna').value||0;
-  const scarto=+document.getElementById('esScarto').value||0;
+  const selezione=+document.getElementById('esSelezione').value||0;
+  const costoRifilo=+document.getElementById('esCostoRifilo').value||0;
+  const rifiloLarghezza=+document.getElementById('esRifiloLarghezza').value||0;
+  const scarto=esScartoCorrente(c);
   const peso=c.peso||0;
   const pesoNetto=peso*(1-scarto/100);
   const ricavo=prezzo*pesoNetto;
-  const costoTot=(c.prezzoAcqFinale||0)*peso+(taglio+consegna)*peso;
+  const costoTot=(c.prezzoAcqFinale||0)*peso+(taglio+consegna+selezione+costoRifilo)*peso;
   const margine=ricavo-costoTot;
   state.sold[i]={...c,cliente,fatturaVendita:document.getElementById('esFattura').value.trim(),
     dataVendita:document.getElementById('esData').value,prezzoVendita:prezzo,pesoVenduto:pesoNetto,
-    scartoPct:scarto,costoTaglioVendita:taglio,costoConsegnaVendita:consegna,
+    scartoPct:scarto,larghezzaRifilo:rifiloLarghezza||null,
+    costoTaglioVendita:taglio,costoConsegnaVendita:consegna,
+    costoSelezioneVendita:selezione,costoRifiloVendita:costoRifilo,
     ricavo,costoTotVendita:costoTot,margine,marginePct:ricavo>0?(margine/ricavo)*100:0};
   saveState(); closeEditSale();
   showToast('Vendita corretta');
@@ -1348,7 +1437,9 @@ const DISTINTA_ALIASES={
   rivestimento:['cop','coating','rivestimento'],
   durezza:['d','durezza','temper','hardness'],
   collo:['annvarie','ann.varie','ann varie','riferimento','rif','ndocumento','collo','ncollo','pr'],
-  nota:['note','nota','notes']
+  nota:['note','nota','notes'],
+  fornitore:['fornitore','supplier','forn'],
+  prezzo:['prezzo','costo','price','cost','prezzofattura','prezzo fattura','eur/t','euro/t']
 };
 function normHeader(s){ return String(s||'').toLowerCase().trim().replace(/\s+/g,' '); }
 function aliasPriority(field,headerNorm){
@@ -1421,7 +1512,9 @@ function parseDistintaRows(rows){
       rivestimento: colMap.rivestimento!==undefined ? String(row[colMap.rivestimento]||'').trim() : '',
       durezza: colMap.durezza!==undefined ? String(row[colMap.durezza]||'').trim() : '',
       pesoT: pesoRaw/1000, // le distinte riportano il peso in KG per pacco
-      nota: colMap.nota!==undefined ? String(row[colMap.nota]||'').trim() : ''
+      nota: colMap.nota!==undefined ? String(row[colMap.nota]||'').trim() : '',
+      fornitore: colMap.fornitore!==undefined ? String(row[colMap.fornitore]||'').trim() : '',
+      prezzoRiga: colMap.prezzo!==undefined ? (parseFloat(String(row[colMap.prezzo]).replace(',','.'))||null) : null
     });
   }
   return out;
@@ -1432,20 +1525,29 @@ function renderDistintaPreview(){
     <div class="bi">
       <span class="mono"><input type="checkbox" ${r.include?'checked':''} onchange="distintaRows[${i}].include=this.checked;calcDistintaTotals()" style="margin-right:8px;vertical-align:middle">
       ${r.collo||('#'+(i+1))} · ${r.spessore}×${r.larghezza}×${r.lunghezza} ${r.rivestimento||''} ${r.durezza||''}</span>
-      <span class="mono">${(r.pesoT*1000).toLocaleString('it-IT')} kg</span>
+      <span class="mono" style="display:flex;gap:6px;align-items:center">
+        <input type="text" value="${(r.fornitore||'').replace(/"/g,'&quot;')}" placeholder="fornitore (comune)" oninput="distintaRows[${i}].fornitore=this.value" title="Fornitore per questo pacco — vuoto = usa il fornitore comune sopra" style="width:92px;font:inherit;color:inherit;background:transparent;border:1px solid var(--line);border-radius:4px;padding:2px 6px">
+        <input type="number" value="${r.prezzoRiga!=null?r.prezzoRiga:''}" placeholder="€/t comune" title="Prezzo fattura per questo pacco — vuoto = usa il prezzo comune sopra" oninput="distintaRows[${i}].prezzoRiga=this.value===''?null:+this.value;calcDistintaTotals()" style="width:78px;font:inherit;color:inherit;background:transparent;border:1px solid var(--line);border-radius:4px;padding:2px 6px">
+        <span>${(r.pesoT*1000).toLocaleString('it-IT')} kg</span>
+      </span>
     </div>`).join('');
   document.getElementById('distintaCount').textContent=distintaRows.length;
   calcDistintaTotals();
 }
+function distintaRowFinale(r,common){
+  const rawPrice = r.prezzoRiga!=null ? r.prezzoRiga : common.fattRaw;
+  const eurPrice = (common.valuta==='USD'&&common.cambio>0) ? rawPrice/common.cambio : rawPrice;
+  return eurPrice+common.dazio+common.trasporto+common.taglio+common.cbam+common.altro;
+}
 function calcDistintaTotals(){
   const g=id=>+document.getElementById(id).value||0;
   const valuta=document.getElementById('dValuta').value, cambio=g('dCambio'), fattRaw=g('dPrezzoFattura');
-  const fattEur=(valuta==='USD'&&cambio>0)?fattRaw/cambio:fattRaw;
-  const finale=fattEur+g('dDazio')+g('dTrasporto')+g('dTaglio')+g('dCbam')+g('dAltro');
+  const common={valuta,cambio,fattRaw,dazio:g('dDazio'),trasporto:g('dTrasporto'),taglio:g('dTaglio'),cbam:g('dCbam'),altro:g('dAltro')};
   const included=distintaRows.filter(r=>r.include);
   const w=included.reduce((a,r)=>a+r.pesoT,0);
+  const v=included.reduce((a,r)=>a+distintaRowFinale(r,common)*r.pesoT,0);
   document.getElementById('distintaTotW').textContent=w.toLocaleString('it-IT',{minimumFractionDigits:3,maximumFractionDigits:3})+' t';
-  document.getElementById('distintaTotV').textContent=fmtEur(finale*w);
+  document.getElementById('distintaTotV').textContent=fmtEur(v);
   document.getElementById('distintaConfirmBtn').textContent=`Importa ${included.length} pacchi`;
 }
 function closeDistinta(){ document.getElementById('distintaOverlay').classList.remove('show'); distintaRows=[]; }
@@ -1461,16 +1563,18 @@ function confirmDistintaImport(){
   const notaCommon=document.getElementById('dNota').value.trim();
   const g=id=>+document.getElementById(id).value||0;
   const valuta=document.getElementById('dValuta').value, cambio=g('dCambio'), fattRaw=g('dPrezzoFattura');
-  const fattEur=(valuta==='USD'&&cambio>0)?fattRaw/cambio:fattRaw;
   const dazio=g('dDazio'),trasporto=g('dTrasporto'),taglio=g('dTaglio'),cbam=g('dCbam'),altro=g('dAltro');
-  const finale=fattEur+dazio+trasporto+taglio+cbam+altro;
+  const common={valuta,cambio,fattRaw,dazio,trasporto,taglio,cbam,altro};
   let base=nextId();
   included.forEach((r,i)=>{
+    const rowFattRaw = r.prezzoRiga!=null ? r.prezzoRiga : fattRaw;
+    const rowFattEur = (valuta==='USD'&&cambio>0) ? rowFattRaw/cambio : rowFattRaw;
+    const finale = distintaRowFinale(r,common);
     const rec={
-      id:base+i, status:dest, fornitore:forn,
+      id:base+i, status:dest, fornitore:r.fornitore||forn,
       collo:r.collo||'', spessore:r.spessore, larghezza:r.larghezza, lunghezza:r.lunghezza,
       rivestimento:rivCommon||r.rivestimento||'', durezza:durCommon||r.durezza||'', scelta,
-      peso:r.pesoT, prezzoFatturaRaw:fattRaw, valuta, cambio, prezzoFattura:fattEur,
+      peso:r.pesoT, prezzoFatturaRaw:rowFattRaw, valuta, cambio, prezzoFattura:rowFattEur,
       dazioCambio:dazio, trasporto, taglio, cbam, altro,
       prezzoAcqFinale:finale, valoreTotale:finale*r.pesoT,
       nota:[notaCommon,r.nota].filter(Boolean).join(' · ')
