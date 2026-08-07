@@ -255,6 +255,10 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M8 4v16"/></svg>Importa distinta
     </button>
     <input type="file" id="distintaFile" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleDistintaFile(event)">
+    <button onclick="document.getElementById('resaFile').click()" title="Carica una resa taglio/rifilo/selezione da un centro servizi (es. Combass)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 7l8-4 8 4M4 7v10l8 4 8-4V7M4 7l8 4m0 0l8-4m-8 4v10"/></svg>Importa resa taglio
+    </button>
+    <input type="file" id="resaFile" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleResaFile(event)">
   </div>
 </header>
 
@@ -438,6 +442,29 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
     <div class="modal-foot">
       <button class="btn-ghost" onclick="closeDistinta()">Annulla</button>
       <button class="btn-confirm" onclick="confirmDistintaImport()" id="distintaConfirmBtn">Importa pacchi</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ IMPORTA RESA TAGLIO MODAL ============ -->
+<div class="overlay" id="resaOverlay">
+  <div class="modal wide">
+    <div class="modal-head">
+      <div><h2>Importa resa taglio</h2><div class="sub" id="resaSub">Carica la resa Excel del centro servizi (taglio / rifilo / selezione)</div></div>
+      <button class="x" onclick="closeResa()">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="split-hint">Ogni lotto d'origine viene cercato tra i coil/semilavorati già a magazzino e consumato; i lotti generati e già consumati da una fase successiva <b>nello stesso foglio</b> (es. semilavorato tagliato poi rifilato) non vengono messi a magazzino: passano direttamente al risultato finale, ma lo scarto di ogni fase resta comunque registrato nello storico. Il bilancio peso è calcolato per fase (non riga per riga), perché il taglio reale mescola fogli di lotti adiacenti.</p>
+      <div class="field-row">
+        <div class="field"><label>Costo €/t di riserva (usato solo per i lotti d'origine NON trovati a magazzino)</label><input type="number" id="rFallbackCosto" value="0" oninput="renderResaPreview()"></div>
+        <div class="field"><label>Fornitore di riserva (usato se non deducibile dai lotti consumati)</label><input type="text" id="rFallbackFornitore" placeholder="es. TITAN"></div>
+      </div>
+      <div id="resaBlocksWrap"></div>
+      <div id="resaWarnWrap"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-ghost" onclick="closeResa()">Annulla</button>
+      <button class="btn-confirm" onclick="confirmResaImport()" id="resaConfirmBtn">Importa</button>
     </div>
   </div>
 </div>
@@ -829,7 +856,7 @@ function renderInv(t){
     <tr class="${selected.has(c.id)?'sel':''}">
       <td class="chk"><input type="checkbox" ${selected.has(c.id)?'checked':''} onchange="toggleOne(${c.id},this)"></td>
       <td><span class="supplier sup-${c.fornitore}">${c.fornitore||'—'}</span></td>
-      <td class="collo mono">${c.collo||'—'}</td>
+      <td class="collo mono">${c.collo||'—'}${c.tipo==='semilavorato'?' <span class="scelta" style="background:var(--sail-bg);color:var(--sail)" title="Semilavorato: in attesa di rifilo/lavorazione successiva">SEMI</span>':''}</td>
       <td class="num mono dim">${c.spessore||'—'}</td>
       <td class="num mono">${c.larghezza||'—'}</td>
       <td class="num mono dim">${c.lunghezza||'—'}</td>
@@ -1586,11 +1613,263 @@ function confirmDistintaImport(){
   render();
 }
 
+/* ---------- IMPORTA RESA TAGLIO (Combass: taglio / rifilo / selezione, anche incatenati) ---------- */
+const RESA_SCELTA_MAP={'01':'PRIMA','02':'SECONDA','03':'TERZA','04':'QUARTA','05':'QUINTA','b':'BOTOLA','B':'BOTOLA'};
+function resaSceltaFromCode(code){
+  if(code==null) return '';
+  const s=String(code).trim();
+  return RESA_SCELTA_MAP[s]||RESA_SCELTA_MAP[s.toLowerCase()]||s.toUpperCase();
+}
+function resaNormHead(s){ return String(s||'').toLowerCase().trim().replace(/[àá]/g,'a').replace(/\s+/g,' '); }
+const RESA_HEAD_ALIASES={
+  idOrdine:['id-ordine','id ordine','ordine'], cliente:['des.cliente','descliente','cliente'],
+  attivita:['attivita','attività'], lottoOrigine:['lottoorigine','lotto origine'], disponibile:['disponibile'],
+  lottoPF:['lotto pf','lottopf'], scelta:['scelta'], note:['note','nota'], formato:['formato'],
+  pesoSemilavorato:['pesosemilavorato','peso semilavorato'], pesoIScelta:['peso i scelta'], pesoVScelta:['peso v scelta'],
+  pesoAltre:['peso altre','altre'], botola:['botola'], rottame:['rottame'], diffPeso:['diff.peso','diffpeso','diff peso']
+};
+function resaBuildHeaderMap(row){
+  const map={};
+  (row||[]).forEach((cell,ci)=>{
+    const hn=resaNormHead(cell); if(!hn) return;
+    for(const field in RESA_HEAD_ALIASES){ if(RESA_HEAD_ALIASES[field].includes(hn)) map[field]=ci; }
+  });
+  return map;
+}
+function resaFindHeaderRow(rows){
+  for(let i=0;i<Math.min(rows.length,10);i++){
+    const map=resaBuildHeaderMap(rows[i]);
+    if(map.lottoOrigine!==undefined && map.lottoPF!==undefined && map.disponibile!==undefined) return {idx:i,map};
+  }
+  return null;
+}
+function resaNum(v){ if(v===null||v===undefined||v==='') return null; const n=typeof v==='number'?v:parseFloat(String(v).replace(',','.')); return isFinite(n)?n:null; }
+function resaStr(v){ return v==null?'':String(v).trim(); }
+// Prova a scomporre "0,150x913,00x924,00 D 5.6/2.8 TH 520" in spessore/larghezza/lunghezza + resto (rivestimento).
+function resaParseFormato(f){
+  const m=/^([\d.,]+)\s*x\s*([\d.,]+)\s*x\s*([\d.,]+)\s*(.*)$/i.exec((f||'').trim());
+  if(!m) return {spessore:0,larghezza:0,lunghezza:0,rivestimento:f||''};
+  return {
+    spessore:parseFloat(m[1].replace(',','.'))||0,
+    larghezza:parseFloat(m[2].replace(',','.'))||0,
+    lunghezza:parseFloat(m[3].replace(',','.'))||0,
+    rivestimento:(m[4]||'').trim()
+  };
+}
+function parseResaSheet(rows){
+  const h=resaFindHeaderRow(rows);
+  if(!h) return {error:'Non trovo le colonne attese (LottoOrigine, Disponibile, Lotto PF). Verifica che sia un export Combass.', blocks:[]};
+  const map=h.map;
+  let curOrdine=null,curCliente=null,curAttivita=null,curOrigine=null,curDisponibile=null;
+  const rawOrigins=[], flatRows=[];
+  for(let i=h.idx+1;i<rows.length;i++){
+    const row=rows[i]; if(!row) continue;
+    const idOrdine=map.idOrdine!==undefined?row[map.idOrdine]:null;
+    const cliente=map.cliente!==undefined?row[map.cliente]:null;
+    const attivita=map.attivita!==undefined?resaStr(row[map.attivita]):'';
+    const lottoOrigineRaw=map.lottoOrigine!==undefined?resaStr(row[map.lottoOrigine]):'';
+    const disponibileRaw=map.disponibile!==undefined?resaNum(row[map.disponibile]):null;
+    const lottoPF=map.lottoPF!==undefined?resaStr(row[map.lottoPF]):'';
+    if(idOrdine) curOrdine=idOrdine;
+    if(cliente) curCliente=cliente;
+    if(attivita) curAttivita=attivita;
+    if(lottoOrigineRaw){ curOrigine=lottoOrigineRaw; curDisponibile=disponibileRaw; rawOrigins.push({attivita:curAttivita,lottoOrigine:curOrigine,disponibile:curDisponibile}); }
+    const isTotalsRow=!lottoPF&&!lottoOrigineRaw&&disponibileRaw!=null&&flatRows.length>0&&row.slice(0,3).every(c=>!c);
+    if(isTotalsRow) continue;
+    if(!lottoPF&&!lottoOrigineRaw&&disponibileRaw==null) continue;
+    if(!curOrigine) continue;
+    const scelta=map.scelta!==undefined?resaStr(row[map.scelta]):'';
+    const note=map.note!==undefined?resaStr(row[map.note]):'';
+    const formato=map.formato!==undefined?resaStr(row[map.formato]):'';
+    const diffPeso=map.diffPeso!==undefined?resaNum(row[map.diffPeso]):null;
+    const weightCols=[['semilavorato',map.pesoSemilavorato],['pacco',map.pesoIScelta],['pacco',map.pesoVScelta],['pacco',map.pesoAltre],['botola',map.botola],['rottame',map.rottame]];
+    const outputs=[];
+    weightCols.forEach(([kind,ci])=>{ if(ci===undefined) return; const v=resaNum(row[ci]); if(v!=null) outputs.push({kind,pesoKg:v}); });
+    if(!lottoPF&&!outputs.length) continue;
+    flatRows.push({ordine:curOrdine,cliente:curCliente,attivita:curAttivita,lottoOrigine:curOrigine,disponibile:curDisponibile,
+      lottoPF,scelta:resaSceltaFromCode(scelta),sceltaRaw:scelta,note,formato,outputs,diffPesoKg:diffPeso||0});
+  }
+  const order=[]; rawOrigins.forEach(o=>{ if(!order.length||order[order.length-1]!==o.attivita) order.push(o.attivita); });
+  const blocks=order.map(a=>({attivita:a,rows:[],origins:[]}));
+  const blockByAttivita=a=>blocks.find(b=>b.attivita===a)||blocks[blocks.length-1];
+  rawOrigins.forEach(o=>{ const b=blockByAttivita(o.attivita); if(!b.origins.find(x=>x.lottoOrigine===o.lottoOrigine)) b.origins.push({lottoOrigine:o.lottoOrigine,disponibile:o.disponibile,rows:[]}); });
+  flatRows.forEach(r=>{ const b=blockByAttivita(r.attivita); b.rows.push(r); const og=b.origins.find(x=>x.lottoOrigine===r.lottoOrigine); if(og) og.rows.push(r); });
+  blocks.forEach(b=>{
+    b.totIn=b.origins.reduce((a,o)=>a+(o.disponibile||0),0);
+    b.totOutStock=b.rows.reduce((a,r)=>a+r.outputs.filter(o=>['semilavorato','pacco','botola'].includes(o.kind)).reduce((s,o)=>s+o.pesoKg,0),0);
+    b.totRottame=b.rows.reduce((a,r)=>a+r.outputs.filter(o=>o.kind==='rottame').reduce((s,o)=>s+o.pesoKg,0),0);
+    b.totDiff=b.rows.reduce((a,r)=>a+(r.diffPesoKg||0),0);
+  });
+  return {ordine:curOrdine,cliente:curCliente,blocks};
+}
+
+let resaParsed=null, resaPlan=null;
+function handleResaFile(e){
+  const file=e.target.files[0]; if(!file) return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      const data=new Uint8Array(ev.target.result);
+      const wb=XLSX.read(data,{type:'array'});
+      let best=null;
+      wb.SheetNames.forEach(name=>{
+        const rows=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,raw:true,defval:''});
+        const parsed=parseResaSheet(rows);
+        if(!parsed.error && parsed.blocks.length && (!best||parsed.blocks.length>best.blocks.length)) best=parsed;
+      });
+      if(!best){ alert('Non ho riconosciuto una resa taglio valida in questo file (servono le colonne LottoOrigine, Disponibile, Lotto PF).'); e.target.value=''; return; }
+      resaParsed=best;
+      document.getElementById('resaSub').textContent=file.name+(best.ordine?` · Ordine ${best.ordine}`:'')+(best.cliente?` · ${best.cliente}`:'');
+      buildResaPlan();
+      renderResaPreview();
+      document.getElementById('resaOverlay').classList.add('show');
+    }catch(err){ console.error(err); alert('Impossibile leggere il file. Formati supportati: .xlsx, .xls, .csv'); }
+    e.target.value='';
+  };
+  r.readAsArrayBuffer(file);
+}
+// Costruisce il piano di import: per ogni blocco, risolve le origini (magazzino / catena interna / non trovato)
+// e determina quali righe di output vanno a magazzino (terminali) e quali sono consumate da un blocco successivo.
+function buildResaPlan(){
+  const blocks=resaParsed.blocks;
+  // indicizza tutte le righe di output di TUTTI i blocchi per lottoPF, per capire quali vengono ri-consumate dopo
+  const allOutputRowsByCode={};
+  blocks.forEach((b,bi)=>b.rows.forEach(r=>{ if(r.lottoPF) allOutputRowsByCode[r.lottoPF]={row:r,blockIdx:bi}; }));
+
+  const plan={blocks:[]};
+  blocks.forEach((b,bi)=>{
+    const bp={attivita:b.attivita,totIn:b.totIn,totOutStock:b.totOutStock,totRottame:b.totRottame,totDiff:b.totDiff,origins:[],terminals:[],fornitoreGuess:''};
+    // risolvi ogni origine
+    b.origins.forEach(o=>{
+      let match=null;
+      // 1) catena interna: questo codice è stato generato da un blocco precedente nello stesso file?
+      const chained=allOutputRowsByCode[o.lottoOrigine];
+      if(chained && chained.blockIdx<bi){ match={type:'chain',blockIdx:chained.blockIdx}; }
+      else{
+        // 2) magazzino reale (coil o semilavorato in sospeso da una resa precedente)
+        const stockItem=state.stock.find(x=>(x.collo||'').trim().toLowerCase()===o.lottoOrigine.trim().toLowerCase());
+        if(stockItem){ match={type:'stock',item:stockItem}; if(!bp.fornitoreGuess) bp.fornitoreGuess=stockItem.fornitore||''; }
+      }
+      bp.origins.push({lottoOrigine:o.lottoOrigine,disponibile:o.disponibile,match});
+    });
+    plan.blocks.push(bp);
+  });
+  // seconda passata: per ogni blocco calcola il costo/t risultante (dipende dal valore delle origini, che per le
+  // origini "chain" dipende dal costo/t del blocco precedente — per questo servono in ordine)
+  plan.blocks.forEach((bp,bi)=>{
+    let valoreTotale=0, pesoIgnoto=0;
+    bp.origins.forEach(o=>{
+      const pesoT=(o.disponibile||0)/1000;
+      if(o.match&&o.match.type==='stock') valoreTotale+=pesoT*(o.match.item.prezzoAcqFinale||0);
+      else if(o.match&&o.match.type==='chain') valoreTotale+=pesoT*(plan.blocks[o.match.blockIdx].costoT||0);
+      else pesoIgnoto+=pesoT; // risolto dopo con il costo di riserva
+    });
+    bp._valoreTotaleParziale=valoreTotale; bp._pesoIgnoto=pesoIgnoto;
+    bp.costoT=null; // calcolato in renderResaPreview con il costo di riserva corrente (può cambiare a video)
+  });
+  resaPlan=plan;
+  // ora popola i "terminali": righe di output il cui lottoPF NON viene ripreso come lottoOrigine da un blocco successivo
+  resaParsed.blocks.forEach((b,bi)=>{
+    const bp=resaPlan.blocks[bi];
+    b.rows.forEach(r=>{
+      if(!r.lottoPF) return;
+      const reusedLater=resaParsed.blocks.some((b2,bi2)=>bi2>bi&&b2.origins.some(o=>o.lottoOrigine===r.lottoPF));
+      if(reusedLater) return; // è un semilavorato che confluisce in una fase successiva nello stesso file: non materializzare
+      r.outputs.filter(o=>o.kind!=='rottame').forEach(o=>{
+        bp.terminals.push({lottoPF:r.lottoPF,kind:o.kind,pesoKg:o.pesoKg,scelta:r.scelta,note:r.note,formato:r.formato});
+      });
+    });
+  });
+}
+function renderResaPreview(){
+  const fallbackCosto=+document.getElementById('rFallbackCosto').value||0;
+  const fallbackFornitore=document.getElementById('rFallbackFornitore').value.trim();
+  const wrap=document.getElementById('resaBlocksWrap'); const warnWrap=document.getElementById('resaWarnWrap');
+  let warnings=[];
+  const html=resaPlan.blocks.map((bp,bi)=>{
+    bp.costoT = bp._pesoIgnoto>0
+      ? (bp._valoreTotaleParziale + bp._pesoIgnoto*fallbackCosto) / (bp.totOutStock/1000||1)
+      : bp._valoreTotaleParziale / (bp.totOutStock/1000||1);
+    const scartoKg=bp.totIn-bp.totOutStock-bp.totRottame;
+    const scartoPct=bp.totIn>0?((bp.totIn-bp.totOutStock)/bp.totIn*100):0;
+    const origRows=bp.origins.map(o=>{
+      let statusHtml;
+      if(o.match&&o.match.type==='stock') statusHtml=`<span style="color:var(--green)">✓ a magazzino</span> (${o.match.item.fornitore||'—'}, ${fmtEur(o.match.item.prezzoAcqFinale||0)}/t)`;
+      else if(o.match&&o.match.type==='chain') statusHtml=`<span style="color:var(--steel)">⛓ da fase precedente</span> (interno al file)`;
+      else { statusHtml=`<span style="color:var(--rust)">⚠ non trovato a magazzino</span> — userò il costo di riserva`; warnings.push(`Lotto "${o.lottoOrigine}" non trovato a magazzino (fase ${bp.attivita}): non verrà sottratto dallo stock, solo usato per il calcolo del costo.`); }
+      return `<div class="bi"><span class="mono">${o.lottoOrigine} · ${o.disponibile?o.disponibile.toLocaleString('it-IT'):'?'} kg</span><span class="mono">${statusHtml}</span></div>`;
+    }).join('');
+    const termRows=bp.terminals.map(t=>{
+      const kindLabel=t.kind==='semilavorato'?'<span class="scelta" style="background:var(--sail-bg);color:var(--sail)">SEMI</span>':`<span class="scelta scelta-${t.scelta||'PRIMA'}">${t.scelta?sceltaLabel(t.scelta):'—'}</span>`;
+      return `<div class="bi"><span class="mono">${t.lottoPF} ${kindLabel} ${t.note?`· <span class="dim">${t.note}</span>`:''}</span><span class="mono">${t.pesoKg.toLocaleString('it-IT')} kg · ${fmtEur(bp.costoT)}/t</span></div>`;
+    }).join('');
+    return `
+    <div class="section-label" style="margin-top:18px">Fase ${bi+1}: ${bp.attivita||'—'}</div>
+    <div class="calc-preview" style="margin-bottom:8px">
+      <div class="r"><span>Ingresso (lotti d'origine)</span><span class="mono">${bp.totIn.toLocaleString('it-IT')} kg</span></div>
+      <div class="r"><span>Uscita a magazzino</span><span class="mono">${bp.totOutStock.toLocaleString('it-IT')} kg</span></div>
+      ${bp.totRottame?`<div class="r"><span>Rottame (non a magazzino)</span><span class="mono">${bp.totRottame.toLocaleString('it-IT')} kg</span></div>`:''}
+      <div class="r total"><span>Scarto di fase</span><span class="mono" style="color:${scartoPct>8?'var(--rust)':'var(--green)'}">${scartoKg.toLocaleString('it-IT')} kg (${scartoPct.toFixed(1)}%)</span></div>
+      <div class="r"><span>Nuovo costo/t su questa fase</span><span class="mono">${fmtEur2(bp.costoT)}</span></div>
+    </div>
+    <div class="bulk-list" style="max-height:160px;margin-bottom:6px"><div class="bi" style="font-weight:700"><span>Lotti d'origine (${bp.origins.length})</span><span></span></div>${origRows}</div>
+    <div class="bulk-list" style="max-height:200px"><div class="bi" style="font-weight:700"><span>Verranno creati a magazzino (${bp.terminals.length})</span><span></span></div>${termRows||'<div class="bi"><span class="dim">— nessuno: tutto confluisce nella fase successiva —</span><span></span></div>'}</div>`;
+  }).join('');
+  wrap.innerHTML=html;
+  warnWrap.innerHTML=warnings.length?`<div class="calc-preview" style="margin-top:14px;border-color:var(--rust)">${warnings.map(w=>`<div class="r"><span style="color:var(--rust)">⚠ ${w}</span></div>`).join('')}</div>`:'';
+  if(!document.getElementById('rFallbackFornitore').value && resaPlan.blocks[0]) document.getElementById('rFallbackFornitore').value=resaPlan.blocks[0].fornitoreGuess||'';
+  const totNPacchi=resaPlan.blocks.reduce((a,b)=>a+b.terminals.length,0);
+  document.getElementById('resaConfirmBtn').textContent=`Importa (${totNPacchi} voci a magazzino)`;
+}
+function closeResa(){ document.getElementById('resaOverlay').classList.remove('show'); resaParsed=null; resaPlan=null; document.getElementById('resaFile').value=''; }
+function confirmResaImport(){
+  if(!resaPlan) return;
+  const fallbackCosto=+document.getElementById('rFallbackCosto').value||0;
+  const fallbackFornitore=document.getElementById('rFallbackFornitore').value.trim()||'—';
+  const consumedIds=new Set();
+  let base=nextId();
+  const dataOggi=new Date().toISOString().slice(0,10);
+  resaPlan.blocks.forEach(bp=>{
+    // consuma le origini reali di magazzino
+    bp.origins.forEach(o=>{ if(o.match&&o.match.type==='stock') consumedIds.add(o.match.item.id); });
+    const fornitoreBlocco=bp.fornitoreGuess||fallbackFornitore;
+    const originColli=bp.origins.map(o=>o.lottoOrigine).join(', ');
+    bp.terminals.forEach(t=>{
+      const fmt=resaParseFormato(t.formato);
+      const rec={
+        id:base++, status:'stock', tipo:t.kind==='semilavorato'?'semilavorato':'pacco',
+        fornitore:fornitoreBlocco, collo:t.lottoPF,
+        spessore:fmt.spessore, larghezza:fmt.larghezza, lunghezza:fmt.lunghezza,
+        rivestimento:fmt.rivestimento, durezza:'',
+        scelta:t.kind==='semilavorato'?'':t.scelta,
+        peso:t.pesoKg/1000, prezzoAcqFinale:bp.costoT, valoreTotale:bp.costoT*(t.pesoKg/1000),
+        nota:[t.note,t.kind==='semilavorato'?'in attesa di lavorazione successiva':''].filter(Boolean).join(' · '),
+        origineCoil:originColli
+      };
+      state.stock.push(rec);
+    });
+    state.tagli.push({
+      id:base++, data:dataOggi, collo:originColli, fornitore:fornitoreBlocco,
+      pesoOriginale:bp.totIn/1000, pesoPacchi:bp.totOutStock/1000,
+      scartoT:(bp.totIn-bp.totOutStock)/1000, scartoPct:bp.totIn>0?((bp.totIn-bp.totOutStock)/bp.totIn*100):0,
+      nPacchi:bp.terminals.length, pacchiColli:bp.terminals.map(t=>t.lottoPF),
+      costoOriginaleT:bp._valoreTotaleParziale/((bp.totIn-bp._pesoIgnoto*1000)/1000||1), nuovoCostoT:bp.costoT,
+      nota:`Resa ${bp.attivita}${bp.totRottame?` · rottame recuperato ${bp.totRottame.toLocaleString('it-IT')} kg`:''}`
+    });
+  });
+  state.stock=state.stock.filter(x=>!consumedIds.has(x.id));
+  saveState(); closeResa(); clearSel();
+  showToast('Resa importata: magazzino aggiornato');
+  render();
+}
+
 function showToast(msg){ document.getElementById('toastMsg').textContent=msg; const t=document.getElementById('toast'); t.classList.add('show'); clearTimeout(window._tt); window._tt=setTimeout(()=>t.classList.remove('show'),3200); }
 
 document.getElementById('sellOverlay').addEventListener('click',e=>{if(e.target.id==='sellOverlay')closeSell()});
 document.getElementById('editSaleOverlay').addEventListener('click',e=>{if(e.target.id==='editSaleOverlay')closeEditSale()});
 document.getElementById('editOverlay').addEventListener('click',e=>{if(e.target.id==='editOverlay')closeEdit()});
+document.getElementById('distintaOverlay').addEventListener('click',e=>{if(e.target.id==='distintaOverlay')closeDistinta()});
+document.getElementById('resaOverlay').addEventListener('click',e=>{if(e.target.id==='resaOverlay')closeResa()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSell();closeEdit();}});
 
 initFirebase();
