@@ -152,6 +152,30 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
 .scelta{font-weight:700;font-size:11px;letter-spacing:.02em;padding:3px 9px;border-radius:6px;display:inline-block;white-space:nowrap}
 .rifilo-tag{font-size:10.5px;font-weight:700;color:var(--rust);margin-left:4px;white-space:nowrap}
 .origine-tag{display:block;font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.01em;margin-top:1px;white-space:nowrap}
+.hint-inline{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.4;min-height:14px}
+.hint-inline b{color:var(--rust)}
+.hint-inline a{color:var(--steel);cursor:pointer;text-decoration:underline}
+.age-ok{color:var(--green);font-weight:700}
+.age-warn{color:var(--amber);font-weight:700}
+.age-bad{color:var(--rust);font-weight:700}
+.an-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:16px;margin-top:4px;align-items:start}
+.an-card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;min-width:0;overflow:hidden}
+.an-card h3{font-size:13px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.an-card table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:13px}
+.an-card th{text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;padding:0 6px 6px 0;border-bottom:1px solid var(--line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.an-card td{padding:7px 6px 7px 0;border-bottom:1px solid var(--line);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.an-card td:last-child,.an-card th:last-child{padding-right:0}
+.an-card tr:last-child td{border-bottom:none}
+.an-card td.n,.an-card th.n{text-align:right;font-variant-numeric:tabular-nums}
+.an-card td b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.an-card input[type=text],.an-card input[type=number]{width:100%;box-sizing:border-box;padding:5px 7px;font:inherit;font-size:12.5px;color:inherit;background:var(--panel);border:1px solid var(--line);border-radius:5px}
+.an-card input[type=number]{text-align:right;font-variant-numeric:tabular-nums}
+.an-card input[type=checkbox]{margin:0}
+.an-card .mini-btn{padding:3px 7px;font-size:11px}
+.an-sub{display:block;font-size:10.5px;color:var(--muted);font-weight:400;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.an-bar{height:5px;border-radius:3px;background:var(--steel);display:block;margin-top:3px;max-width:100%}
+.an-note{font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.5;white-space:normal}
+@media(max-width:760px){.an-grid{grid-template-columns:1fr}}
 .scelta-PRIMA{background:var(--green-bg);color:var(--green)}
 .scelta-SECONDA{background:var(--steel-bg);color:var(--steel)}
 .scelta-TERZA{background:var(--amber-bg);color:var(--amber)}
@@ -239,6 +263,8 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
     <button class="tab" data-tab="sailing" onclick="switchTab('sailing')">In navigazione <span class="badge" id="tabSailCount"></span></button>
     <button class="tab" data-tab="sold" onclick="switchTab('sold')">Storico vendite <span class="badge" id="tabSoldCount"></span></button>
     <button class="tab" data-tab="scarti" onclick="switchTab('scarti')">Scarti <span class="badge" id="tabScartiCount"></span></button>
+    <button class="tab" data-tab="analisi" onclick="switchTab('analisi')">Analisi</button>
+    <button class="tab" data-tab="cbam" onclick="switchTab('cbam')">CBAM</button>
   </div>
   <div class="spacer"></div>
   <div class="io-btns">
@@ -286,6 +312,20 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
     <div class="kpi accent-green"><div class="label">Margine totale</div><div class="val" id="sMargin">€0</div></div>
     <div class="kpi accent-rust"><div class="label">Margine medio</div><div class="val" id="sMarginPct">0%</div></div>
   </div>
+  <div class="kpis" id="kpiCbam" style="display:none">
+    <div class="kpi accent-steel"><div class="label">Certificati stimati</div><div class="val" id="cCert">0</div></div>
+    <div class="kpi accent-rust"><div class="label">Costo certificati</div><div class="val" id="cCosto">€0</div></div>
+    <div class="kpi accent-amber"><div class="label">Incidenza per tonnellata</div><div class="val" id="cCostoT">€0</div></div>
+    <div class="kpi accent-ink"><div class="label">Import extra-UE anno</div><div class="val" id="cPeso">0<small>t</small></div></div>
+    <div class="kpi accent-green"><div class="label">Soglia de minimis 50 t</div><div class="val" id="cSoglia">—</div></div>
+  </div>
+  <div class="kpis" id="kpiAnalisi" style="display:none">
+    <div class="kpi accent-steel"><div class="label">Margine import diretto</div><div class="val" id="aMgDiretto">€0</div></div>
+    <div class="kpi accent-ink"><div class="label">Margine trader UE</div><div class="val" id="aMgTrader">€0</div></div>
+    <div class="kpi accent-amber"><div class="label">Giacenza media magazzino</div><div class="val" id="aGiacenza">—</div></div>
+    <div class="kpi accent-rust"><div class="label">Fermo oltre 180 gg</div><div class="val" id="aFermo">€0</div></div>
+    <div class="kpi accent-green"><div class="label">Capitale immobilizzato</div><div class="val" id="aCapitale">€0</div></div>
+  </div>
   <div class="kpis" id="kpiScarti" style="display:none">
     <div class="kpi accent-steel"><div class="label">Tagli effettuati (anno)</div><div class="val" id="tCount">0</div></div>
     <div class="kpi accent-ink"><div class="label">Peso tagliato (anno)</div><div class="val" id="tWeight">0<small>t</small></div></div>
@@ -329,7 +369,9 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
     <button class="b-sell" id="bulkArriveBtn" style="display:none;background:var(--sail)" onclick="bulkArrive()">Sposta a magazzino →</button>
   </div>
 
-  <div class="table-wrap"><div class="table-scroll"><table id="mainTable"></table></div></div>
+  <div class="table-wrap" id="tableWrap"><div class="table-scroll"><table id="mainTable"></table></div></div>
+  <div id="analisiWrap" style="display:none"></div>
+  <div id="cbamWrap" style="display:none"></div>
 </main>
 
 <!-- ============ SELL MODAL (single + bulk) ============ -->
@@ -341,10 +383,16 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
     </div>
     <div class="modal-body">
       <div id="sellRecapWrap"></div>
-      <div class="field"><label>Cliente</label><input type="text" id="fCliente" placeholder="Nome cliente" oninput="calcMargin()"></div>
-      <div class="field-row">
+      <div class="field"><label>Cliente</label><input type="text" id="fCliente" placeholder="Nome cliente" oninput="calcMargin()" list="clientiList"></div>
+      <datalist id="clientiList"></datalist>
+      <div class="field-row-3">
+        <div class="field"><label>N. ordine cliente</label><input type="text" id="fOrdine" placeholder="es. OC 2026/114"></div>
         <div class="field"><label>N. Fattura / DDT</label><input type="text" id="fFattura" placeholder="es. 2026/xxx"></div>
         <div class="field"><label>Data vendita</label><input type="date" id="fData"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Data consegna</label><input type="date" id="fDataConsegna"></div>
+        <div class="field"><label>Giorni pagamento</label><input type="number" id="fGiorniPag" placeholder="es. 60" oninput="calcMargin()"></div>
       </div>
       <div class="field-row-3">
         <div class="field"><label>Prezzo vendita (€/t)</label><input type="number" id="fPrezzo" placeholder="0" oninput="calcMargin()"></div>
@@ -373,10 +421,15 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
       <button class="x" onclick="closeEditSale()">×</button>
     </div>
     <div class="modal-body">
-      <div class="field"><label>Cliente</label><input type="text" id="esCliente" oninput="calcEditSalePreview()"></div>
-      <div class="field-row">
+      <div class="field"><label>Cliente</label><input type="text" id="esCliente" oninput="calcEditSalePreview()" list="clientiList"></div>
+      <div class="field-row-3">
+        <div class="field"><label>N. ordine cliente</label><input type="text" id="esOrdine" placeholder="es. OC 2026/114"></div>
         <div class="field"><label>N. Fattura / DDT</label><input type="text" id="esFattura"></div>
         <div class="field"><label>Data vendita</label><input type="date" id="esData"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Data consegna</label><input type="date" id="esDataConsegna"></div>
+        <div class="field"><label>Giorni pagamento</label><input type="number" id="esGiorniPag" oninput="calcEditSalePreview()"></div>
       </div>
       <div class="field-row-3">
         <div class="field"><label>Prezzo vendita (€/t)</label><input type="number" id="esPrezzo" oninput="calcEditSalePreview()"></div>
@@ -409,9 +462,43 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
       <div class="field-row">
         <div class="field"><label>Fornitore comune (usato se il pacco non ne ha uno proprio)</label><input type="text" id="dFornitore" placeholder="es. TECNOSID"></div>
         <div class="field"><label>Destinazione</label>
-          <select id="dDestinazione"><option value="stock">A magazzino</option><option value="sailing">In navigazione</option></select>
+          <select id="dDestinazione" onchange="onDistintaDest()"><option value="stock">A magazzino (merce già nazionalizzata)</option><option value="sailing">In navigazione (merce in arrivo)</option></select>
+          <div class="hint-inline" id="dDestHint"></div>
         </div>
       </div>
+
+      <div class="section-label">Origine e CBAM</div>
+      <div class="field-row-3">
+        <div class="field"><label>Paese origine della merce</label>
+          <select id="dOrigine" onchange="onDistintaOrigine()">
+            <option value="">— Da indicare —</option>
+            <option value="IT">Italia (trader locale)</option>
+            <option value="UE">Altro paese UE</option>
+            <option value="US">USA</option>
+            <option value="CA">Canada</option>
+            <option value="RS">Serbia</option>
+            <option value="IN">India</option>
+            <option value="CN">Cina</option>
+            <option value="TR">Turchia</option>
+            <option value="KR">Corea del Sud</option>
+            <option value="JP">Giappone</option>
+            <option value="XX">Altro extra-UE</option>
+          </select>
+        </div>
+        <div class="field"><label>N. ordine acquisto</label><input type="text" id="dOrdineAcq" placeholder="es. SO 122054"></div>
+        <div class="field"><label>Data carico / sdoganamento</label><input type="date" id="dDataCarico" onchange="onDistintaOrigine()"></div>
+      </div>
+      <div class="field-row-3">
+        <div class="field"><label>Fonte dato emissioni</label>
+          <select id="dFonteEmis" onchange="onDistintaOrigine()">
+            <option value="DEFAULT">Valori di default CE (con mark-up)</option>
+            <option value="FORNITORE">Dati verificati del fornitore</option>
+          </select>
+        </div>
+        <div class="field"><label>Emissioni specifiche (tCO₂e/t)</label><input type="number" id="dEmissioni" step="0.001" placeholder="0.000" oninput="onDistintaOrigine()"></div>
+        <div class="field"><label>Ubicazione</label><input type="text" id="dUbicazione" placeholder="es. Combas" list="ubicazioniList"></div>
+      </div>
+      <div class="hint-inline" id="dCbamHint" style="margin:-4px 0 4px"></div>
       <div class="field-row-3">
         <div class="field"><label>Rivestimento (vuoto = dal file)</label><input type="text" id="dRivestimento" placeholder="es. TFS"></div>
         <div class="field"><label>Durezza (vuoto = dal file)</label><input type="text" id="dDurezza" placeholder="es. DR8"></div>
@@ -433,7 +520,7 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
         <div class="field"><label>Taglio €/t</label><input type="number" id="dTaglio" value="0" oninput="calcDistintaTotals()"></div>
       </div>
       <div class="field-row">
-        <div class="field"><label>CBAM €/t</label><input type="number" id="dCbam" value="0" oninput="calcDistintaTotals()"></div>
+        <div class="field"><label>CBAM €/t (calcolato, modificabile)</label><input type="number" id="dCbam" value="0" step="0.01" oninput="calcDistintaTotals()"></div>
         <div class="field"><label>Altro €/t</label><input type="number" id="dAltro" value="0" oninput="calcDistintaTotals()"></div>
       </div>
 
@@ -484,9 +571,49 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
     <div class="modal-body">
       <div class="section-label">Identificazione</div>
       <div class="field-row">
-        <div class="field"><label>Fornitore</label><input type="text" id="eFornitore" placeholder="TITAN / REYNOLDS / HBIS / JSW…"></div>
+        <div class="field"><label>Fornitore</label><input type="text" id="eFornitore" placeholder="TITAN / REYNOLDS / HBIS / JSW…" list="fornitoriList"></div>
         <div class="field"><label>Collo</label><input type="text" id="eCollo" placeholder="es. X241387C-6.P008"></div>
       </div>
+      <datalist id="fornitoriList"></datalist>
+      <div class="field-row-3">
+        <div class="field"><label>Paese origine</label>
+          <select id="eOrigine" onchange="onOrigineChange()">
+            <option value="">— Non specificata —</option>
+            <option value="IT">Italia (trader locale)</option>
+            <option value="UE">Altro paese UE</option>
+            <option value="US">USA</option>
+            <option value="CA">Canada</option>
+            <option value="RS">Serbia</option>
+            <option value="IN">India</option>
+            <option value="CN">Cina</option>
+            <option value="TR">Turchia</option>
+            <option value="KR">Corea del Sud</option>
+            <option value="JP">Giappone</option>
+            <option value="XX">Altro extra-UE</option>
+          </select>
+        </div>
+        <div class="field"><label>N. ordine acquisto</label><input type="text" id="eOrdineAcq" placeholder="es. SO 122054"></div>
+        <div class="field"><label>Data carico a magazzino</label><input type="date" id="eDataCarico"></div>
+      </div>
+
+      <div class="field-row">
+        <div class="field"><label>Ubicazione</label><input type="text" id="eUbicazione" placeholder="es. Combas / deposito / c/o cliente" list="ubicazioniList"></div>
+        <div class="field"><label>Canale</label><input type="text" id="eCanale" readonly style="background:var(--grey-bg);font-weight:700"></div>
+      </div>
+      <datalist id="ubicazioniList"></datalist>
+      <p class="split-hint" style="margin:2px 0 0">L'origine è quella <b>della merce</b>, non del fornitore: dallo stesso fornitore americano puoi ricevere sia acciaio di origine USA sia di origine Canada, e il CBAM cambia.</p>
+      <div class="section-label">Emissioni CBAM</div>
+      <div class="field-row-3">
+        <div class="field"><label>Fonte dato emissioni</label>
+          <select id="eFonteEmis" onchange="calcCbamRiga()">
+            <option value="DEFAULT">Valori di default CE (con mark-up)</option>
+            <option value="FORNITORE">Dati verificati del fornitore</option>
+          </select>
+        </div>
+        <div class="field"><label>Emissioni specifiche (tCO₂e/t)</label><input type="number" id="eEmissioni" step="0.001" placeholder="0.000" oninput="calcCbamRiga()"></div>
+        <div class="field"><label>Carbon price già pagato (€/tCO₂e)</label><input type="number" id="eCarbonPag" step="0.01" value="0" oninput="calcCbamRiga()"></div>
+      </div>
+      <div class="calc-preview" id="cbamRigaPreview" style="margin-bottom:4px"></div>
       <div class="section-label">Specifiche</div>
       <div class="field-row-3">
         <div class="field"><label>Spessore (mm)</label><input type="number" id="eSpessore" step="0.001" placeholder="0.15"></div>
@@ -522,7 +649,7 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
         <div class="field"><label>Taglio (€/t)</label><input type="number" id="eTaglio" value="0" oninput="calcValue()"></div>
       </div>
       <div class="field-row-3">
-        <div class="field"><label>Costo CBAM (€/t)</label><input type="number" id="eCbam" value="0" step="0.01" oninput="calcValue()"></div>
+        <div class="field"><label>Costo CBAM (€/t)</label><input type="number" id="eCbam" value="0" step="0.01" oninput="calcValue()"><div class="hint-inline" id="cbamHint"></div></div>
         <div class="field"><label>Altro (€/t)</label><input type="number" id="eAltro" value="0" oninput="calcValue()"></div>
         <div class="field"><label>Costo finale (€/t)</label><input type="number" id="ePrezzoFinale" readonly style="background:var(--grey-bg);font-weight:700"></div>
       </div>
@@ -592,7 +719,7 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
 const SEED_COILS = [{"id": 1, "fornitore": "TITAN", "spessore": 0.14, "larghezza": 750.0, "lunghezza": 924.0, "rivestimento": "D 5.6/2.8", "durezza": "DR8", "sc": "1", "ta": "PP", "nota": "LIEVE AMMACCATURA", "collo": "120801-28.P001", "fogli": "", "peso": 1.13, "prezzoFattura": 1030.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 0.0, "prezzoAcqFinale": 1030.0, "valoreTotale": 1163.9}, {"id": 2, "fornitore": "REYNOLDS", "spessore": 0.14, "larghezza": 800.0, "lunghezza": 924.0, "rivestimento": "E 2.0/2.0", "durezza": "DR8", "sc": "01", "ta": "PP", "nota": "x15", "collo": "X241387C-6.P008", "fogli": "1290.0", "peso": 1.07, "prezzoFattura": 870.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 0.0, "prezzoAcqFinale": 870.0, "valoreTotale": 930.9}, {"id": 3, "fornitore": "REYNOLDS", "spessore": 0.14, "larghezza": 800.0, "lunghezza": 924.0, "rivestimento": "E 2.0/2.0", "durezza": "DR8", "sc": "01", "ta": "PP", "nota": "x15", "collo": "X241387C-6.P006", "fogli": "1900.0", "peso": 1.564, "prezzoFattura": 870.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 0.0, "prezzoAcqFinale": 870.0, "valoreTotale": 1360.68}, {"id": 4, "fornitore": "REYNOLDS", "spessore": 0.14, "larghezza": 800.0, "lunghezza": 924.0, "rivestimento": "E 2.0/2.0", "durezza": "DR8", "sc": "01", "ta": "PP", "nota": "x15", "collo": "X241387C-6.P005", "fogli": "1900.0", "peso": 1.567, "prezzoFattura": 870.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 0.0, "prezzoAcqFinale": 870.0, "valoreTotale": 1363.29}, {"id": 5, "fornitore": "REYNOLDS", "spessore": 0.14, "larghezza": 800.0, "lunghezza": 924.0, "rivestimento": "E 2.0/2.0", "durezza": "DR8", "sc": "01", "ta": "PP", "nota": "x15", "collo": "X241387C-6.P004", "fogli": "1900.0", "peso": 1.572, "prezzoFattura": 870.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 0.0, "prezzoAcqFinale": 870.0, "valoreTotale": 1367.64}, {"id": 6, "fornitore": "REYNOLDS", "spessore": 0.14, "larghezza": 800.0, "lunghezza": 924.0, "rivestimento": "E 2.0/2.0", "durezza": "DR8", "sc": "01", "ta": "PP", "nota": "x15", "collo": "X241387C-6.P007", "fogli": "2250.0", "peso": 1.862, "prezzoFattura": 870.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 0.0, "prezzoAcqFinale": 870.0, "valoreTotale": 1619.94}, {"id": 7, "fornitore": "TITAN", "spessore": 0.14, "larghezza": 800.0, "lunghezza": 924.0, "rivestimento": "D 5.6/2.8", "durezza": "DR8", "sc": "01", "ta": "PA", "nota": "LIEVE AMMACCATURA", "collo": "120801-14.P001", "fogli": "", "peso": 1.807, "prezzoFattura": 820.0, "dazioCambio": 0.131, "trasporto": 0.0, "taglio": 0.0, "altro": 80.0, "prezzoAcqFinale": 1007.42, "valoreTotale": 1820.4079}, {"id": 8, "fornitore": "TITAN", "spessore": 0.14, "larghezza": 800.0, "lunghezza": 925.0, "rivestimento": "D 5.6/2.8", "durezza": "DR8", "sc": "01", "ta": "PA", "nota": "LIEVE AMMACCATURA", "collo": "120801-25.P001", "fogli": "", "peso": 1.779, "prezzoFattura": 820.0, "dazioCambio": 0.131, "trasporto": 0.0, "taglio": 0.0, "altro": 80.0, "prezzoAcqFinale": 1007.42, "valoreTotale": 1792.2002}, {"id": 9, "fornitore": "TITAN", "spessore": 0.14, "larghezza": 800.0, "lunghezza": 925.0, "rivestimento": "D 5.6/2.8", "durezza": "DR8", "sc": "01", "ta": "PA", "nota": "LIEVE AMMACCATURA", "collo": "120801-26.P001", "fogli": "", "peso": 1.611, "prezzoFattura": 820.0, "dazioCambio": 0.131, "trasporto": 0.0, "taglio": 0.0, "altro": 80.0, "prezzoAcqFinale": 1007.42, "valoreTotale": 1622.9536}, {"id": 10, "fornitore": "TITAN", "spessore": 0.14, "larghezza": 800.0, "lunghezza": 925.0, "rivestimento": "D 5.6/2.8", "durezza": "DR8", "sc": "01", "ta": "PA", "nota": "LIEVE AMMACCATURA", "collo": "120801-27.P001", "fogli": "", "peso": 1.859, "prezzoFattura": 820.0, "dazioCambio": 0.131, "trasporto": 0.0, "taglio": 0.0, "altro": 80.0, "prezzoAcqFinale": 1007.42, "valoreTotale": 1872.7938}, {"id": 11, "fornitore": "TITAN", "spessore": 0.15, "larghezza": 808.0, "lunghezza": 0.0, "rivestimento": "E 2.2/2.2", "durezza": "T8", "sc": "01", "ta": "RO", "nota": "", "collo": "121069-1", "fogli": "0.0", "peso": 6.35, "prezzoFattura": 770.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 80.0, "prezzoAcqFinale": 850.0, "valoreTotale": 5397.5}, {"id": 12, "fornitore": "TITAN", "spessore": 0.15, "larghezza": 808.0, "lunghezza": 0.0, "rivestimento": "E 2.2/2.2", "durezza": "T8", "sc": "01", "ta": "RO", "nota": "", "collo": "121069-7", "fogli": "0.0", "peso": 7.568, "prezzoFattura": 770.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 80.0, "prezzoAcqFinale": 850.0, "valoreTotale": 6432.8}, {"id": 13, "fornitore": "HBIS", "spessore": 0.15, "larghezza": 912.0, "lunghezza": 0.0, "rivestimento": "D 5.6/2.8", "durezza": "TH 520", "sc": "01", "ta": "RO", "nota": "", "collo": "592459401", "fogli": "0.0", "peso": 4.93, "prezzoFattura": 966.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 50.0, "prezzoAcqFinale": 1016.0, "valoreTotale": 5008.88}, {"id": 14, "fornitore": "HBIS", "spessore": 0.15, "larghezza": 912.0, "lunghezza": 924.0, "rivestimento": "E 2.8/2.8", "durezza": "TH 550", "sc": "02", "ta": "PP", "nota": "s19 - x19 -canali sul foglio", "collo": "549525302.P004", "fogli": "580.0", "peso": 0.58, "prezzoFattura": 966.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 50.0, "prezzoAcqFinale": 1016.0, "valoreTotale": 589.28}, {"id": 15, "fornitore": "HBIS", "spessore": 0.15, "larghezza": 912.0, "lunghezza": 924.0, "rivestimento": "E 2.8/2.8", "durezza": "TH 550", "sc": "01", "ta": "PP", "nota": "s19 - x19", "collo": "549525302.P002", "fogli": "1640.0", "peso": 1.626, "prezzoFattura": 966.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 50.0, "prezzoAcqFinale": 1016.0, "valoreTotale": 1652.016}, {"id": 16, "fornitore": "HBIS", "spessore": 0.15, "larghezza": 912.0, "lunghezza": 0.0, "rivestimento": "E 2.8/2.8", "durezza": "TH 520", "sc": "01", "ta": "RO", "nota": "", "collo": "550758301", "fogli": "0.0", "peso": 1.82, "prezzoFattura": 966.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 50.0, "prezzoAcqFinale": 1016.0, "valoreTotale": 1849.12}, {"id": 17, "fornitore": "HBIS", "spessore": 0.15, "larghezza": 912.0, "lunghezza": 924.0, "rivestimento": "E 2.8/2.8", "durezza": "TH 550", "sc": "01", "ta": "PP", "nota": "x19", "collo": "550496402.P002", "fogli": "2150.0", "peso": 2.147, "prezzoFattura": 1066.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 50.0, "prezzoAcqFinale": 1116.0, "valoreTotale": 2396.052}, {"id": 18, "fornitore": "HBIS", "spessore": 0.15, "larghezza": 912.0, "lunghezza": 924.0, "rivestimento": "E 2.8/2.8", "durezza": "TH 550", "sc": "01", "ta": "PP", "nota": "x19", "collo": "550496301.P001", "fogli": "2310.0", "peso": 2.294, "prezzoFattura": 1066.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 50.0, "prezzoAcqFinale": 1116.0, "valoreTotale": 2560.104}, {"id": 19, "fornitore": "HBIS", "spessore": 0.15, "larghezza": 912.0, "lunghezza": 924.0, "rivestimento": "E 2.8/2.8", "durezza": "TH 550", "sc": "01", "ta": "PP", "nota": "x19", "collo": "550497302.P002", "fogli": "2350.0", "peso": 2.317, "prezzoFattura": 1066.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 50.0, "prezzoAcqFinale": 1116.0, "valoreTotale": 2585.772}, {"id": 20, "fornitore": "HBIS", "spessore": 0.15, "larghezza": 912.0, "lunghezza": 0.0, "rivestimento": "E 2.8/2.8", "durezza": "TH 520", "sc": "01", "ta": "RO", "nota": "", "collo": "550758102", "fogli": "0.0", "peso": 4.7, "prezzoFattura": 966.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 50.0, "prezzoAcqFinale": 1016.0, "valoreTotale": 4775.2}, {"id": 21, "fornitore": "HBIS", "spessore": 0.15, "larghezza": 913.0, "lunghezza": 0.0, "rivestimento": "5.6/2.8", "durezza": "TH520", "sc": "1", "ta": "RO", "nota": "", "collo": "550703501", "fogli": "", "peso": 1.7, "prezzoFattura": 966.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 50.0, "prezzoAcqFinale": 1016.0, "valoreTotale": 1727.2}, {"id": 22, "fornitore": "HBIS", "spessore": 0.15, "larghezza": 913.0, "lunghezza": 0.0, "rivestimento": "D 5.6/2.8", "durezza": "TH 520", "sc": "01", "ta": "RO", "nota": "", "collo": "550717901", "fogli": "0.0", "peso": 3.11, "prezzoFattura": 966.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 50.0, "prezzoAcqFinale": 1016.0, "valoreTotale": 3159.76}, {"id": 23, "fornitore": "HBIS", "spessore": 0.15, "larghezza": 913.0, "lunghezza": 0.0, "rivestimento": "D 5.6/2.8", "durezza": "TH 520", "sc": "01", "ta": "RO", "nota": "", "collo": "592465002", "fogli": "0.0", "peso": 4.58, "prezzoFattura": 966.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 50.0, "prezzoAcqFinale": 1016.0, "valoreTotale": 4653.28}, {"id": 24, "fornitore": "HBIS", "spessore": 0.15, "larghezza": 913.0, "lunghezza": 0.0, "rivestimento": "D 5.6/2.8", "durezza": "TH 520", "sc": "01", "ta": "RO", "nota": "", "collo": "550562501", "fogli": "0.0", "peso": 4.89, "prezzoFattura": 966.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 50.0, "prezzoAcqFinale": 1016.0, "valoreTotale": 4968.24}, {"id": 25, "fornitore": "HBIS", "spessore": 0.15, "larghezza": 913.0, "lunghezza": 0.0, "rivestimento": "D 5.6/2.8", "durezza": "TH 520", "sc": "01", "ta": "RO", "nota": "", "collo": "592444501", "fogli": "0.0", "peso": 7.04, "prezzoFattura": 966.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 50.0, "prezzoAcqFinale": 1016.0, "valoreTotale": 7152.64}, {"id": 26, "fornitore": "HBIS", "spessore": 0.15, "larghezza": 921.0, "lunghezza": 0.0, "rivestimento": "E 2.8/2.8", "durezza": "TH 550", "sc": "01", "ta": "RO", "nota": "", "collo": "592455401", "fogli": "0.0", "peso": 3.91, "prezzoFattura": 966.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 50.0, "prezzoAcqFinale": 1016.0, "valoreTotale": 3972.56}, {"id": 27, "fornitore": "HBIS", "spessore": 0.15, "larghezza": 921.0, "lunghezza": 0.0, "rivestimento": "E 2.8/2.8", "durezza": "TH 550", "sc": "01", "ta": "RO", "nota": "", "collo": "550716901", "fogli": "0.0", "peso": 3.97, "prezzoFattura": 966.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 50.0, "prezzoAcqFinale": 1016.0, "valoreTotale": 4033.52}, {"id": 28, "fornitore": "HBIS", "spessore": 0.15, "larghezza": 921.0, "lunghezza": 0.0, "rivestimento": "E 2.8/2.8", "durezza": "TH 550", "sc": "01", "ta": "RO", "nota": "", "collo": "579039301", "fogli": "0.0", "peso": 4.9, "prezzoFattura": 966.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 50.0, "prezzoAcqFinale": 1016.0, "valoreTotale": 4978.4}, {"id": 29, "fornitore": "HBIS", "spessore": 0.15, "larghezza": 967.0, "lunghezza": 0.0, "rivestimento": "E 2.8/2.8", "durezza": "TH 550", "sc": "01", "ta": "RO", "nota": "SPESSORE 0.297", "collo": "550350605", "fogli": "0.0", "peso": 3.62, "prezzoFattura": 1066.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 50.0, "prezzoAcqFinale": 1116.0, "valoreTotale": 4039.92}, {"id": 30, "fornitore": "TITAN", "spessore": 0.154, "larghezza": 814.0, "lunghezza": 0.0, "rivestimento": "E 2.2/2.2", "durezza": "DR8", "sc": "01", "ta": "RO", "nota": "sospeso 0.19x913", "collo": "J561291", "fogli": "0.0", "peso": 7.664, "prezzoFattura": 710.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 0.0, "prezzoAcqFinale": 710.0, "valoreTotale": 5441.44}, {"id": 31, "fornitore": "HBIS", "spessore": 0.155, "larghezza": 913.0, "lunghezza": 0.0, "rivestimento": "D 2.8/5.6", "durezza": "TH 550", "sc": "01", "ta": "RO", "nota": "", "collo": "550702401", "fogli": "0.0", "peso": 4.77, "prezzoFattura": 966.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 50.0, "prezzoAcqFinale": 1016.0, "valoreTotale": 4846.32}, {"id": 32, "fornitore": "REYNOLDS", "spessore": 0.156, "larghezza": 873.0, "lunghezza": 860.0, "rivestimento": "TFS", "durezza": "DR8", "sc": "01", "ta": "PA", "nota": "", "collo": "240910S-16", "fogli": "1654.0", "peso": 1.52, "prezzoFattura": 860.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 0.0, "prezzoAcqFinale": 860.0, "valoreTotale": 1307.2}, {"id": 33, "fornitore": "TITAN", "spessore": 0.16, "larghezza": 819.0, "lunghezza": 0.0, "rivestimento": "D 2.2/1.1", "durezza": "T8", "sc": "01", "ta": "RO", "nota": "", "collo": "121069-3", "fogli": "0.0", "peso": 3.488, "prezzoFattura": 770.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 80.0, "prezzoAcqFinale": 850.0, "valoreTotale": 2964.8}, {"id": 34, "fornitore": "TITAN", "spessore": 0.16, "larghezza": 819.0, "lunghezza": 0.0, "rivestimento": "D 2.2/1.1", "durezza": "T8", "sc": "01", "ta": "RO", "nota": "", "collo": "121069-4", "fogli": "0.0", "peso": 4.203, "prezzoFattura": 770.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 80.0, "prezzoAcqFinale": 850.0, "valoreTotale": 3572.55}, {"id": 35, "fornitore": "TITAN", "spessore": 0.16, "larghezza": 819.0, "lunghezza": 0.0, "rivestimento": "D 2.2/1.1", "durezza": "T8", "sc": "01", "ta": "RO", "nota": "", "collo": "121069-5", "fogli": "0.0", "peso": 4.613, "prezzoFattura": 770.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 80.0, "prezzoAcqFinale": 850.0, "valoreTotale": 3921.05}, {"id": 36, "fornitore": "REYNOLDS", "spessore": 0.16, "larghezza": 822.0, "lunghezza": 924.0, "rivestimento": "8,4/2,2", "durezza": "DR8", "sc": "01", "ta": "PA", "nota": "BUCCIA D'ARANCIA", "collo": "X241387C-10", "fogli": "1704.0", "peso": 1.624, "prezzoFattura": 900.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 0.0, "prezzoAcqFinale": 900.0, "valoreTotale": 1461.6}, {"id": 37, "fornitore": "HBIS", "spessore": 0.16, "larghezza": 894.0, "lunghezza": 0.0, "rivestimento": "E 2.8/2.8", "durezza": "TH 550", "sc": "01", "ta": "RO", "nota": "", "collo": "550812202", "fogli": "0.0", "peso": 1.26, "prezzoFattura": 966.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 50.0, "prezzoAcqFinale": 1016.0, "valoreTotale": 1280.16}, {"id": 38, "fornitore": "HBIS", "spessore": 0.16, "larghezza": 894.0, "lunghezza": 0.0, "rivestimento": "E 2.8/2.8", "durezza": "TH 550", "sc": "01", "ta": "RO", "nota": "", "collo": "550812101", "fogli": "0.0", "peso": 1.48, "prezzoFattura": 966.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 50.0, "prezzoAcqFinale": 1016.0, "valoreTotale": 1503.68}, {"id": 39, "fornitore": "HBIS", "spessore": 0.16, "larghezza": 894.0, "lunghezza": 0.0, "rivestimento": "E 2.8/2.8", "durezza": "TH 550", "sc": "01", "ta": "RO", "nota": "", "collo": "550813601", "fogli": "0.0", "peso": 3.51, "prezzoFattura": 966.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 50.0, "prezzoAcqFinale": 1016.0, "valoreTotale": 3566.16}, {"id": 40, "fornitore": "HBIS", "spessore": 0.16, "larghezza": 894.0, "lunghezza": 0.0, "rivestimento": "E 2.8/2.8", "durezza": "TH 550", "sc": "01", "ta": "RO", "nota": "", "collo": "550812501", "fogli": "0.0", "peso": 4.49, "prezzoFattura": 966.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 50.0, "prezzoAcqFinale": 1016.0, "valoreTotale": 4561.84}, {"id": 41, "fornitore": "HBIS", "spessore": 0.16, "larghezza": 894.0, "lunghezza": 0.0, "rivestimento": "E 2.8/2.8", "durezza": "TH 550", "sc": "01", "ta": "RO", "nota": "", "collo": "550813602", "fogli": "0.0", "peso": 4.74, "prezzoFattura": 966.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 50.0, "prezzoAcqFinale": 1016.0, "valoreTotale": 4815.84}, {"id": 42, "fornitore": "HBIS", "spessore": 0.16, "larghezza": 958.0, "lunghezza": 0.0, "rivestimento": "D 11.2/2.8", "durezza": "TH 550", "sc": "01", "ta": "RO", "nota": "", "collo": "592472401", "fogli": "0.0", "peso": 2.49, "prezzoFattura": 966.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 50.0, "prezzoAcqFinale": 1016.0, "valoreTotale": 2529.84}, {"id": 43, "fornitore": "REYNOLDS", "spessore": 0.162, "larghezza": 822.0, "lunghezza": 924.0, "rivestimento": "8,4/2,2", "durezza": "DR8", "sc": "01", "ta": "PA", "nota": "BUCCIA D'ARANCIA", "collo": "X241387C-23", "fogli": "754.0", "peso": 0.728, "prezzoFattura": 900.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 0.0, "prezzoAcqFinale": 900.0, "valoreTotale": 655.2}, {"id": 44, "fornitore": "REYNOLDS", "spessore": 0.162, "larghezza": 873.0, "lunghezza": 0.0, "rivestimento": "TFS", "durezza": "DR8", "sc": "S", "ta": "RO", "nota": "SOSPESO ROTOLO X MACCHIA 1 LATRO", "collo": "X241387C-19.R00", "fogli": "0.0", "peso": 7.289, "prezzoFattura": 855.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 0.0, "prezzoAcqFinale": 855.0, "valoreTotale": 6232.095}, {"id": 45, "fornitore": "TITAN", "spessore": 0.165, "larghezza": 819.0, "lunghezza": 902.1, "rivestimento": "TFS", "durezza": "DR8", "sc": "01", "ta": "PP", "nota": "", "collo": "116650-009.P004", "fogli": "0.0", "peso": 0.138, "prezzoFattura": 950.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 0.0, "prezzoAcqFinale": 950.0, "valoreTotale": 131.1}, {"id": 46, "fornitore": "TITAN", "spessore": 0.17, "larghezza": 751.0, "lunghezza": 0.0, "rivestimento": "TFS", "durezza": "T8", "sc": "01", "ta": "RO", "nota": "", "collo": "120803-1", "fogli": "0.0", "peso": 6.773, "prezzoFattura": 770.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 80.0, "prezzoAcqFinale": 850.0, "valoreTotale": 5757.05}, {"id": 47, "fornitore": "TITAN", "spessore": 0.17, "larghezza": 770.0, "lunghezza": 0.0, "rivestimento": "TFS", "durezza": "T8", "sc": "01", "ta": "RO", "nota": "", "collo": "119949-11", "fogli": "0.0", "peso": 8.861, "prezzoFattura": 930.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 0.0, "prezzoAcqFinale": 930.0, "valoreTotale": 8240.73}, {"id": 48, "fornitore": "REYNOLDS", "spessore": 0.179, "larghezza": 813.0, "lunghezza": 940.0, "rivestimento": "E 2.2/2.2", "durezza": "T5 CA", "sc": "02", "ta": "PR", "nota": "piegatura centro foglio fine rotolo", "collo": "X221199C-2.P004", "fogli": "220.0", "peso": 0.249, "prezzoFattura": 710.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 0.0, "prezzoAcqFinale": 710.0, "valoreTotale": 176.79}, {"id": 49, "fornitore": "TITAN", "spessore": 0.18, "larghezza": 781.0, "lunghezza": 705.0, "rivestimento": "TFS", "durezza": "DR8", "sc": "01", "ta": "PA", "nota": "", "collo": "113280-3", "fogli": "0.0", "peso": 1.973, "prezzoFattura": 710.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 0.0, "prezzoAcqFinale": 710.0, "valoreTotale": 1400.83}, {"id": 50, "fornitore": "REYNOLDS", "spessore": 0.18, "larghezza": 897.0, "lunghezza": 0.0, "rivestimento": "TFS", "durezza": "DR8", "sc": "01", "ta": "RO", "nota": "", "collo": "X250232C-5", "fogli": "0.0", "peso": 7.775, "prezzoFattura": 765.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 0.0, "prezzoAcqFinale": 765.0, "valoreTotale": 5947.875}, {"id": 51, "fornitore": "JSW", "spessore": 0.18, "larghezza": 926.0, "lunghezza": 871.2, "rivestimento": "TFS", "durezza": "TH 520", "sc": "02", "ta": "PP", "nota": "", "collo": "TFMREI0015.P005", "fogli": "", "peso": 0.593, "prezzoFattura": 0, "dazioCambio": 0, "trasporto": 0, "taglio": 0, "altro": 0, "prezzoAcqFinale": 0.0, "valoreTotale": 0.0}, {"id": 52, "fornitore": "TITAN", "spessore": 0.182, "larghezza": 819.0, "lunghezza": 902.1, "rivestimento": "TFS", "durezza": "DR8", "sc": "02", "ta": "PR", "nota": "codici vari", "collo": "115591-5.P006", "fogli": "0.0", "peso": 0.244, "prezzoFattura": 710.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 0.0, "prezzoAcqFinale": 710.0, "valoreTotale": 173.24}, {"id": 53, "fornitore": "REYNOLDS", "spessore": 0.182, "larghezza": 897.0, "lunghezza": 0.0, "rivestimento": "TFS", "durezza": "DR8", "sc": "01", "ta": "RO", "nota": "", "collo": "X211503C-5", "fogli": "0.0", "peso": 5.679, "prezzoFattura": 710.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 0.0, "prezzoAcqFinale": 710.0, "valoreTotale": 4032.09}, {"id": 54, "fornitore": "REYNOLDS", "spessore": 0.182, "larghezza": 898.0, "lunghezza": 900.0, "rivestimento": "TFS", "durezza": "DR8", "sc": "01", "ta": "PA", "nota": "", "collo": "240910S-41", "fogli": "1164.0", "peso": 1.343, "prezzoFattura": 860.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 0.0, "prezzoAcqFinale": 860.0, "valoreTotale": 1154.98}, {"id": 55, "fornitore": "REYNOLDS", "spessore": 0.182, "larghezza": 898.0, "lunghezza": 900.0, "rivestimento": "TFS", "durezza": "DR8", "sc": "01", "ta": "PA", "nota": "", "collo": "240910S-28", "fogli": "1334.0", "peso": 1.54, "prezzoFattura": 860.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 0.0, "prezzoAcqFinale": 860.0, "valoreTotale": 1324.4}, {"id": 56, "fornitore": "REYNOLDS", "spessore": 0.182, "larghezza": 898.0, "lunghezza": 900.0, "rivestimento": "TFS", "durezza": "DR8", "sc": "01", "ta": "PA", "nota": "", "collo": "240910S-29", "fogli": "1334.0", "peso": 1.54, "prezzoFattura": 860.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 0.0, "prezzoAcqFinale": 860.0, "valoreTotale": 1324.4}, {"id": 57, "fornitore": "REYNOLDS", "spessore": 0.182, "larghezza": 898.0, "lunghezza": 900.0, "rivestimento": "TFS", "durezza": "DR8", "sc": "01", "ta": "PA", "nota": "", "collo": "240910S-30", "fogli": "1342.0", "peso": 1.549, "prezzoFattura": 860.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 0.0, "prezzoAcqFinale": 860.0, "valoreTotale": 1332.14}, {"id": 58, "fornitore": "REYNOLDS", "spessore": 0.184, "larghezza": 849.0, "lunghezza": 902.1, "rivestimento": "TFS", "durezza": "DR8", "sc": "01", "ta": "PR", "nota": "", "collo": "X220184-10.P001", "fogli": "0.0", "peso": 1.772, "prezzoFattura": 710.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 0.0, "prezzoAcqFinale": 710.0, "valoreTotale": 1258.12}, {"id": 59, "fornitore": "REYNOLDS", "spessore": 0.184, "larghezza": 849.0, "lunghezza": 902.1, "rivestimento": "TFS", "durezza": "DR8", "sc": "01", "ta": "PR", "nota": "", "collo": "X220184-10.P002", "fogli": "0.0", "peso": 1.781, "prezzoFattura": 710.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 0.0, "prezzoAcqFinale": 710.0, "valoreTotale": 1264.51}, {"id": 60, "fornitore": "REYNOLDS", "spessore": 0.19, "larghezza": 775.0, "lunghezza": 840.0, "rivestimento": "TFS", "durezza": "DR8", "sc": "01", "ta": "PP", "nota": "x9", "collo": "X191250C-4.P005", "fogli": "0.0", "peso": 0.569, "prezzoFattura": 710.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 0.0, "prezzoAcqFinale": 710.0, "valoreTotale": 403.99}, {"id": 61, "fornitore": "REYNOLDS", "spessore": 0.21, "larghezza": 883.0, "lunghezza": 840.0, "rivestimento": "TFS", "durezza": "T5 CA", "sc": "01", "ta": "PA", "nota": "", "collo": "X250630C-2", "fogli": "1323.0", "peso": 1.617, "prezzoFattura": 800.0, "dazioCambio": -0.1379, "trasporto": 0.0, "taglio": 0.0, "altro": 80.0, "prezzoAcqFinale": 769.6552, "valoreTotale": 1244.5325}, {"id": 62, "fornitore": "REYNOLDS", "spessore": 0.21, "larghezza": 883.0, "lunghezza": 840.0, "rivestimento": "TFS", "durezza": "T5 CA", "sc": "01", "ta": "PA", "nota": "", "collo": "X250630C-1", "fogli": "1325.0", "peso": 1.619, "prezzoFattura": 800.0, "dazioCambio": -0.1379, "trasporto": 0.0, "taglio": 0.0, "altro": 80.0, "prezzoAcqFinale": 769.6552, "valoreTotale": 1246.0718}, {"id": 63, "fornitore": "REYNOLDS", "spessore": 0.21, "larghezza": 883.0, "lunghezza": 840.0, "rivestimento": "TFS", "durezza": "T5 CA", "sc": "01", "ta": "PA", "nota": "", "collo": "X250232C-8", "fogli": "1425.0", "peso": 1.742, "prezzoFattura": 765.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 0.0, "prezzoAcqFinale": 765.0, "valoreTotale": 1332.63}, {"id": 64, "fornitore": "REYNOLDS", "spessore": 0.218, "larghezza": 868.0, "lunghezza": 0.0, "rivestimento": "E 2.2/2.2", "durezza": "DR8", "sc": "01", "ta": "RO", "nota": "", "collo": "X221199C-5", "fogli": "0.0", "peso": 2.781, "prezzoFattura": 710.0, "dazioCambio": 0.0, "trasporto": 0.0, "taglio": 0.0, "altro": 0.0, "prezzoAcqFinale": 710.0, "valoreTotale": 1974.51}, {"id": 65, "fornitore": "REYNOLDS", "spessore": 0.23, "larghezza": 991.0, "lunghezza": 0.0, "rivestimento": "E 2.2/2.2", "durezza": "DR7.5", "sc": "01", "ta": "RO", "nota": "", "collo": "X250964-3", "fogli": "0.0", "peso": 5.748, "prezzoFattura": 850.0, "dazioCambio": -0.1379, "trasporto": 0.0, "taglio": 0.0, "altro": 80.0, "prezzoAcqFinale": 812.7586, "valoreTotale": 4671.7367}, {"id": 66, "fornitore": "TITAN", "spessore": 0.25, "larghezza": 841.0, "lunghezza": 0.0, "rivestimento": "TFS", "durezza": "T5CA", "sc": "1", "ta": "RO", "nota": "", "collo": "119949-15", "fogli": "", "peso": 8.505, "prezzoFattura": 0, "dazioCambio": 0, "trasporto": 0, "taglio": 0, "altro": 0, "prezzoAcqFinale": 0.0, "valoreTotale": 0.0}];
-let state = { stock: [], sailing: [], sold: [], tagli: [] };
+let state = { stock: [], sailing: [], sold: [], tagli: [], cbam: null };
 let currentTab = 'stock';
 let sellingIds = [];   // one or many
 let selected = new Set();
@@ -602,6 +729,131 @@ const fmtEur = n=>'€'+Math.round(n).toLocaleString('it-IT');
 const fmtEur2 = n=>'€'+n.toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2});
 const fmtT = n=>n.toLocaleString('it-IT',{minimumFractionDigits:3,maximumFractionDigits:3});
 const sceltaLabel = s=>({PRIMA:'Prima',SECONDA:'Seconda',TERZA:'Terza',QUINTA:'Quinta',BOTOLA:'Botola'}[s]||s);
+
+/* ---------- ORIGINE, CANALE, CBAM ---------- */
+const PAESI={IT:'Italia',UE:'UE',US:'USA',CA:'Canada',RS:'Serbia',IN:'India',CN:'Cina',TR:'Turchia',KR:'Corea',JP:'Giappone',XX:'Extra-UE'};
+/* Parametri CBAM — tutti modificabili dalla scheda CBAM, nessuno cablato nei calcoli.
+   Base: NC 7210 (prodotti stagnati/cromati). Default value CE al netto del mark-up. */
+const CBAM_DEF={
+  bmg:1.491,          // benchmark CBAM tCO2e/t
+  cscf:1.0,           // fattore di correzione intersettoriale
+  fattore:{2026:2.5,2027:5,2028:10,2029:22.5,2030:48.5,2031:61,2032:73.5,2033:86,2034:100},
+  markup:{2026:10,2027:20,2028:30},   // maggiorazione sui default value, dal 2028 resta 30
+  emisBase:{IT:0,UE:0,US:1.44,CA:1.51,RS:2.10,IN:2.55,CN:2.30,TR:2.00,KR:1.95,JP:1.80,XX:1.83},
+  prezzi:[{periodo:'2026-Q1',prezzo:75.36,provvisorio:false}]
+};
+function cbamCfg(){
+  if(!state.cbam) state.cbam=JSON.parse(JSON.stringify(CBAM_DEF));
+  const c=state.cbam;
+  if(!c.prezzi||!c.prezzi.length) c.prezzi=[{periodo:'2026-Q1',prezzo:0}];
+  return c;
+}
+const annoDi=d=>d?+String(d).slice(0,4):new Date().getFullYear();
+function fattoreAnno(y){ const f=cbamCfg().fattore; return (f[y]!=null?f[y]:(y>=2034?100:2.5))/100; }
+function markupAnno(y){ const m=cbamCfg().markup; return (m[y]!=null?m[y]:30)/100; }
+function trimestreDi(d){ if(!d) return ''; const y=String(d).slice(0,4), m=+String(d).slice(5,7); return `${y}-Q${Math.ceil(m/3)}`; }
+function periodoProvvisorio(per){
+  const p=cbamCfg().prezzi.filter(x=>x.periodo===per);
+  if(p.length) return !!p[0].provvisorio;
+  return true;   // periodo non ancora inserito: quello che si usa e' comunque una stima
+}
+const PUBBLICAZIONI={'2026-Q1':'7 aprile 2026','2026-Q2':'inizio luglio 2026','2026-Q3':'inizio ottobre 2026','2026-Q4':'metà gennaio 2027'};
+function prezzoPeriodo(per){
+  const all=cbamCfg().prezzi;
+  const esatto=all.find(x=>x.periodo===per);
+  if(esatto) return +esatto.prezzo||0;
+  // nessun prezzo per questo trimestre: usa l'ultimo trimestre precedente disponibile
+  const prec=all.filter(x=>x.periodo<per).sort((a,b)=>a.periodo.localeCompare(b.periodo));
+  if(prec.length) return +prec[prec.length-1].prezzo||0;
+  const succ=all.slice().sort((a,b)=>a.periodo.localeCompare(b.periodo));
+  return succ.length?+succ[0].prezzo||0:0;
+}
+function periodoFonte(per){
+  const all=cbamCfg().prezzi;
+  if(all.some(x=>x.periodo===per)) return per;
+  const prec=all.filter(x=>x.periodo<per).sort((a,b)=>a.periodo.localeCompare(b.periodo));
+  return prec.length?prec[prec.length-1].periodo:'';
+}
+const trimPrec=per=>{ const y=+per.slice(0,4), q=+per.slice(-1); return q>1?`${y}-Q${q-1}`:`${y-1}-Q4`; };
+/* Emissioni specifiche applicate a un coil, con mark-up se si usano i default CE */
+// La merce entra a magazzino solo dopo lo sdoganamento: la data di carico E' la data di immissione in libera pratica.
+const dataCbam=c=>c.dataCarico||null;
+function emissioniCoil(c){
+  const y=annoDi(dataCbam(c)||c.dataVendita);
+  if(!c.origine||c.origine==='IT'||c.origine==='UE') return {y,em:0,markup:0,fonte:c.fonteEmissioni||'DEFAULT'};
+  const fonte=c.fonteEmissioni||'DEFAULT';
+  const base=(c.emissioniSpec>0)?+c.emissioniSpec:(cbamCfg().emisBase[c.origine]||0);
+  const mk=fonte==='FORNITORE'?0:markupAnno(y);
+  return {y,em:base*(1+mk),markup:mk,fonte,base};
+}
+/* Certificati e costo per un coil. Restituisce anche il dettaglio per la scheda CBAM. */
+function cbamCoil(c,pesoOverride){
+  const cfg=cbamCfg();
+  const {y,em,markup,fonte,base}=emissioniCoil(c);
+  const peso=pesoOverride!=null?pesoOverride:(c.peso||0);
+  if(!em||!peso) return {y,em:em||0,markup,fonte,base:base||0,peso,sefa:0,netti:0,cert:0,prezzo:0,costo:0,costoT:0,carbon:0};
+  const sefa=(1-fattoreAnno(y))*cfg.cscf*cfg.bmg;
+  let netti=Math.max(0,em-sefa);
+  const cert=netti*peso;
+  const per=trimestreDi(dataCbam(c))||`${y}-Q1`;
+  const prezzo=prezzoPeriodo(per);
+  const prov=periodoProvvisorio(per);
+  const carbon=+c.carbonPagato||0;   // €/tCO2e già pagati nel paese d'origine
+  const prezzoNetto=Math.max(0,prezzo-carbon);
+  const costo=cert*prezzoNetto;
+  return {y,em,markup,fonte,base:base||0,peso,sefa,netti,cert,prezzo,prezzoNetto,carbon,costo,costoT:peso>0?costo/peso:0,periodo:per,provvisorio:prov};
+}
+const paeseLabel=o=>PAESI[o]||o||'';
+const canaleDa=o=>!o?'':((o==='IT'||o==='UE')?'TRADER':'DIRETTO');
+const canaleLabel=c=>c==='TRADER'?'Trader UE':(c==='DIRETTO'?'Import diretto':'—');
+function canaleDiRiga(c){ return c.canale || canaleDa(c.origine) || ''; }
+function calcCbamRiga(){
+  const box=document.getElementById('cbamRigaPreview'); if(!box) return;
+  const o=document.getElementById('eOrigine').value;
+  const hint=document.getElementById('cbamHint');
+  if(!o){ box.innerHTML='<div class="r"><span>Seleziona il paese di origine per calcolare il CBAM.</span></div>'; if(hint) hint.innerHTML=''; return; }
+  if(o==='IT'||o==='UE'){ box.innerHTML='<div class="r"><span>Origine UE</span><span class="mono">nessun CBAM dovuto</span></div>'; if(hint) hint.innerHTML=''; return; }
+  const finto={origine:o,fonteEmissioni:document.getElementById('eFonteEmis').value,
+    emissioniSpec:+document.getElementById('eEmissioni').value||0,
+    carbonPagato:+document.getElementById('eCarbonPag').value||0,
+    dataCarico:document.getElementById('eDataCarico').value||oggi(),
+    peso:+document.getElementById('ePeso').value||0};
+  const r=cbamCoil(finto);
+  const mkTxt=r.markup>0?` (base ${fi3(r.base)} + mark-up ${Math.round(r.markup*100)}%)`:' (dato fornitore, nessun mark-up)';
+  box.innerHTML=`
+    <div class="r"><span>Emissioni applicate ${r.y}</span><span class="mono">${fi3(r.em)} tCO₂e/t<small style="color:var(--muted);font-weight:400">${mkTxt}</small></span></div>
+    <div class="r"><span>Allocazione gratuita (SEFA) — fattore CBAM ${(fattoreAnno(r.y)*100).toFixed(1)}%</span><span class="mono">− ${fi3(r.sefa)}</span></div>
+    <div class="r"><span>Emissioni nette soggette</span><span class="mono" style="font-weight:700">${fi3(r.netti)} tCO₂e/t</span></div>
+    <div class="r"><span>Certificati per questo collo (${fmtT(r.peso)} t)</span><span class="mono">${r.cert.toLocaleString('it-IT',{maximumFractionDigits:2})}</span></div>
+    <div class="r"><span>Prezzo certificato ${r.periodo}${r.provvisorio?' <b style="color:var(--amber)">(stima)</b>':''}${r.carbon>0?` al netto di €${r.carbon} già pagati`:''}</span><span class="mono">${fmtEur2(r.prezzoNetto)}</span></div>
+    <div class="r total"><span>Costo CBAM</span><span class="mono">${fmtEur2(r.costoT)}/t · ${fmtEur2(r.costo)} totali</span></div>`;
+  if(hint) hint.innerHTML=r.costoT>0?`Calcolato: <b>€${r.costoT.toFixed(2)}/t</b> · <a onclick="applicaCbam(${r.costoT.toFixed(2)})">applica al costo</a>`:'';
+}
+function applicaCbam(v){ document.getElementById('eCbam').value=v; calcValue(); }
+const fi3=n=>(+n||0).toLocaleString('it-IT',{minimumFractionDigits:3,maximumFractionDigits:3});
+function onOrigineChange(){
+  const o=document.getElementById('eOrigine').value;
+  document.getElementById('eCanale').value=canaleLabel(canaleDa(o))||'';
+  const hint=document.getElementById('cbamHint');
+  const cbamEl=document.getElementById('eCbam');
+  if(!o){ hint.innerHTML=''; return; }
+  const sugg=CBAM_T[o]||0;
+  if(sugg===0){ hint.innerHTML='Origine UE: nessun CBAM dovuto.'; return; }
+  hint.innerHTML=`Indicativo per ${paeseLabel(o)}: <b>€${sugg}/t</b> · <a onclick="applicaCbam(${sugg})">applica</a>`;
+  if(!(+cbamEl.value>0)){ cbamEl.value=sugg; calcValue(); }
+}
+function applicaCbam(v){ document.getElementById('eCbam').value=v; calcValue(); }
+const oggi=()=>new Date().toISOString().slice(0,10);
+function giorniDa(d){
+  if(!d) return null;
+  const t=Date.parse(d+'T00:00:00'); if(isNaN(t)) return null;
+  return Math.max(0,Math.floor((Date.now()-t)/86400000));
+}
+function ageCell(gg){
+  if(gg===null) return '<span class="dim">—</span>';
+  const cls=gg>180?'age-bad':(gg>90?'age-warn':'age-ok');
+  return `<span class="${cls}">${gg}</span>`;
+}
 
 /* ---------- FIREBASE: STATO CONDIVISO IN CLOUD ---------- */
 const LS_KEY = 'steelco_magazzino_v2';           // vecchia cache locale, usata solo per la migrazione iniziale
@@ -724,10 +976,16 @@ function switchTab(t){
   document.getElementById('kpiSail').style.display = t==='sailing'?'grid':'none';
   document.getElementById('kpiSold').style.display = t==='sold'?'grid':'none';
   document.getElementById('kpiScarti').style.display = t==='scarti'?'grid':'none';
-  const isScarti = t==='scarti';
+  document.getElementById('kpiAnalisi').style.display = t==='analisi'?'grid':'none';
+  document.getElementById('kpiCbam').style.display = t==='cbam'?'grid':'none';
+  const isScarti = t==='scarti', isAnalisi = t==='analisi'||t==='cbam';
   ['supplierFilter','thickFilter','widthFilter','coatFilter','sceltaFilter','addCoilBtn'].forEach(id=>{
-    document.getElementById(id).style.display = isScarti?'none':'';
+    document.getElementById(id).style.display = (isScarti||isAnalisi)?'none':'';
   });
+  document.getElementById('tableWrap').style.display = isAnalisi?'none':'';
+  document.getElementById('analisiWrap').style.display = t==='analisi'?'':'none';
+  document.getElementById('cbamWrap').style.display = t==='cbam'?'':'none';
+  document.querySelector('.toolbar').style.display = isAnalisi?'none':'';
   document.getElementById('exportSoldBtn').style.display = t==='sold'?'':'none';
   document.getElementById('searchBox').placeholder = isScarti?'Cerca per collo coil o fornitore…'
     :(t==='sold'?'Cerca collo, cliente, fattura, spessore, larghezza…':'Cerca collo, fornitore, rivestimento, spessore, larghezza, nota…');
@@ -735,6 +993,13 @@ function switchTab(t){
   render();
 }
 function activeList(){ return currentTab==='stock'?state.stock:currentTab==='sailing'?state.sailing:state.sold; }
+function refreshDatalists(){
+  const all=state.stock.concat(state.sailing,state.sold);
+  const dl=(id,vals)=>{const e=document.getElementById(id); if(e) e.innerHTML=[...new Set(vals)].filter(Boolean).sort().map(v=>`<option value="${String(v).replace(/"/g,'&quot;')}">`).join('');};
+  dl('clientiList',state.sold.map(c=>c.cliente));
+  dl('fornitoriList',all.map(c=>c.fornitore));
+  dl('ubicazioniList',all.map(c=>c.ubicazione));
+}
 
 /* ---------- FILTERS ---------- */
 function refreshFilterOptions(){
@@ -764,6 +1029,7 @@ function filtered(list){
     if(sc&&c.scelta!==sc) return false;
     if(!q) return true;
     return [c.fornitore,c.collo,c.origineCoil,c.rivestimento,c.durezza,c.scelta,c.nota,c.cliente,c.fatturaVendita,
+            c.ordineCliente,c.ordineAcquisto,c.ubicazione,paeseLabel(c.origine),canaleLabel(canaleDiRiga(c)),
             c.spessore,c.larghezza,c.lunghezza,
             `${c.spessore||''}x${c.larghezza||''}x${c.lunghezza||''}`,
             `${c.spessore||''}×${c.larghezza||''}×${c.lunghezza||''}`]
@@ -847,9 +1113,11 @@ function updateKPIs(){
 
 /* ---------- RENDER ---------- */
 function render(){
-  updateKPIs(); refreshFilterOptions();
+  updateKPIs(); refreshFilterOptions(); refreshDatalists();
   const t=document.getElementById('mainTable');
-  if(currentTab==='sold') renderSold(t);
+  if(currentTab==='cbam') renderCbam();
+  else if(currentTab==='analisi') renderAnalisi();
+  else if(currentTab==='sold') renderSold(t);
   else if(currentTab==='scarti') renderScarti(t);
   else renderInv(t);
   updateBulkbar();
@@ -860,13 +1128,14 @@ function renderInv(t){
   if(!list.length){ t.innerHTML=emptyRow(isStock?'Nessun coil a magazzino':'Nessun coil in navigazione', isStock?'Aggiungi un coil o modifica i filtri.':'Aggiungi merce in arrivo con "Aggiungi coil".'); return; }
   t.innerHTML=`<thead><tr>
     <th class="chk"><input type="checkbox" id="selAll" onchange="toggleAll(this)"></th>
-    ${sortTh('Fornitore','fornitore')}${sortTh('Collo','collo')}${sortTh('Spess.','spessore','num')}${sortTh('Largh.','larghezza','num')}${sortTh('Lungh.','lunghezza','num')}${sortTh('Rivest.','rivestimento')}${sortTh('Durezza','durezza')}${sortTh('Scelta','scelta')}
-    ${sortTh('Peso (t)','peso','num')}${sortTh('Costo €/t','prezzoAcqFinale','num')}${sortTh('Valore','valoreTotale','num')}${sortTh('Note','nota')}<th></th>
+    ${sortTh('Fornitore','fornitore')}${sortTh('Collo','collo')}${sortTh('Orig.','origine')}${sortTh('Spess.','spessore','num')}${sortTh('Largh.','larghezza','num')}${sortTh('Lungh.','lunghezza','num')}${sortTh('Rivest.','rivestimento')}${sortTh('Durezza','durezza')}${sortTh('Scelta','scelta')}
+    ${sortTh('Peso (t)','peso','num')}${sortTh('Costo €/t','prezzoAcqFinale','num')}${sortTh('Valore','valoreTotale','num')}${isStock?sortTh('Giac. gg','dataCarico','num'):''}${sortTh('Ubicaz.','ubicazione')}${sortTh('Note','nota')}<th></th>
   </tr></thead><tbody>${list.map(c=>`
     <tr class="${selected.has(c.id)?'sel':''}">
       <td class="chk"><input type="checkbox" ${selected.has(c.id)?'checked':''} onchange="toggleOne(${c.id},this)"></td>
-      <td><span class="supplier sup-${c.fornitore}">${c.fornitore||'—'}</span></td>
+      <td><span class="supplier sup-${c.fornitore}">${c.fornitore||'—'}</span>${c.ordineAcquisto?`<span class="origine-tag" title="Ordine di acquisto">${c.ordineAcquisto}</span>`:''}</td>
       <td class="collo mono">${c.collo||'—'}${c.tipo==='semilavorato'?' <span class="scelta" style="background:var(--sail-bg);color:var(--sail)" title="Semilavorato: in attesa di rifilo/lavorazione successiva">SEMI</span>':''}${c.origineCoil?`<span class="origine-tag" title="Ricavato dal coil ${c.origineCoil}">da ${c.origineCoil}</span>`:''}</td>
+      <td class="dim" title="${canaleLabel(canaleDiRiga(c))}">${paeseLabel(c.origine)||'—'}</td>
       <td class="num mono dim">${c.spessore||'—'}</td>
       <td class="num mono">${c.larghezza||'—'}</td>
       <td class="num mono dim">${c.lunghezza||'—'}</td>
@@ -876,6 +1145,8 @@ function renderInv(t){
       <td class="num mono">${fmtT(c.peso||0)}</td>
       <td class="num mono">${fmtEur(c.prezzoAcqFinale||0)}</td>
       <td class="num mono">${fmtEur(c.valoreTotale||0)}</td>
+      ${isStock?`<td class="num mono">${ageCell(giorniDa(c.dataCarico))}</td>`:''}
+      <td class="dim">${c.ubicazione||'—'}</td>
       <td class="note-cell" title="${c.nota||''}">${c.nota||''}</td>
       <td class="actions-cell">
         ${isStock?`<button class="mini-btn sell" onclick="openSell([${c.id}])">Vendi</button>`
@@ -890,7 +1161,7 @@ function renderSold(t){
   const list=sortKey?applySort(base):base.slice().reverse();
   if(!list.length){ t.innerHTML=emptyRow('Nessuna vendita registrata','I coil venduti compariranno qui.'); return; }
   t.innerHTML=`<thead><tr>
-    ${sortTh('Data','dataVendita')}${sortTh('Cliente','cliente')}${sortTh('Fornitore','fornitore')}${sortTh('Collo','collo')}
+    ${sortTh('Data','dataVendita')}${sortTh('Cliente','cliente')}${sortTh('Ordine','ordineCliente')}${sortTh('Fornitore','fornitore')}${sortTh('Collo','collo')}${sortTh('Orig.','origine')}
     ${sortTh('Spess.','spessore','num')}${sortTh('Largh.','larghezza','num')}${sortTh('Lungh.','lunghezza','num')}${sortTh('Rivest.','rivestimento')}${sortTh('Durezza','durezza')}${sortTh('Scelta','scelta')}
     ${sortTh('Fattura/DDT','fatturaVendita')}
     ${sortTh('Peso (t)','pesoVenduto','num')}${sortTh('Prezzo €/t','prezzoVendita','num')}${sortTh('Ricavo','ricavo','num')}${sortTh('Margine','margine','num')}${sortTh('Marg.%','marginePct','num')}<th></th>
@@ -898,15 +1169,17 @@ function renderSold(t){
     <tr>
       <td class="mono dim">${c.dataVendita||'—'}</td>
       <td style="font-weight:600">${c.cliente||'—'}</td>
+      <td class="mono">${c.ordineCliente||'<span class="dim">—</span>'}</td>
       <td><span class="supplier sup-${c.fornitore}">${c.fornitore}</span></td>
       <td class="collo mono">${c.collo||'—'}${c.origineCoil?`<span class="origine-tag" title="Ricavato dal coil ${c.origineCoil}">da ${c.origineCoil}</span>`:''}</td>
+      <td class="dim" title="${canaleLabel(canaleDiRiga(c))}">${paeseLabel(c.origine)||'—'}</td>
       <td class="num mono dim">${c.spessore||'—'}</td>
       <td class="num mono">${c.larghezza||'—'}${c.larghezzaRifilo?`<span class="rifilo-tag" title="Venduto rifilato a ${c.larghezzaRifilo} mm">→${c.larghezzaRifilo}</span>`:''}</td>
       <td class="num mono dim">${c.lunghezza||'—'}</td>
       <td>${c.rivestimento||'—'}</td>
       <td class="dim">${c.durezza||'—'}</td>
       <td>${c.scelta?`<span class="scelta scelta-${c.scelta}">${sceltaLabel(c.scelta)}</span>`:'<span class="dim">—</span>'}</td>
-      <td class="mono dim">${c.fatturaVendita||'—'}</td>
+      <td class="mono dim">${c.fatturaVendita||'—'}${c.giacenzaGiorni!=null?`<span class="origine-tag" title="Giorni di giacenza prima della vendita">${c.giacenzaGiorni} gg a magazzino</span>`:''}</td>
       <td class="num mono">${fmtT(c.pesoVenduto||0)}</td>
       <td class="num mono">${fmtEur(c.prezzoVendita||0)}</td>
       <td class="num mono">${fmtEur(c.ricavo||0)}</td>
@@ -945,9 +1218,353 @@ function renderScarti(t){
     </tr>`;}).join('')}</tbody>`;
 }
 function emptyRow(title,sub){
-  return `<tbody><tr><td colspan="20"><div class="empty">
+  return `<tbody><tr><td colspan="24"><div class="empty">
     <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M3 7l3-4h12l3 4M12 11v5M9 13h6"/></svg>
     <h3>${title}</h3><p>${sub}</p></div></td></tr></tbody>`;
+}
+
+
+/* ---------- ANALISI ---------- */
+function aggrega(rows,keyFn){
+  const m=new Map();
+  rows.forEach(c=>{
+    const k=keyFn(c); if(k===null||k===undefined||k==='') return;
+    let o=m.get(k); if(!o){ o={k,n:0,peso:0,ricavo:0,margine:0,costo:0}; m.set(k,o); }
+    o.n++; o.peso+=c.pesoVenduto||0; o.ricavo+=c.ricavo||0; o.margine+=c.margine||0; o.costo+=c.costoTotVendita||0;
+  });
+  return [...m.values()].map(o=>({...o,mgPct:o.ricavo>0?(o.margine/o.ricavo)*100:0,mgT:o.peso>0?o.margine/o.peso:0}));
+}
+function anTable(title,rows,labelCol,note){
+  if(!rows.length) return `<div class="an-card"><h3>${title}</h3><p class="an-note">Nessun dato disponibile.</p></div>`;
+  const maxMg=Math.max(...rows.map(r=>Math.abs(r.margine)),1);
+  return `<div class="an-card"><h3>${title}</h3>
+    <table><colgroup><col style="width:32%"><col style="width:14%"><col style="width:19%"><col style="width:19%"><col style="width:16%"></colgroup>
+    <thead><tr><th>${labelCol}</th><th class="n">t</th><th class="n">Ricavo</th><th class="n">Margine</th><th class="n">€/t</th></tr></thead>
+    <tbody>${rows.map(r=>`<tr>
+      <td><b title="${String(r.k).replace(/"/g,'&quot;')}">${r.k}</b><span class="an-bar" style="width:${Math.round(Math.abs(r.margine)/maxMg*100)}%;background:${r.margine>=0?'var(--steel)':'var(--rust)'}"></span></td>
+      <td class="n mono">${fmtT(r.peso)}</td>
+      <td class="n mono">${fmtEur(r.ricavo)}</td>
+      <td class="n mono ${r.margine>=0?'mg-pos':'mg-neg'}">${fmtEur(r.margine)}</td>
+      <td class="n mono ${r.margine>=0?'mg-pos':'mg-neg'}">${fmtEur(r.mgT)}</td>
+    </tr>`).join('')}</tbody></table>${note?`<p class="an-note">${note}</p>`:''}</div>`;
+}
+function renderAnalisi(){
+  const sold=state.sold, stock=state.stock, sail=state.sailing;
+
+  const canali=aggrega(sold,c=>canaleLabel(canaleDiRiga(c))||'Non specificato');
+  const dir=canali.find(r=>r.k==='Import diretto'), tra=canali.find(r=>r.k==='Trader UE');
+  document.getElementById('aMgDiretto').innerHTML=dir?`${fmtEur(dir.margine)}<small> · ${fmtEur(dir.mgT)}/t</small>`:'—';
+  document.getElementById('aMgTrader').innerHTML=tra?`${fmtEur(tra.margine)}<small> · ${fmtEur(tra.mgT)}/t</small>`:'—';
+
+  const conData=stock.filter(c=>c.dataCarico);
+  const gg=conData.map(c=>giorniDa(c.dataCarico)).filter(v=>v!==null);
+  document.getElementById('aGiacenza').innerHTML=gg.length?`${Math.round(gg.reduce((a,b)=>a+b,0)/gg.length)}<small>gg</small>`:'—';
+  const fermi=conData.filter(c=>(giorniDa(c.dataCarico)||0)>180);
+  document.getElementById('aFermo').innerHTML=`${fmtEur(fermi.reduce((a,c)=>a+(c.valoreTotale||0),0))}<small> · ${fermi.length} coil</small>`;
+  const cap=stock.reduce((a,c)=>a+(c.valoreTotale||0),0)+sail.reduce((a,c)=>a+(c.valoreTotale||0),0);
+  document.getElementById('aCapitale').textContent=fmtEur(cap);
+
+  const byCliente=aggrega(sold,c=>c.cliente||'—').sort((a,b)=>b.ricavo-a.ricavo);
+  const byOrdine=aggrega(sold,c=>c.ordineCliente).sort((a,b)=>b.ricavo-a.ricavo).slice(0,12);
+  const byForn=aggrega(sold,c=>c.fornitore||'—').sort((a,b)=>b.mgT-a.mgT);
+  const byOrig=aggrega(sold,c=>paeseLabel(c.origine)||'Non specificata').sort((a,b)=>b.mgT-a.mgT);
+  const bySpess=aggrega(sold,c=>c.spessore?String(c.spessore)+' mm':'—').sort((a,b)=>b.mgT-a.mgT);
+
+  const totRic=sold.reduce((a,c)=>a+(c.ricavo||0),0);
+  const conc=byCliente.length?((byCliente[0].ricavo/totRic)*100):0;
+
+  // fasce giacenza
+  const fasce=[{l:'0–30 gg',min:0,max:30},{l:'31–90 gg',min:31,max:90},{l:'91–180 gg',min:91,max:180},{l:'oltre 180 gg',min:181,max:1e9}];
+  const senzaData=stock.filter(c=>!c.dataCarico);
+  const fasceRows=fasce.map(f=>{
+    const sel=conData.filter(c=>{const g=giorniDa(c.dataCarico); return g!==null&&g>=f.min&&g<=f.max;});
+    return {l:f.l,n:sel.length,peso:sel.reduce((a,c)=>a+(c.peso||0),0),val:sel.reduce((a,c)=>a+(c.valoreTotale||0),0)};
+  });
+  const maxVal=Math.max(...fasceRows.map(r=>r.val),1);
+
+  document.getElementById('analisiWrap').innerHTML=`
+  <div class="an-grid">
+    ${anTable('Margine per canale',canali.sort((a,b)=>b.mgT-a.mgT),'Canale','Import diretto significa rischio quota, CBAM, ritardi e cambio. Il trader UE è merce già tagliata e pronta: margine più basso ma rischio quasi nullo. Confronta il €/t, non la percentuale.')}
+    ${anTable('Margine per cliente',byCliente,'Cliente',byCliente.length?`Il primo cliente vale il ${conc.toFixed(0)}% del fatturato.`:'')}
+    ${anTable('Margine per fornitore',byForn,'Fornitore')}
+    ${anTable('Margine per origine',byOrig,'Origine')}
+    ${anTable('Margine per ordine cliente',byOrdine,'Ordine','Compila il numero d\'ordine in fase di vendita per vedere qui la redditività di ogni singola commessa, anche quando più ordini finiscono nella stessa fattura.')}
+    ${anTable('Margine per spessore',bySpess,'Spessore')}
+    <div class="an-card"><h3>Anzianità del magazzino</h3>
+      <table><colgroup><col style="width:38%"><col style="width:16%"><col style="width:19%"><col style="width:27%"></colgroup>
+      <thead><tr><th>Fascia</th><th class="n">Coil</th><th class="n">t</th><th class="n">Valore</th></tr></thead>
+      <tbody>${fasceRows.map(r=>`<tr>
+        <td><b>${r.l}</b><span class="an-bar" style="width:${Math.round(r.val/maxVal*100)}%;background:${r.l==='oltre 180 gg'?'var(--rust)':(r.l==='91–180 gg'?'var(--amber)':'var(--green)')}"></span></td>
+        <td class="n mono">${r.n}</td><td class="n mono">${fmtT(r.peso)}</td><td class="n mono">${fmtEur(r.val)}</td>
+      </tr>`).join('')}</tbody></table>
+      ${senzaData.length?`<p class="an-note">${senzaData.length} coil senza data di carico (${fmtT(senzaData.reduce((a,c)=>a+(c.peso||0),0))} t, ${fmtEur(senzaData.reduce((a,c)=>a+(c.valoreTotale||0),0))}) non compaiono in questo conteggio. Sono i carichi precedenti: si popolano da soli man mano che li modifichi.</p>`:''}
+    </div>
+    <div class="an-card"><h3>Qualità dei dati</h3>
+      <table><colgroup><col style="width:52%"><col style="width:18%"><col style="width:30%"></colgroup>
+      <thead><tr><th>Controllo</th><th class="n">Righe</th><th class="n">Valore</th></tr></thead>
+      <tbody>
+      ${(()=>{ const tutti=stock.concat(sail);
+        const checks=[
+          {l:'Coil a costo zero',sel:tutti.filter(c=>!(c.prezzoAcqFinale>0))},
+          {l:'Senza paese di origine',sel:tutti.filter(c=>!c.origine)},
+          {l:'Senza data di carico',sel:stock.filter(c=>!c.dataCarico)},
+          {l:'Senza ordine di acquisto',sel:tutti.filter(c=>!c.ordineAcquisto)},
+          {l:'Sotto 1 tonnellata',sel:stock.filter(c=>(c.peso||0)<1)},
+          {l:'Con nota di difetto',sel:stock.filter(c=>/ammacc|buccia|sospes|macchia|piegat|difett/i.test(c.nota||''))}
+        ];
+        return checks.map(k=>`<tr><td><b>${k.l}</b></td><td class="n mono ${k.sel.length?'mg-neg':''}">${k.sel.length}</td><td class="n mono">${fmtEur(k.sel.reduce((a,c)=>a+(c.valoreTotale||0),0))}</td></tr>`).join('');
+      })()}
+      </tbody></table>
+      <p class="an-note">Ogni riga qui sopra è margine che non stai misurando o merce che non stai controllando.</p>
+    </div>
+  </div>`;
+}
+
+
+/* ---------- SCHEDA CBAM ---------- */
+function cbamRighe(){
+  // ogni collo importato extra-UE con data di carico: e' il fatto generatore
+  return state.stock.concat(state.sailing,state.sold)
+    .filter(c=>c.origine&&c.origine!=='IT'&&c.origine!=='UE')
+    .map(c=>({c,r:cbamCoil(c)}))
+    .filter(x=>x.r.cert>0);
+}
+function setCbamCfg(k,v){ const c=cbamCfg(); c[k]=+v||0; saveState(); renderCbam(); }
+function setCbamFattore(y,v){ cbamCfg().fattore[y]=+v||0; saveState(); renderCbam(); }
+function setCbamMarkup(y,v){ cbamCfg().markup[y]=+v||0; saveState(); renderCbam(); }
+function setCbamEmis(o,v){ cbamCfg().emisBase[o]=+v||0; saveState(); renderCbam(); }
+function setCbamPrezzo(i,campo,v){
+  const p=cbamCfg().prezzi[i]; if(!p) return;
+  const perVecchio=p.periodo;
+  p[campo]=campo==='prezzo'?(+v||0):v;
+  saveState();
+  // il prezzo di un trimestre si riflette subito su tutto cio' che e' stato importato in quel trimestre
+  ricalcolaCbamTrimestre(p.periodo,true);
+  if(campo==='periodo'&&perVecchio!==p.periodo) ricalcolaCbamTrimestre(perVecchio,true);
+  renderCbam();
+}
+function ricalcolaCbamTrimestre(per,silenzioso){
+  const tocca=l=>state[l].filter(c=>c.origine&&c.origine!=='IT'&&c.origine!=='UE'&&trimestreDi(dataCbam(c))===per);
+  const inv=tocca('stock').concat(tocca('sailing'));
+  const vend=tocca('sold');
+  if(!inv.length&&!vend.length){ if(!silenzioso) alert(`Nessun collo importato nel trimestre ${per}.`); return 0; }
+  const applica=c=>{
+    const nuovo=+cbamCoil(c).costoT.toFixed(2), vecchio=+c.cbam||0;
+    const diff=(nuovo-vecchio)*(c.peso||0);
+    c.cbam=nuovo; c.prezzoAcqFinale=(+c.prezzoAcqFinale||0)-vecchio+nuovo; c.valoreTotale=c.prezzoAcqFinale*(c.peso||0);
+    return diff;
+  };
+  const dInv=inv.reduce((a,c)=>a+applica(c),0);
+  const dVend=vend.reduce((a,c)=>{
+    const d=applica(c);
+    const costoExtra=((+c.costoTaglioVendita||0)+(+c.costoConsegnaVendita||0)+(+c.costoSelezioneVendita||0)+(+c.costoRifiloVendita||0))*(c.peso||0);
+    c.costoTotVendita=c.prezzoAcqFinale*(c.peso||0)+costoExtra;
+    c.margine=(c.ricavo||0)-c.costoTotVendita;
+    c.marginePct=c.ricavo>0?(c.margine/c.ricavo)*100:0;
+    return a+d;
+  },0);
+  saveState();
+  const n=inv.length+vend.length;
+  const pezzi=[];
+  if(inv.length) pezzi.push(`${inv.length} a magazzino ${dInv>=0?'+':'−'}${fmtEur2(Math.abs(dInv))}`);
+  if(vend.length) pezzi.push(`${vend.length} venduti, margine ${dVend>=0?'−':'+'}${fmtEur2(Math.abs(dVend))}`);
+  showToast(`${per} riallineato a ${fmtEur2(prezzoPeriodo(per))} · ${pezzi.join(' · ')}`);
+  render();
+  return n;
+}
+function toggleProvvisorio(i,v){ const p=cbamCfg().prezzi[i]; if(!p) return; p.provvisorio=!!v; saveState(); renderCbam(); }
+/* Crea in automatico una riga prezzo per ogni trimestre in cui c'e' merce importata:
+   parte dal prezzo del trimestre precedente e resta marcata come stima. */
+function allineaPeriodi(){
+  const cfg=cbamCfg();
+  const usati=[...new Set(state.stock.concat(state.sailing,state.sold)
+    .filter(c=>c.origine&&c.origine!=='IT'&&c.origine!=='UE'&&dataCbam(c))
+    .map(c=>trimestreDi(dataCbam(c))))].filter(Boolean);
+  let agg=false;
+  usati.sort().forEach(per=>{
+    if(cfg.prezzi.some(x=>x.periodo===per)) return;
+    cfg.prezzi.push({periodo:per,prezzo:prezzoPeriodo(per),provvisorio:true,ereditatoDa:trimPrec(per)});
+    agg=true;
+  });
+  if(agg){ cfg.prezzi.sort((a,b)=>a.periodo.localeCompare(b.periodo)); saveState(); }
+  return agg;
+}
+function addCbamPrezzo(){
+  const p=cbamCfg().prezzi; const last=p[p.length-1];
+  let per='2026-Q1';
+  if(last){ const y=+last.periodo.slice(0,4), q=+last.periodo.slice(-1); per=q<4?`${y}-Q${q+1}`:`${y+1}-Q1`; }
+  p.push({periodo:per,prezzo:last?last.prezzo:0,provvisorio:true}); saveState(); renderCbam();
+}
+function delCbamPrezzo(i){ cbamCfg().prezzi.splice(i,1); saveState(); renderCbam(); }
+
+function renderCbam(){
+  const cfg=cbamCfg();
+  allineaPeriodi();
+  const righe=cbamRighe();
+  const annoCorr=new Date().getFullYear();
+
+  const perAnno=new Map();
+  righe.forEach(({c,r})=>{
+    let o=perAnno.get(r.y); if(!o){ o={y:r.y,peso:0,cert:0,costo:0,n:0}; perAnno.set(r.y,o); }
+    o.n++; o.peso+=r.peso; o.cert+=r.cert; o.costo+=r.costo;
+  });
+  const anni=[...perAnno.values()].sort((a,b)=>a.y-b.y);
+
+  const perTrim=new Map();
+  righe.forEach(({c,r})=>{
+    const k=r.periodo||'—';
+    let o=perTrim.get(k); if(!o){ o={k,peso:0,cert:0,costo:0}; perTrim.set(k,o); }
+    o.peso+=r.peso; o.cert+=r.cert; o.costo+=r.costo;
+  });
+  const trim=[...perTrim.values()].sort((a,b)=>a.k.localeCompare(b.k));
+  // obbligo di detenzione 50% cumulato sull'anno
+  let cum=0; const trimCum=trim.map(t=>{ cum+=t.cert; return {...t,cum,minimo:cum*0.5}; });
+
+  const perOrig=new Map();
+  righe.forEach(({c,r})=>{
+    const k=paeseLabel(c.origine);
+    let o=perOrig.get(k); if(!o){ o={k,peso:0,cert:0,costo:0,fonte:new Set()}; perOrig.set(k,o); }
+    o.peso+=r.peso; o.cert+=r.cert; o.costo+=r.costo; o.fonte.add(r.fonte==='FORNITORE'?'fornitore':'default');
+  });
+  const orig=[...perOrig.values()].sort((a,b)=>b.cert-a.cert);
+
+  const pesoExtraUE=state.stock.concat(state.sailing,state.sold)
+    .filter(c=>c.origine&&c.origine!=='IT'&&c.origine!=='UE'&&annoDi(c.dataCarico)===annoCorr)
+    .reduce((a,c)=>a+(c.peso||0),0);
+  const senzaOrigine=state.stock.concat(state.sailing).filter(c=>!c.origine);
+  const senzaEmis=state.stock.concat(state.sailing).filter(c=>c.origine&&c.origine!=='IT'&&c.origine!=='UE'&&!(c.emissioniSpec>0));
+  const senzaData2=state.stock.concat(state.sailing).filter(c=>c.origine&&c.origine!=='IT'&&c.origine!=='UE'&&!c.dataCarico);
+
+  const totCert=righe.reduce((a,x)=>a+x.r.cert,0);
+  const totCosto=righe.reduce((a,x)=>a+x.r.costo,0);
+  const totPeso=righe.reduce((a,x)=>a+x.r.peso,0);
+
+  document.getElementById('cCert').textContent=totCert.toLocaleString('it-IT',{maximumFractionDigits:0});
+  document.getElementById('cCosto').textContent=fmtEur(totCosto);
+  document.getElementById('cCostoT').textContent=totPeso>0?fmtEur2(totCosto/totPeso):'€0';
+  document.getElementById('cPeso').innerHTML=fmtT(pesoExtraUE)+'<small>t</small>';
+  document.getElementById('cSoglia').innerHTML=pesoExtraUE>50?'<span style="color:var(--rust)">Sopra</span>':'<span style="color:var(--green)">Sotto</span>';
+
+  const annoRows=anni.length?anni.map(a=>`<tr>
+      <td><b>${a.y}</b><span class="an-bar" style="width:${Math.round(a.cert/Math.max(...anni.map(x=>x.cert),1)*100)}%"></span></td>
+      <td class="n mono">${(fattoreAnno(a.y)*100).toFixed(1)}%</td>
+      <td class="n mono">${fmtT(a.peso)}</td>
+      <td class="n mono">${a.cert.toLocaleString('it-IT',{maximumFractionDigits:1})}</td>
+      <td class="n mono">${fmtEur(a.costo)}</td>
+    </tr>`).join(''):'<tr><td colspan="5" class="dim">Nessuna importazione extra-UE con origine e data di carico compilate.</td></tr>';
+
+  const trimRows=trimCum.length?trimCum.map(t=>`<tr>
+      <td><b>${t.k}</b></td>
+      <td class="n mono">${fmtT(t.peso)}</td>
+      <td class="n mono">${t.cert.toLocaleString('it-IT',{maximumFractionDigits:1})}</td>
+      <td class="n mono">${t.cum.toLocaleString('it-IT',{maximumFractionDigits:1})}</td>
+      <td class="n mono" style="font-weight:700;color:var(--rust)">${t.minimo.toLocaleString('it-IT',{maximumFractionDigits:1})}</td>
+    </tr>`).join(''):'<tr><td colspan="5" class="dim">Nessun dato.</td></tr>';
+
+  const origRows=orig.length?orig.map(o=>`<tr>
+      <td><b>${o.k}</b><span class="an-bar" style="width:${Math.round(o.cert/Math.max(...orig.map(x=>x.cert),1)*100)}%"></span></td>
+      <td class="dim">${[...o.fonte].join(', ')}</td>
+      <td class="n mono">${fmtT(o.peso)}</td>
+      <td class="n mono">${o.cert.toLocaleString('it-IT',{maximumFractionDigits:1})}</td>
+      <td class="n mono">${fmtEur(o.costo)}</td>
+    </tr>`).join(''):'<tr><td colspan="5" class="dim">Nessun dato.</td></tr>';
+
+  const anniPar=Object.keys(cfg.fattore).map(Number).sort();
+  const paesiPar=Object.keys(cfg.emisBase).filter(k=>k!=='IT'&&k!=='UE');
+
+  document.getElementById('cbamWrap').innerHTML=`
+  <div class="an-grid">
+    <div class="an-card"><h3>Prezzo certificato per periodo</h3>
+      <table><colgroup><col style="width:38%"><col style="width:24%"><col style="width:15%"><col style="width:23%"></colgroup>
+      <thead><tr><th>Trimestre</th><th class="n">€/tCO₂e</th><th class="n">Stima</th><th class="n">Azioni</th></tr></thead><tbody>
+      ${cfg.prezzi.map((p,i)=>`<tr>
+        <td><input type="text" value="${p.periodo}" onchange="setCbamPrezzo(${i},'periodo',this.value)">
+          <span class="an-sub"${p.provvisorio&&p.ereditatoDa?' style="color:var(--amber)"':''}>${p.provvisorio&&p.ereditatoDa?`stima da ${p.ereditatoDa}`:(PUBBLICAZIONI[p.periodo]?'uff. '+PUBBLICAZIONI[p.periodo]:'ufficiale')}</span></td>
+        <td class="n"><input type="number" step="0.01" value="${p.prezzo}" onchange="setCbamPrezzo(${i},'prezzo',this.value)"></td>
+        <td class="n"><input type="checkbox" ${p.provvisorio?'checked':''} onchange="toggleProvvisorio(${i},this.checked)" title="Spunta finché il prezzo ufficiale non è uscito"></td>
+        <td class="n"><button class="mini-btn" onclick="ricalcolaCbamTrimestre('${p.periodo}')" title="Riapplica questo prezzo a tutti i colli del trimestre">Ricalc.</button>
+          <button class="mini-btn danger" onclick="delCbamPrezzo(${i})" title="Elimina">✕</button></td>
+      </tr>`).join('')}
+      </tbody></table>
+      <button class="split-add" onclick="addCbamPrezzo()">+ Aggiungi periodo</button>
+      <p class="an-note">Ogni volta che importi in un trimestre nuovo, la riga si crea da sola con il prezzo del trimestre precedente e resta marcata come stima. Quando esce il prezzo ufficiale — prima settimana del trimestre successivo, pubblicato il primo giorno lavorativo della settimana dopo — ti basta <b>correggere il numero qui</b>: tutto si riallinea da solo, magazzino, navigazione e vendite già fatte, costo e margine compresi. Poi togli la spunta stima. Il pulsante Ricalcola serve solo se vuoi rilanciarlo a mano.</p>
+    </div>
+
+    <div class="an-card"><h3>Certificati da acquistare per anno</h3>
+      <table><colgroup><col style="width:30%"><col style="width:15%"><col style="width:17%"><col style="width:19%"><col style="width:19%"></colgroup>
+      <thead><tr><th>Anno</th><th class="n">Fatt.</th><th class="n">t</th><th class="n">Cert.</th><th class="n">Costo</th></tr></thead>
+      <tbody>${annoRows}</tbody></table>
+      <p class="an-note">Le vendite dei certificati partono il <b>1° febbraio 2027</b>. La prima dichiarazione annuale, per le importazioni 2026, va presentata entro il <b>30 settembre 2027</b>. I certificati non usati vengono cancellati il 1° novembre di ogni anno e non sono cedibili a terzi.</p>
+    </div>
+
+    <div class="an-card"><h3>Copertura minima trimestrale</h3>
+      <table><colgroup><col style="width:26%"><col style="width:17%"><col style="width:17%"><col style="width:19%"><col style="width:21%"></colgroup>
+      <thead><tr><th>Trim.</th><th class="n">t</th><th class="n">Cert.</th><th class="n">Cumul.</th><th class="n">Min. 50%</th></tr></thead>
+      <tbody>${trimRows}</tbody></table>
+      <p class="an-note">Dal 2027 a fine di ogni trimestre devi avere sul conto CBAM almeno il <b>50%</b> dei certificati corrispondenti alle emissioni incorporate importate dall'inizio dell'anno. Verifica al 31 marzo, 30 giugno, 30 settembre e 31 dicembre. La colonna "minimo" è la liquidità che devi avere pronta a quella data.</p>
+    </div>
+
+    <div class="an-card"><h3>Esposizione per origine</h3>
+      <table><colgroup><col style="width:28%"><col style="width:20%"><col style="width:15%"><col style="width:17%"><col style="width:20%"></colgroup>
+      <thead><tr><th>Origine</th><th>Fonte</th><th class="n">t</th><th class="n">Cert.</th><th class="n">Costo</th></tr></thead>
+      <tbody>${origRows}</tbody></table>
+      <p class="an-note">L'origine è quella della merce, non del fornitore: dallo stesso fornitore americano puoi ricevere sia origine USA sia origine Canada, con esposizione diversa. Il trimestre è quello della <b>data di carico a magazzino</b>, che per te coincide con lo sdoganamento: merce arrivata a settembre e sdoganata a ottobre entra nel quarto trimestre.</p>
+    </div>
+
+    <div class="an-card"><h3>Parametri di calcolo</h3>
+      <table><colgroup><col style="width:65%"><col style="width:35%"></colgroup><tbody>
+        <tr><td><b>Benchmark BMg</b><span class="an-sub">tCO₂e per tonnellata</span></td><td class="n"><input type="number" step="0.001" value="${cfg.bmg}" onchange="setCbamCfg('bmg',this.value)"></td></tr>
+        <tr><td><b>CSCF</b><span class="an-sub">correzione intersettoriale</span></td><td class="n"><input type="number" step="0.001" value="${cfg.cscf}" onchange="setCbamCfg('cscf',this.value)"></td></tr>
+      </tbody></table>
+      <table style="margin-top:12px"><colgroup><col style="width:22%"><col style="width:26%"><col style="width:26%"><col style="width:26%"></colgroup>
+      <thead><tr><th>Anno</th><th class="n">Fattore %</th><th class="n">Mark-up %</th><th class="n">SEFA</th></tr></thead><tbody>
+      ${anniPar.map(y=>`<tr>
+        <td><b>${y}</b></td>
+        <td class="n"><input type="number" step="0.1" value="${cfg.fattore[y]}" onchange="setCbamFattore(${y},this.value)"></td>
+        <td class="n"><input type="number" step="1" value="${cfg.markup[y]!=null?cfg.markup[y]:30}" onchange="setCbamMarkup(${y},this.value)"></td>
+        <td class="n mono dim">${fi3((1-fattoreAnno(y))*cfg.cscf*cfg.bmg)}</td>
+      </tr>`).join('')}
+      </tbody></table>
+      <p class="an-note">SEFA = (1 − fattore CBAM) × CSCF × BM<sub>g</sub>. È l'allocazione gratuita che si sottrae alle emissioni specifiche prima di calcolare i certificati. Nel 2026 il fattore è 2,5%, quindi resta il 97,5% di allocazione gratuita. Proposta COM(2026) 616 del 17 luglio 2026 potrebbe rallentare il percorso dal 2028: non è ancora legge, ma è il motivo per cui questi valori restano modificabili.</p>
+    </div>
+
+    <div class="an-card"><h3>Default value per origine</h3>
+      <table><colgroup><col style="width:40%"><col style="width:30%"><col style="width:30%"></colgroup>
+      <thead><tr><th>Paese</th><th class="n">Base</th><th class="n">Con mark-up</th></tr></thead><tbody>
+      ${paesiPar.map(o=>`<tr>
+        <td><b>${paeseLabel(o)}</b></td>
+        <td class="n"><input type="number" step="0.001" value="${cfg.emisBase[o]}" onchange="setCbamEmis('${o}',this.value)"></td>
+        <td class="n mono dim">${fi3(cfg.emisBase[o]*(1+markupAnno(annoCorr)))}</td>
+      </tr>`).join('')}
+      </tbody></table>
+      <p class="an-note">Usando i default CE si applica una maggiorazione crescente: 10% nel 2026, 20% nel 2027, 30% dal 2028. Con i dati verificati del fornitore il mark-up non si applica — è lì che sta il risparmio, se riesci a farteli dare.</p>
+    </div>
+
+    <div class="an-card"><h3>Quanto del conto è ancora una stima</h3>
+      <table><colgroup><col style="width:34%"><col style="width:22%"><col style="width:20%"><col style="width:24%"></colgroup>
+      <thead><tr><th>Trimestre</th><th class="n">Prezzo</th><th class="n">Cert.</th><th class="n">Costo</th></tr></thead><tbody>
+      ${trim.length?trim.map(t=>{
+        const prov=periodoProvvisorio(t.k);
+        return `<tr>
+          <td><b>${t.k}</b>${prov?' <span class="scelta" style="background:var(--amber-bg);color:var(--amber)">STIMA</span>':' <span class="scelta" style="background:var(--green-bg);color:var(--green)">UFFICIALE</span>'}</td>
+          <td class="n mono">${fmtEur2(prezzoPeriodo(t.k))}</td>
+          <td class="n mono">${t.cert.toLocaleString('it-IT',{maximumFractionDigits:1})}</td>
+          <td class="n mono ${prov?'mg-neg':''}">${fmtEur(t.costo)}</td>
+        </tr>`;}).join(''):'<tr><td colspan="4" class="dim">Nessun dato.</td></tr>'}
+      </tbody></table>
+      <p class="an-note">Le righe in stima sono quelle su cui il conto può ancora muoversi. Il numero di certificati invece è già certo — dipende solo da origine, peso e anno, non dal prezzo. Se vuoi un margine di sicurezza, metti nella stima un prezzo un po' più alto dell'ultimo ufficiale: meglio una sorpresa in meno che una in più.</p>
+    </div>
+
+    <div class="an-card"><h3>Cosa manca per un calcolo affidabile</h3>
+      <table><colgroup><col style="width:56%"><col style="width:20%"><col style="width:24%"></colgroup>
+      <thead><tr><th>Controllo</th><th class="n">Colli</th><th class="n">t</th></tr></thead><tbody>
+        <tr><td><b>Senza paese di origine</b></td><td class="n mono ${senzaOrigine.length?'mg-neg':''}">${senzaOrigine.length}</td><td class="n mono">${fmtT(senzaOrigine.reduce((a,c)=>a+(c.peso||0),0))}</td></tr>
+        <tr><td><b>Extra-UE senza emissioni proprie</b></td><td class="n mono ${senzaEmis.length?'mg-neg':''}">${senzaEmis.length}</td><td class="n mono">${fmtT(senzaEmis.reduce((a,c)=>a+(c.peso||0),0))}</td></tr>
+        <tr><td><b>Extra-UE senza data di carico</b></td><td class="n mono ${senzaData2.length?'mg-neg':''}">${senzaData2.length}</td><td class="n mono">${fmtT(senzaData2.reduce((a,c)=>a+(c.peso||0),0))}</td></tr>
+      </tbody></table>
+      <p class="an-note">La seconda riga usa i default CE con mark-up: è il "piano B" più caro. Ogni collo per cui ottieni il certificato emissioni verificato del fornitore esce da questo conteggio e costa meno.</p>
+    </div>
+  </div>`;
 }
 
 /* ---------- SELECTION ---------- */
@@ -981,7 +1598,7 @@ function bulkArrive(){
   if(!ids.length) return;
   ids.forEach(id=>{
     const c=state.sailing.find(x=>x.id===id);
-    if(c){ state.sailing=state.sailing.filter(x=>x.id!==id); state.stock.push({...c,status:'stock'}); }
+    if(c){ state.sailing=state.sailing.filter(x=>x.id!==id); state.stock.push({...c,status:'stock',dataCarico:c.dataCarico||oggi()}); }
   });
   saveState(); clearSel();
   showToast(`${ids.length} coil spostati a magazzino`);
@@ -1016,8 +1633,15 @@ function exportStorico(){
   const data=ord.map(c=>({
     'DATA':c.dataVendita||'',
     'CLIENTE':c.cliente||'',
+    'ORDINE CLIENTE':c.ordineCliente||'',
     'FATTURA/DDT':c.fatturaVendita||'',
+    'DATA CONSEGNA':c.dataConsegna||'',
+    'GG PAGAMENTO':c.giorniPagamento||'',
     'FORNITORE':c.fornitore||'',
+    'ORDINE ACQUISTO':c.ordineAcquisto||'',
+    'ORIGINE':paeseLabel(c.origine),
+    'CANALE':canaleLabel(canaleDiRiga(c)),
+    'GG GIACENZA':c.giacenzaGiorni!=null?c.giacenzaGiorni:'',
     'COLLO':c.collo||'',
     'COIL ORIGINE':c.origineCoil||'',
     'SPESSORE':c.spessore||'',
@@ -1038,7 +1662,7 @@ function exportStorico(){
     'MARGINE %':+((c.marginePct||0).toFixed(2))
   }));
   const ws=XLSX.utils.json_to_sheet(data);
-  ws['!cols']=[{wch:11},{wch:22},{wch:14},{wch:14},{wch:16},{wch:16},{wch:10},{wch:11},{wch:14},{wch:11},{wch:14},{wch:10},{wch:10},{wch:13},{wch:15},{wch:10},{wch:14},{wch:15},{wch:13},{wch:13},{wch:13},{wch:11}];
+  ws['!cols']=[{wch:11},{wch:22},{wch:15},{wch:14},{wch:13},{wch:13},{wch:14},{wch:16},{wch:12},{wch:14},{wch:12},{wch:16},{wch:16},{wch:10},{wch:11},{wch:14},{wch:11},{wch:14},{wch:10},{wch:10},{wch:13},{wch:15},{wch:10},{wch:14},{wch:15},{wch:13},{wch:13},{wch:13},{wch:11}];
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,'Storico vendite');
   XLSX.writeFile(wb,`Storico_vendite_${new Date().toISOString().slice(0,10)}.xlsx`);
@@ -1138,6 +1762,9 @@ function confirmSell(){
   const rifiloLarghezza=+document.getElementById('fRifiloLarghezza').value||0;
   const fattura=document.getElementById('fFattura').value.trim();
   const data=document.getElementById('fData').value;
+  const ordine=document.getElementById('fOrdine').value.trim();
+  const dataConsegna=document.getElementById('fDataConsegna').value;
+  const giorniPag=+document.getElementById('fGiorniPag').value||0;
   // allocate per-coil so the sold history keeps one row per coil
   coils.forEach(c=>{
     const peso=c.peso||0;
@@ -1146,7 +1773,9 @@ function confirmSell(){
     const ricavo=prezzo*pesoNetto;
     const costoTot=(c.prezzoAcqFinale||0)*peso+(taglio+consegna+selezione+costoRifilo)*peso;
     const margine=ricavo-costoTot;
-    const rec={...c,status:'sold',cliente,fatturaVendita:fattura,dataVendita:data,
+    const rec={...c,status:'sold',cliente,ordineCliente:ordine,fatturaVendita:fattura,dataVendita:data,
+      dataConsegna:dataConsegna||null,giorniPagamento:giorniPag||null,
+      giacenzaGiorni:(c.dataCarico&&data)?Math.max(0,Math.round((Date.parse(data+'T00:00:00')-Date.parse(c.dataCarico+'T00:00:00'))/86400000)):null,
       prezzoVendita:prezzo,pesoVenduto:pesoNetto,scartoPct:scarto,
       larghezzaRifilo:rifiloLarghezza||null,
       costoTaglioVendita:taglio,costoConsegnaVendita:consegna,
@@ -1167,8 +1796,11 @@ function openEditSale(id){
   editSaleId=id;
   document.getElementById('editSaleSub').textContent=`${c.fornitore||''} · ${c.collo||'—'} · ${fmtT(c.peso||0)} t originali`;
   document.getElementById('esCliente').value=c.cliente||'';
+  document.getElementById('esOrdine').value=c.ordineCliente||'';
   document.getElementById('esFattura').value=c.fatturaVendita||'';
   document.getElementById('esData').value=c.dataVendita||'';
+  document.getElementById('esDataConsegna').value=c.dataConsegna||'';
+  document.getElementById('esGiorniPag').value=c.giorniPagamento||'';
   document.getElementById('esPrezzo').value=c.prezzoVendita||0;
   document.getElementById('esTaglio').value=c.costoTaglioVendita||0;
   document.getElementById('esConsegna').value=c.costoConsegnaVendita||0;
@@ -1236,8 +1868,12 @@ function confirmEditSale(){
   const ricavo=prezzo*pesoNetto;
   const costoTot=(c.prezzoAcqFinale||0)*peso+(taglio+consegna+selezione+costoRifilo)*peso;
   const margine=ricavo-costoTot;
-  state.sold[i]={...c,cliente,fatturaVendita:document.getElementById('esFattura').value.trim(),
-    dataVendita:document.getElementById('esData').value,prezzoVendita:prezzo,pesoVenduto:pesoNetto,
+  state.sold[i]={...c,cliente,ordineCliente:document.getElementById('esOrdine').value.trim(),
+    fatturaVendita:document.getElementById('esFattura').value.trim(),
+    dataVendita:document.getElementById('esData').value,
+    dataConsegna:document.getElementById('esDataConsegna').value||null,
+    giorniPagamento:+document.getElementById('esGiorniPag').value||null,
+    prezzoVendita:prezzo,pesoVenduto:pesoNetto,
     scartoPct:scarto,larghezzaRifilo:rifiloLarghezza||null,
     costoTaglioVendita:taglio,costoConsegnaVendita:consegna,
     costoSelezioneVendita:selezione,costoRifiloVendita:costoRifilo,
@@ -1251,7 +1887,12 @@ function confirmEditSale(){
 function openAdd(){
   document.getElementById('editTitle').textContent='Aggiungi coil';
   document.getElementById('editSub').textContent = currentTab==='sailing'?'Entra in navigazione (merce in arrivo)':'Entra a magazzino';
-  ['eFornitore','eCollo','eSpessore','eLarghezza','eLunghezza','eRivestimento','eDurezza','ePeso','ePrezzoFattura','eCambio','eNota'].forEach(id=>document.getElementById(id).value='');
+  ['eFornitore','eCollo','eSpessore','eLarghezza','eLunghezza','eRivestimento','eDurezza','ePeso','ePrezzoFattura','eCambio','eNota','eOrdineAcq','eUbicazione'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('eOrigine').value='';
+  document.getElementById('eFonteEmis').value='DEFAULT';
+  document.getElementById('eEmissioni').value=''; document.getElementById('eCarbonPag').value=0;
+  document.getElementById('eDataCarico').value = currentTab==='sailing'?'':oggi();
+  onOrigineChange();
   ['eDazio','eTrasporto','eTaglio','eCbam','eAltro'].forEach(id=>document.getElementById(id).value=0);
   document.getElementById('eScelta').value='';
   document.getElementById('eValuta').value='EUR'; toggleValuta();
@@ -1272,6 +1913,12 @@ function openEdit(id){
   set('eFornitore',c.fornitore);set('eCollo',c.collo);set('eSpessore',c.spessore);set('eLarghezza',c.larghezza);
   set('eLunghezza',c.lunghezza);set('eRivestimento',c.rivestimento);set('eDurezza',c.durezza);set('ePeso',c.peso);
   document.getElementById('eScelta').value=c.scelta||'';
+  document.getElementById('eOrigine').value=c.origine||'';
+  set('eOrdineAcq',c.ordineAcquisto); set('eUbicazione',c.ubicazione); set('eDataCarico',c.dataCarico);
+  document.getElementById('eCanale').value=canaleLabel(canaleDiRiga(c))||'';
+  document.getElementById('eFonteEmis').value=c.fonteEmissioni||'DEFAULT';
+  document.getElementById('eEmissioni').value=c.emissioniSpec||'';
+  document.getElementById('eCarbonPag').value=c.carbonPagato||0;
   set('ePrezzoFattura',c.prezzoFatturaRaw!=null?c.prezzoFatturaRaw:c.prezzoFattura);
   set('eDazio',c.dazioCambio);set('eTrasporto',c.trasporto);
   set('eTaglio',c.taglio);set('eCbam',c.cbam);set('eAltro',c.altro);set('eNota',c.nota);
@@ -1314,6 +1961,7 @@ function calcValue(){
     <div class="r"><span>Costo finale €/t</span><span class="mono">${fmtEur2(finale)}</span></div>
     <div class="r total"><span>Valore totale (${fmtT(peso)} t)</span><span class="mono">${fmtEur2(finale*peso)}</span></div>`;
   if(splitCoilId!=null) calcSplitPreview();
+  calcCbamRiga();
 }
 function saveEdit(){
   const g=id=>document.getElementById(id).value;
@@ -1325,7 +1973,12 @@ function saveEdit(){
   const cbam=gn('eCbam');
   const finale=fattEur+gn('eDazio')+gn('eTrasporto')+gn('eTaglio')+cbam+gn('eAltro');
   const peso=gn('ePeso');
-  const data={fornitore:forn,collo:g('eCollo').trim(),spessore:gn('eSpessore'),larghezza:gn('eLarghezza'),
+  const origine=g('eOrigine');
+  const data={fornitore:forn,collo:g('eCollo').trim(),
+    origine,canale:canaleDa(origine),ordineAcquisto:g('eOrdineAcq').trim(),
+    ubicazione:g('eUbicazione').trim(),dataCarico:g('eDataCarico')||null,
+    fonteEmissioni:g('eFonteEmis'),emissioniSpec:gn('eEmissioni')||null,carbonPagato:gn('eCarbonPag')||0,
+    spessore:gn('eSpessore'),larghezza:gn('eLarghezza'),
     lunghezza:gn('eLunghezza'),rivestimento:g('eRivestimento').trim(),durezza:g('eDurezza').trim(),scelta:g('eScelta'),peso,
     prezzoFatturaRaw:fattRaw,valuta,cambio,prezzoFattura:fattEur,dazioCambio:gn('eDazio'),trasporto:gn('eTrasporto'),
     taglio:gn('eTaglio'),cbam,altro:gn('eAltro'),prezzoAcqFinale:finale,valoreTotale:finale*peso,nota:g('eNota').trim()};
@@ -1463,7 +2116,7 @@ function confirmSplit(){
 function arrive(id){
   const c=state.sailing.find(x=>x.id===id); if(!c) return;
   state.sailing=state.sailing.filter(x=>x.id!==id);
-  state.stock.push({...c,status:'stock'});
+  state.stock.push({...c,status:'stock',dataCarico:c.dataCarico||oggi()});
   saveState(); showToast(`Coil ${c.collo||''} arrivato — spostato a magazzino`); render();
 }
 
@@ -1482,7 +2135,7 @@ function restoreCoil(id){
   const c=state.sold.find(x=>x.id===id); if(!c) return;
   if(!confirm(`Riportare il coil ${c.collo||''} a magazzino? La vendita a ${c.cliente} verrà annullata.`)) return;
   const clean={...c,status:'stock'};
-  ['cliente','fatturaVendita','dataVendita','prezzoVendita','pesoVenduto','scartoPct','larghezzaRifilo','costoTaglioVendita','costoConsegnaVendita','costoSelezioneVendita','costoRifiloVendita','ricavo','costoTotVendita','margine','marginePct'].forEach(k=>delete clean[k]);
+  ['cliente','ordineCliente','fatturaVendita','dataVendita','dataConsegna','giorniPagamento','giacenzaGiorni','prezzoVendita','pesoVenduto','scartoPct','larghezzaRifilo','costoTaglioVendita','costoConsegnaVendita','costoSelezioneVendita','costoRifiloVendita','ricavo','costoTotVendita','margine','marginePct'].forEach(k=>delete clean[k]);
   state.sold=state.sold.filter(x=>x.id!==id);
   state.stock.push(clean);
   saveState(); showToast(`Coil ${c.collo||''} riportato a magazzino`); render();
@@ -1502,7 +2155,7 @@ function importData(e){
     const d=JSON.parse(ev.target.result);
     if(!d.stock) throw 0;
     if(!confirm('Sostituire tutti i dati attuali con quelli del file?')) return;
-    state={stock:d.stock||[],sailing:d.sailing||[],sold:d.sold||[],tagli:d.tagli||[]};
+    state={stock:d.stock||[],sailing:d.sailing||[],sold:d.sold||[],tagli:d.tagli||[],cbam:d.cbam||null};
     saveState(); render(); showToast('Dati importati');
   }catch(err){ alert('File non valido. Usa un backup esportato da questa app.'); } };
   r.readAsText(file); e.target.value='';
@@ -1520,7 +2173,8 @@ const DISTINTA_ALIASES={
   collo:['annvarie','ann.varie','ann varie','riferimento','rif','ndocumento','collo','ncollo','pr'],
   nota:['note','nota','notes'],
   fornitore:['fornitore','supplier','forn'],
-  prezzo:['prezzo','costo','price','cost','prezzofattura','prezzo fattura','eur/t','euro/t']
+  prezzo:['prezzo','costo','price','cost','prezzofattura','prezzo fattura','eur/t','euro/t'],
+  origine:['origine','origin','countryoforigin','country of origin','paeseorigine','paese origine','coo','madein','made in']
 };
 function normHeader(s){ return String(s||'').toLowerCase().trim().replace(/\s+/g,' '); }
 function aliasPriority(field,headerNorm){
@@ -1542,6 +2196,39 @@ function buildColMap(headerRow){
   const map={}; for(const f in best) map[f]=best[f].ci;
   return map;
 }
+const ORIG_TESTO={us:'US',usa:'US','united states':'US','stati uniti':'US',ca:'CA',can:'CA',canada:'CA',
+  rs:'RS',srb:'RS',serbia:'RS',in:'IN',ind:'IN',india:'IN',cn:'CN',chn:'CN',cina:'CN',china:'CN',
+  tr:'TR',tur:'TR',turchia:'TR',turkey:'TR',kr:'KR',kor:'KR',corea:'KR',korea:'KR',jp:'JP',jpn:'JP',giappone:'JP',japan:'JP',
+  it:'IT',ita:'IT',italia:'IT',italy:'IT',eu:'UE',ue:'UE'};
+function origineDaTesto(t){
+  if(!t) return '';
+  const k=String(t).toLowerCase().trim().replace(/[^a-z ]/g,'');
+  return ORIG_TESTO[k]||'';
+}
+function onDistintaDest(){
+  const dest=document.getElementById('dDestinazione').value;
+  document.getElementById('dDestHint').textContent = dest==='stock'
+    ? 'I pacchi entrano subito a magazzino, disponibili alla vendita.'
+    : 'I pacchi entrano in navigazione. La data di carico si metterà da sola quando premerai "Arrivato".';
+  const dc=document.getElementById('dDataCarico');
+  if(dest==='sailing') dc.value=''; else if(!dc.value) dc.value=oggi();
+  onDistintaOrigine();
+}
+function onDistintaOrigine(){
+  const o=document.getElementById('dOrigine').value;
+  const hint=document.getElementById('dCbamHint');
+  const emEl=document.getElementById('dEmissioni');
+  if(o && !(+emEl.value>0) && cbamCfg().emisBase[o]!=null && cbamCfg().emisBase[o]>0) emEl.value=cbamCfg().emisBase[o];
+  if(!o){ hint.innerHTML='<b>Indica il paese di origine.</b> Non era nel file: senza questo dato il CBAM non si calcola e il costo a tonnellata resta incompleto.'; return; }
+  if(o==='IT'||o==='UE'){ hint.innerHTML='Origine UE: nessun CBAM dovuto, il campo resta a zero.'; document.getElementById('dCbam').value=0; calcDistintaTotals(); return; }
+  const finto={origine:o,fonteEmissioni:document.getElementById('dFonteEmis').value,
+    emissioniSpec:+emEl.value||0,carbonPagato:0,
+    dataCarico:document.getElementById('dDataCarico').value||oggi(),peso:1};
+  const r=cbamCoil(finto);
+  document.getElementById('dCbam').value=r.costoT.toFixed(2);
+  hint.innerHTML=`${paeseLabel(o)} · emissioni applicate <b>${fi3(r.em)}</b> tCO₂e/t · meno allocazione gratuita ${fi3(r.sefa)} · restano ${fi3(r.netti)} · prezzo ${r.periodo}${r.provvisorio?' <b style="color:var(--amber)">(stima)</b>':''} → <b>€${r.costoT.toFixed(2)}/t</b> caricati nel campo CBAM.`;
+  calcDistintaTotals();
+}
 function handleDistintaFile(e){
   const file=e.target.files[0]; if(!file) return;
   const r=new FileReader();
@@ -1561,7 +2248,16 @@ function handleDistintaFile(e){
         alert('Non ho trovato righe pacco riconoscibili nel file (servono almeno le colonne spessore, larghezza, lunghezza, peso/kg).');
         e.target.value=''; return;
       }
-      document.getElementById('distintaSub').textContent=file.name+' · '+distintaRows.length+' pacchi rilevati';
+      const dest = currentTab==='sailing' ? 'sailing' : 'stock';
+      document.getElementById('dDestinazione').value=dest;
+      const trovate=[...new Set(distintaRows.map(r=>origineDaTesto(r.origineRaw)).filter(Boolean))];
+      document.getElementById('dOrigine').value = trovate.length===1 ? trovate[0] : '';
+      document.getElementById('dEmissioni').value='';
+      onDistintaDest();
+      document.getElementById('distintaSub').innerHTML=file.name+' · '+distintaRows.length+' pacchi rilevati · destinazione <b>'
+        +(dest==='sailing'?'in navigazione':'a magazzino')+'</b>'
+        +(trovate.length===1?` · origine <b>${paeseLabel(trovate[0])}</b> letta dal file`
+          :(trovate.length>1?' · <b style="color:var(--amber)">origini diverse nel file: indicane una</b>':' · origine da indicare'));
       renderDistintaPreview();
       document.getElementById('distintaOverlay').classList.add('show');
     }catch(err){ console.error(err); alert('Impossibile leggere il file. Formati supportati: .xlsx, .xls, .csv'); }
@@ -1595,7 +2291,8 @@ function parseDistintaRows(rows){
       pesoT: pesoRaw/1000, // le distinte riportano il peso in KG per pacco
       nota: colMap.nota!==undefined ? String(row[colMap.nota]||'').trim() : '',
       fornitore: colMap.fornitore!==undefined ? String(row[colMap.fornitore]||'').trim() : '',
-      prezzoRiga: colMap.prezzo!==undefined ? (parseFloat(String(row[colMap.prezzo]).replace(',','.'))||null) : null
+      prezzoRiga: colMap.prezzo!==undefined ? (parseFloat(String(row[colMap.prezzo]).replace(',','.'))||null) : null,
+      origineRaw: colMap.origine!==undefined ? String(row[colMap.origine]||'').trim() : ''
     });
   }
   return out;
@@ -1638,6 +2335,18 @@ function confirmDistintaImport(){
   const forn=document.getElementById('dFornitore').value.trim();
   if(!forn){ const el=document.getElementById('dFornitore'); el.style.outline='2px solid var(--rust)'; el.focus(); setTimeout(()=>el.style.outline='',1200); return; }
   const dest=document.getElementById('dDestinazione').value;
+  const origine=document.getElementById('dOrigine').value;
+  if(!origine){
+    const el=document.getElementById('dOrigine'); el.style.outline='2px solid var(--rust)'; el.focus();
+    setTimeout(()=>el.style.outline='',1800);
+    document.getElementById('dCbamHint').innerHTML='<b style="color:var(--rust)">Serve il paese di origine prima di importare.</b> Se il packing list non lo riporta, prendilo dal certificato d\'origine dell\'ordine.';
+    return;
+  }
+  const ordineAcq=document.getElementById('dOrdineAcq').value.trim();
+  const dataCarico=document.getElementById('dDataCarico').value||null;
+  const ubic=document.getElementById('dUbicazione').value.trim();
+  const fonteEmis=document.getElementById('dFonteEmis').value;
+  const emisSpec=+document.getElementById('dEmissioni').value||null;
   const rivCommon=document.getElementById('dRivestimento').value.trim();
   const durCommon=document.getElementById('dDurezza').value.trim();
   const scelta=document.getElementById('dScelta').value;
@@ -1653,6 +2362,10 @@ function confirmDistintaImport(){
     const finale = distintaRowFinale(r,common);
     const rec={
       id:base+i, status:dest, fornitore:r.fornitore||forn,
+      origine:origineDaTesto(r.origineRaw)||origine, canale:canaleDa(origineDaTesto(r.origineRaw)||origine),
+      ordineAcquisto:ordineAcq, ubicazione:ubic,
+      dataCarico: dest==='stock' ? (dataCarico||oggi()) : (dataCarico||null),
+      fonteEmissioni:fonteEmis, emissioniSpec:emisSpec, carbonPagato:0,
       collo:r.collo||'', spessore:r.spessore, larghezza:r.larghezza, lunghezza:r.lunghezza,
       rivestimento:rivCommon||r.rivestimento||'', durezza:durCommon||r.durezza||'', scelta,
       peso:r.pesoT, prezzoFatturaRaw:rowFattRaw, valuta, cambio, prezzoFattura:rowFattEur,
@@ -1663,7 +2376,7 @@ function confirmDistintaImport(){
     state[dest].push(rec);
   });
   saveState(); closeDistinta(); clearSel();
-  showToast(`${included.length} pacchi importati (${dest==='sailing'?'in navigazione':'a magazzino'})`);
+  showToast(`${included.length} pacchi importati ${dest==='sailing'?'in navigazione':'a magazzino'} · origine ${paeseLabel(origine)}`);
   render();
 }
 
