@@ -388,6 +388,7 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
     <span class="bw" id="bulkW"></span>
     <div class="sp"></div>
     <button class="b-clear" onclick="clearSel()">Deseleziona</button>
+    <button class="b-export" id="bulkOriginBtn" onclick="openBulkOrigine()">Imposta origine</button>
     <button class="b-export" id="bulkExportBtn" onclick="exportSelezione()">Esporta selezione ↓</button>
     <button class="b-sell" id="bulkSellBtn" onclick="openBulkSell()">Vendi selezionati →</button>
     <button class="b-sell" id="bulkArriveBtn" style="display:none;background:var(--sail)" onclick="bulkArrive()">Sposta a magazzino →</button>
@@ -471,6 +472,49 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
     <div class="modal-foot">
       <button class="btn-ghost" onclick="closeEditSale()">Annulla</button>
       <button class="btn-confirm" onclick="confirmEditSale()">Salva correzioni</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ORIGINE MASSIVA MODAL ============ -->
+<div class="overlay" id="origineOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <div><h2>Imposta origine</h2><div class="sub" id="origineSub"></div></div>
+      <button class="x" onclick="closeBulkOrigine()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="field"><label>Paese di origine della merce</label>
+        <select id="boOrigine" onchange="calcBulkOrigine()">
+          <option value="">— Seleziona —</option>
+          <option value="IT">Italia (trader locale)</option>
+          <option value="UE">Altro paese UE</option>
+          <option value="US">USA</option>
+          <option value="CA">Canada</option>
+          <option value="RS">Serbia</option>
+          <option value="IN">India</option>
+          <option value="CN">Cina</option>
+          <option value="TR">Turchia</option>
+          <option value="KR">Corea del Sud</option>
+          <option value="JP">Giappone</option>
+          <option value="XX">Altro extra-UE</option>
+        </select>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Fonte dato emissioni</label>
+          <select id="boFonte" onchange="calcBulkOrigine()">
+            <option value="DEFAULT">Valori di default CE (con mark-up)</option>
+            <option value="FORNITORE">Dati verificati del fornitore</option>
+          </select>
+        </div>
+        <div class="field"><label>Emissioni specifiche (tCO₂e/t)</label><input type="number" id="boEmissioni" step="0.001" placeholder="vuoto = valore standard" oninput="calcBulkOrigine()"></div>
+      </div>
+      <div class="field"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="boApplicaCosto" checked onchange="calcBulkOrigine()" style="width:auto;margin:0"> Aggiorna anche il costo CBAM nel costo di acquisto</label></div>
+      <div class="calc-preview" id="boPreview"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-ghost" onclick="closeBulkOrigine()">Annulla</button>
+      <button class="btn-confirm" onclick="confirmBulkOrigine()">Applica</button>
     </div>
   </div>
 </div>
@@ -1678,6 +1722,7 @@ function updateBulkbar(){
     const ids=[...selected].filter(id=>state.stock.some(c=>c.id===id));
     if(ids.length){
       bar.classList.add('show'); sellBtn.style.display=''; arriveBtn.style.display='none'; exportBtn.style.display='';
+      document.getElementById('bulkOriginBtn').style.display='';
       document.getElementById('bulkN').textContent=ids.length;
       const w=ids.reduce((a,id)=>{const c=state.stock.find(x=>x.id===id);return a+(c?.peso||0)},0);
       document.getElementById('bulkW').textContent=fmtT(w)+' t · valore '+fmtEur(ids.reduce((a,id)=>{const c=state.stock.find(x=>x.id===id);return a+(c?.valoreTotale||0)},0));
@@ -1686,6 +1731,7 @@ function updateBulkbar(){
     const ids=[...selected].filter(id=>state.sailing.some(c=>c.id===id));
     if(ids.length){
       bar.classList.add('show'); sellBtn.style.display='none'; arriveBtn.style.display=''; exportBtn.style.display='none';
+      document.getElementById('bulkOriginBtn').style.display='';
       document.getElementById('bulkN').textContent=ids.length;
       const w=ids.reduce((a,id)=>{const c=state.sailing.find(x=>x.id===id);return a+(c?.peso||0)},0);
       document.getElementById('bulkW').textContent=fmtT(w)+' t · valore '+fmtEur(ids.reduce((a,id)=>{const c=state.sailing.find(x=>x.id===id);return a+(c?.valoreTotale||0)},0));
@@ -1703,6 +1749,82 @@ function bulkArrive(){
   showToast(`${ids.length} coil spostati a magazzino`);
   render();
 }
+/* ---------- ORIGINE MASSIVA ---------- */
+let origineIds=[];
+function selezionatiCorrenti(){
+  const lista=currentTab==='stock'?'stock':(currentTab==='sailing'?'sailing':null);
+  if(!lista) return [];
+  return [...selected].map(id=>state[lista].find(c=>c.id===id)).filter(Boolean);
+}
+function openBulkOrigine(){
+  const coils=selezionatiCorrenti();
+  if(!coils.length){ alert('Seleziona prima i coil a cui vuoi assegnare l\'origine.'); return; }
+  origineIds=coils.map(c=>c.id);
+  const peso=coils.reduce((a,c)=>a+(c.peso||0),0);
+  const forn=[...new Set(coils.map(c=>c.fornitore))].join(', ');
+  document.getElementById('origineSub').textContent=`${coils.length} coil · ${fmtT(peso)} t · ${forn}`;
+  const gia=[...new Set(coils.map(c=>c.origine).filter(Boolean))];
+  document.getElementById('boOrigine').value=gia.length===1?gia[0]:'';
+  document.getElementById('boFonte').value=coils[0].fonteEmissioni||'DEFAULT';
+  document.getElementById('boEmissioni').value=coils[0].emissioniSpec||'';
+  document.getElementById('boApplicaCosto').checked=true;
+  calcBulkOrigine();
+  document.getElementById('origineOverlay').classList.add('show');
+}
+function closeBulkOrigine(){ document.getElementById('origineOverlay').classList.remove('show'); origineIds=[]; }
+function bulkOrigineCampi(){
+  return {origine:document.getElementById('boOrigine').value,
+    fonte:document.getElementById('boFonte').value,
+    emis:+document.getElementById('boEmissioni').value||null,
+    applica:document.getElementById('boApplicaCosto').checked};
+}
+function calcBulkOrigine(){
+  const box=document.getElementById('boPreview');
+  const {origine,fonte,emis}=bulkOrigineCampi();
+  if(!origine){ box.innerHTML='<div class="r"><span>Seleziona il paese per vedere il calcolo.</span></div>'; return; }
+  const coils=origineIds.map(id=>findAnywhere(id)).filter(Boolean);
+  const peso=coils.reduce((a,c)=>a+(c.peso||0),0);
+  if(origine==='IT'||origine==='UE'){
+    box.innerHTML=`<div class="r"><span>Origine UE</span><span class="mono">nessun CBAM dovuto</span></div>
+      <div class="r"><span>Canale</span><span class="mono">Trader UE</span></div>
+      <div class="r total"><span>Coil aggiornati</span><span class="mono">${coils.length} · ${fmtT(peso)} t</span></div>`;
+    return;
+  }
+  const finto={origine,fonteEmissioni:fonte,emissioniSpec:emis,carbonPagato:0,
+    dataCarico:coils[0]&&coils[0].dataCarico?coils[0].dataCarico:oggi(),peso:1};
+  const r=cbamCoil(finto);
+  const inNav=coils.filter(c=>c.status==='sailing').length;
+  box.innerHTML=`
+    <div class="r"><span>Emissioni applicate</span><span class="mono">${fi3(r.em)} tCO₂e/t</span></div>
+    <div class="r"><span>Meno allocazione gratuita</span><span class="mono">− ${fi3(r.sefa)}</span></div>
+    <div class="r"><span>Emissioni nette</span><span class="mono" style="font-weight:700">${fi3(r.netti)} tCO₂e/t</span></div>
+    <div class="r"><span>Certificati sul totale (${fmtT(peso)} t)</span><span class="mono">${(r.netti*peso).toLocaleString('it-IT',{maximumFractionDigits:2})}</span></div>
+    <div class="r"><span>Prezzo ${r.periodo}${r.provvisorio?' <b style="color:var(--amber)">(stima)</b>':''}</span><span class="mono">${fmtEur2(r.prezzo)}</span></div>
+    <div class="r total"><span>Costo CBAM</span><span class="mono">${fmtEur2(r.costoT)}/t · ${fmtEur2(r.costoT*peso)} totali</span></div>
+    ${inNav?`<div class="r"><span style="color:var(--muted);font-size:12px">${inNav} coil in navigazione: il trimestre definitivo si fisserà quando premerai "Arrivato"</span></div>`:''}`;
+}
+function confirmBulkOrigine(){
+  const {origine,fonte,emis,applica}=bulkOrigineCampi();
+  if(!origine){ const el=document.getElementById('boOrigine'); el.style.outline='2px solid var(--rust)'; el.focus(); setTimeout(()=>el.style.outline='',1400); return; }
+  let n=0;
+  ['stock','sailing'].forEach(lista=>{
+    state[lista].forEach(c=>{
+      if(!origineIds.includes(c.id)) return;
+      c.origine=origine; c.canale=canaleDa(origine);
+      c.fonteEmissioni=fonte; c.emissioniSpec=emis;
+      if(applica){
+        const nuovo=+cbamCoil(c).costoT.toFixed(2), vecchio=+c.cbam||0;
+        c.cbam=nuovo; c.prezzoAcqFinale=(+c.prezzoAcqFinale||0)-vecchio+nuovo;
+        c.valoreTotale=c.prezzoAcqFinale*(c.peso||0);
+      }
+      n++;
+    });
+  });
+  saveState(); closeBulkOrigine(); clearSel();
+  showToast(`${n} coil impostati su origine ${paeseLabel(origine)}`);
+  render();
+}
+
 function exportSelezione(){
   const ids=[...selected].filter(id=>state.stock.some(c=>c.id===id));
   if(!ids.length){ alert('Seleziona almeno un coil a magazzino da esportare.'); return; }
@@ -2734,6 +2856,7 @@ function showToast(msg){ document.getElementById('toastMsg').textContent=msg; co
 document.getElementById('sellOverlay').addEventListener('click',e=>{if(e.target.id==='sellOverlay')closeSell()});
 document.getElementById('editSaleOverlay').addEventListener('click',e=>{if(e.target.id==='editSaleOverlay')closeEditSale()});
 document.getElementById('editOverlay').addEventListener('click',e=>{if(e.target.id==='editOverlay')closeEdit()});
+document.getElementById('origineOverlay').addEventListener('click',e=>{if(e.target.id==='origineOverlay')closeBulkOrigine()});
 document.getElementById('distintaOverlay').addEventListener('click',e=>{if(e.target.id==='distintaOverlay')closeDistinta()});
 document.getElementById('resaOverlay').addEventListener('click',e=>{if(e.target.id==='resaOverlay')closeResa()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSell();closeEdit();}});
