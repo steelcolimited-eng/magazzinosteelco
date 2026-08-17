@@ -150,6 +150,8 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
 .mg-pos{color:var(--green);font-weight:700}
 .mg-neg{color:var(--rust);font-weight:700}
 .scelta{font-weight:700;font-size:11px;letter-spacing:.02em;padding:3px 9px;border-radius:6px;display:inline-block;white-space:nowrap}
+.rifilo-tag{font-size:10.5px;font-weight:700;color:var(--rust);margin-left:4px;white-space:nowrap}
+.origine-tag{display:block;font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.01em;margin-top:1px;white-space:nowrap}
 .scelta-PRIMA{background:var(--green-bg);color:var(--green)}
 .scelta-SECONDA{background:var(--steel-bg);color:var(--steel)}
 .scelta-TERZA{background:var(--amber-bg);color:var(--amber)}
@@ -311,6 +313,9 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
     </select>
     <button class="btn-primary btn-add" id="addCoilBtn" onclick="openAdd()">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>Aggiungi coil
+    </button>
+    <button class="btn-primary btn-add" id="exportSoldBtn" style="display:none;background:var(--ink)" onclick="exportStorico()" title="Scarica lo storico vendite in Excel, con tutte le specifiche">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>Esporta storico
     </button>
   </div>
 
@@ -723,7 +728,9 @@ function switchTab(t){
   ['supplierFilter','thickFilter','widthFilter','coatFilter','sceltaFilter','addCoilBtn'].forEach(id=>{
     document.getElementById(id).style.display = isScarti?'none':'';
   });
-  document.getElementById('searchBox').placeholder = isScarti?'Cerca per collo coil o fornitore…':'Cerca collo, fornitore, rivestimento, nota…';
+  document.getElementById('exportSoldBtn').style.display = t==='sold'?'':'none';
+  document.getElementById('searchBox').placeholder = isScarti?'Cerca per collo coil o fornitore…'
+    :(t==='sold'?'Cerca collo, cliente, fattura, spessore, larghezza…':'Cerca collo, fornitore, rivestimento, spessore, larghezza, nota…');
   document.getElementById('searchBox').value='';
   render();
 }
@@ -756,8 +763,11 @@ function filtered(list){
     if(co&&c.rivestimento!==co) return false;
     if(sc&&c.scelta!==sc) return false;
     if(!q) return true;
-    return [c.fornitore,c.collo,c.rivestimento,c.durezza,c.nota,c.cliente,c.fatturaVendita]
-      .filter(Boolean).some(f=>String(f).toLowerCase().includes(q));
+    return [c.fornitore,c.collo,c.origineCoil,c.rivestimento,c.durezza,c.scelta,c.nota,c.cliente,c.fatturaVendita,
+            c.spessore,c.larghezza,c.lunghezza,
+            `${c.spessore||''}x${c.larghezza||''}x${c.lunghezza||''}`,
+            `${c.spessore||''}×${c.larghezza||''}×${c.lunghezza||''}`]
+      .filter(f=>f!==undefined&&f!==null&&f!=='').some(f=>String(f).toLowerCase().replace(',','.').includes(q.replace(',','.')));
   });
 }
 
@@ -856,7 +866,7 @@ function renderInv(t){
     <tr class="${selected.has(c.id)?'sel':''}">
       <td class="chk"><input type="checkbox" ${selected.has(c.id)?'checked':''} onchange="toggleOne(${c.id},this)"></td>
       <td><span class="supplier sup-${c.fornitore}">${c.fornitore||'—'}</span></td>
-      <td class="collo mono">${c.collo||'—'}${c.tipo==='semilavorato'?' <span class="scelta" style="background:var(--sail-bg);color:var(--sail)" title="Semilavorato: in attesa di rifilo/lavorazione successiva">SEMI</span>':''}</td>
+      <td class="collo mono">${c.collo||'—'}${c.tipo==='semilavorato'?' <span class="scelta" style="background:var(--sail-bg);color:var(--sail)" title="Semilavorato: in attesa di rifilo/lavorazione successiva">SEMI</span>':''}${c.origineCoil?`<span class="origine-tag" title="Ricavato dal coil ${c.origineCoil}">da ${c.origineCoil}</span>`:''}</td>
       <td class="num mono dim">${c.spessore||'—'}</td>
       <td class="num mono">${c.larghezza||'—'}</td>
       <td class="num mono dim">${c.lunghezza||'—'}</td>
@@ -880,14 +890,22 @@ function renderSold(t){
   const list=sortKey?applySort(base):base.slice().reverse();
   if(!list.length){ t.innerHTML=emptyRow('Nessuna vendita registrata','I coil venduti compariranno qui.'); return; }
   t.innerHTML=`<thead><tr>
-    ${sortTh('Data','dataVendita')}${sortTh('Cliente','cliente')}${sortTh('Fornitore','fornitore')}${sortTh('Collo','collo')}${sortTh('Fattura/DDT','fatturaVendita')}
+    ${sortTh('Data','dataVendita')}${sortTh('Cliente','cliente')}${sortTh('Fornitore','fornitore')}${sortTh('Collo','collo')}
+    ${sortTh('Spess.','spessore','num')}${sortTh('Largh.','larghezza','num')}${sortTh('Lungh.','lunghezza','num')}${sortTh('Rivest.','rivestimento')}${sortTh('Durezza','durezza')}${sortTh('Scelta','scelta')}
+    ${sortTh('Fattura/DDT','fatturaVendita')}
     ${sortTh('Peso (t)','pesoVenduto','num')}${sortTh('Prezzo €/t','prezzoVendita','num')}${sortTh('Ricavo','ricavo','num')}${sortTh('Margine','margine','num')}${sortTh('Marg.%','marginePct','num')}<th></th>
   </tr></thead><tbody>${list.map(c=>`
     <tr>
       <td class="mono dim">${c.dataVendita||'—'}</td>
       <td style="font-weight:600">${c.cliente||'—'}</td>
       <td><span class="supplier sup-${c.fornitore}">${c.fornitore}</span></td>
-      <td class="collo mono">${c.collo||'—'}</td>
+      <td class="collo mono">${c.collo||'—'}${c.origineCoil?`<span class="origine-tag" title="Ricavato dal coil ${c.origineCoil}">da ${c.origineCoil}</span>`:''}</td>
+      <td class="num mono dim">${c.spessore||'—'}</td>
+      <td class="num mono">${c.larghezza||'—'}${c.larghezzaRifilo?`<span class="rifilo-tag" title="Venduto rifilato a ${c.larghezzaRifilo} mm">→${c.larghezzaRifilo}</span>`:''}</td>
+      <td class="num mono dim">${c.lunghezza||'—'}</td>
+      <td>${c.rivestimento||'—'}</td>
+      <td class="dim">${c.durezza||'—'}</td>
+      <td>${c.scelta?`<span class="scelta scelta-${c.scelta}">${sceltaLabel(c.scelta)}</span>`:'<span class="dim">—</span>'}</td>
       <td class="mono dim">${c.fatturaVendita||'—'}</td>
       <td class="num mono">${fmtT(c.pesoVenduto||0)}</td>
       <td class="num mono">${fmtEur(c.prezzoVendita||0)}</td>
@@ -927,7 +945,7 @@ function renderScarti(t){
     </tr>`;}).join('')}</tbody>`;
 }
 function emptyRow(title,sub){
-  return `<tbody><tr><td colspan="14"><div class="empty">
+  return `<tbody><tr><td colspan="20"><div class="empty">
     <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M3 7l3-4h12l3 4M12 11v5M9 13h6"/></svg>
     <h3>${title}</h3><p>${sub}</p></div></td></tr></tbody>`;
 }
@@ -989,6 +1007,42 @@ function exportSelezione(){
   XLSX.utils.book_append_sheet(wb,ws,'Proposta');
   XLSX.writeFile(wb,`Proposta_vendita_${new Date().toISOString().slice(0,10)}.xlsx`);
   showToast(`${coils.length} posizioni esportate`);
+}
+
+function exportStorico(){
+  const list=filtered(state.sold);
+  if(!list.length){ alert('Nessuna vendita da esportare con i filtri attuali.'); return; }
+  const ord=sortKey?applySort(list):list.slice().reverse();
+  const data=ord.map(c=>({
+    'DATA':c.dataVendita||'',
+    'CLIENTE':c.cliente||'',
+    'FATTURA/DDT':c.fatturaVendita||'',
+    'FORNITORE':c.fornitore||'',
+    'COLLO':c.collo||'',
+    'COIL ORIGINE':c.origineCoil||'',
+    'SPESSORE':c.spessore||'',
+    'LARGHEZZA':c.larghezza||'',
+    'LARGH. RIFILATA':c.larghezzaRifilo||'',
+    'LUNGHEZZA':c.lunghezza||'',
+    'RIVESTIMENTO':c.rivestimento||'',
+    'DUREZZA':c.durezza||'',
+    'SCELTA':c.scelta||'',
+    'PESO ORIG. (t)':+((c.peso||0).toFixed(3)),
+    'PESO VENDUTO (t)':+((c.pesoVenduto||0).toFixed(3)),
+    'SCARTO %':+((c.scartoPct||0).toFixed(2)),
+    'COSTO ACQ. €/t':+((c.prezzoAcqFinale||0).toFixed(2)),
+    'PREZZO VEND. €/t':+((c.prezzoVendita||0).toFixed(2)),
+    'RICAVO':+((c.ricavo||0).toFixed(2)),
+    'COSTO TOTALE':+((c.costoTotVendita||0).toFixed(2)),
+    'MARGINE':+((c.margine||0).toFixed(2)),
+    'MARGINE %':+((c.marginePct||0).toFixed(2))
+  }));
+  const ws=XLSX.utils.json_to_sheet(data);
+  ws['!cols']=[{wch:11},{wch:22},{wch:14},{wch:14},{wch:16},{wch:16},{wch:10},{wch:11},{wch:14},{wch:11},{wch:14},{wch:10},{wch:10},{wch:13},{wch:15},{wch:10},{wch:14},{wch:15},{wch:13},{wch:13},{wch:13},{wch:11}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Storico vendite');
+  XLSX.writeFile(wb,`Storico_vendite_${new Date().toISOString().slice(0,10)}.xlsx`);
+  showToast(`${data.length} vendite esportate`);
 }
 
 /* ---------- SELL (single + bulk) ---------- */
@@ -1428,7 +1482,7 @@ function restoreCoil(id){
   const c=state.sold.find(x=>x.id===id); if(!c) return;
   if(!confirm(`Riportare il coil ${c.collo||''} a magazzino? La vendita a ${c.cliente} verrà annullata.`)) return;
   const clean={...c,status:'stock'};
-  ['cliente','fatturaVendita','dataVendita','prezzoVendita','pesoVenduto','scartoPct','costoTaglioVendita','costoConsegnaVendita','ricavo','costoTotVendita','margine','marginePct'].forEach(k=>delete clean[k]);
+  ['cliente','fatturaVendita','dataVendita','prezzoVendita','pesoVenduto','scartoPct','larghezzaRifilo','costoTaglioVendita','costoConsegnaVendita','costoSelezioneVendita','costoRifiloVendita','ricavo','costoTotVendita','margine','marginePct'].forEach(k=>delete clean[k]);
   state.sold=state.sold.filter(x=>x.id!==id);
   state.stock.push(clean);
   saveState(); showToast(`Coil ${c.collo||''} riportato a magazzino`); render();
