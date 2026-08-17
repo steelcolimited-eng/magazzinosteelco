@@ -176,6 +176,29 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
 .an-bar{height:5px;border-radius:3px;background:var(--steel);display:block;margin-top:3px;max-width:100%}
 .an-note{font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.5;white-space:normal}
 @media(max-width:760px){.an-grid{grid-template-columns:1fr}}
+.gd{max-width:820px;margin:0 auto}
+.gd-idx{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-bottom:18px}
+.gd-idx h3{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.gd-idx ol{margin:0;padding-left:20px;columns:2;column-gap:28px;font-size:13.5px;line-height:2}
+.gd-idx a{color:var(--steel);text-decoration:none;cursor:pointer}
+.gd-idx a:hover{text-decoration:underline}
+.gd-s{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:20px 22px;margin-bottom:16px}
+.gd-s h2{font-size:16px;font-weight:700;margin-bottom:4px;letter-spacing:-.01em}
+.gd-s .gd-lead{font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.6}
+.gd-s p{font-size:13.5px;line-height:1.75;margin-bottom:10px}
+.gd-s p:last-child{margin-bottom:0}
+.gd-s b{font-weight:700}
+.gd-row{display:grid;grid-template-columns:150px 1fr;gap:10px 16px;font-size:13.5px;line-height:1.65;padding:9px 0;border-top:1px solid var(--line)}
+.gd-row:first-of-type{border-top:none}
+.gd-row .k{font-weight:700}
+.gd-row .k small{display:block;font-weight:400;font-size:11px;color:var(--muted);margin-top:1px}
+.gd-step{display:grid;grid-template-columns:26px 1fr;gap:12px;padding:10px 0;border-top:1px solid var(--line);font-size:13.5px;line-height:1.7}
+.gd-step:first-of-type{border-top:none}
+.gd-step .n{width:22px;height:22px;border-radius:50%;background:var(--steel);color:#fff;font-size:11.5px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:2px}
+.gd-note{background:var(--grey-bg);border-radius:8px;padding:11px 14px;font-size:12.5px;line-height:1.65;color:var(--ink-soft);margin-top:12px}
+.gd-note b{color:var(--rust)}
+.gd-pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:5px;background:var(--steel-bg);color:var(--steel);white-space:nowrap}
+@media(max-width:640px){.gd-idx ol{columns:1}.gd-row{grid-template-columns:1fr;gap:2px}}
 .scelta-PRIMA{background:var(--green-bg);color:var(--green)}
 .scelta-SECONDA{background:var(--steel-bg);color:var(--steel)}
 .scelta-TERZA{background:var(--amber-bg);color:var(--amber)}
@@ -265,6 +288,7 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
     <button class="tab" data-tab="scarti" onclick="switchTab('scarti')">Scarti <span class="badge" id="tabScartiCount"></span></button>
     <button class="tab" data-tab="analisi" onclick="switchTab('analisi')">Analisi</button>
     <button class="tab" data-tab="cbam" onclick="switchTab('cbam')">CBAM</button>
+    <button class="tab" data-tab="guida" onclick="switchTab('guida')">Guida</button>
   </div>
   <div class="spacer"></div>
   <div class="io-btns">
@@ -372,6 +396,7 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
   <div class="table-wrap" id="tableWrap"><div class="table-scroll"><table id="mainTable"></table></div></div>
   <div id="analisiWrap" style="display:none"></div>
   <div id="cbamWrap" style="display:none"></div>
+  <div id="guidaWrap" style="display:none"></div>
 </main>
 
 <!-- ============ SELL MODAL (single + bulk) ============ -->
@@ -978,13 +1003,14 @@ function switchTab(t){
   document.getElementById('kpiScarti').style.display = t==='scarti'?'grid':'none';
   document.getElementById('kpiAnalisi').style.display = t==='analisi'?'grid':'none';
   document.getElementById('kpiCbam').style.display = t==='cbam'?'grid':'none';
-  const isScarti = t==='scarti', isAnalisi = t==='analisi'||t==='cbam';
+  const isScarti = t==='scarti', isAnalisi = t==='analisi'||t==='cbam'||t==='guida';
   ['supplierFilter','thickFilter','widthFilter','coatFilter','sceltaFilter','addCoilBtn'].forEach(id=>{
     document.getElementById(id).style.display = (isScarti||isAnalisi)?'none':'';
   });
   document.getElementById('tableWrap').style.display = isAnalisi?'none':'';
   document.getElementById('analisiWrap').style.display = t==='analisi'?'':'none';
   document.getElementById('cbamWrap').style.display = t==='cbam'?'':'none';
+  document.getElementById('guidaWrap').style.display = t==='guida'?'':'none';
   document.querySelector('.toolbar').style.display = isAnalisi?'none':'';
   document.getElementById('exportSoldBtn').style.display = t==='sold'?'':'none';
   document.getElementById('searchBox').placeholder = isScarti?'Cerca per collo coil o fornitore…'
@@ -1115,7 +1141,8 @@ function updateKPIs(){
 function render(){
   updateKPIs(); refreshFilterOptions(); refreshDatalists();
   const t=document.getElementById('mainTable');
-  if(currentTab==='cbam') renderCbam();
+  if(currentTab==='guida') renderGuida();
+  else if(currentTab==='cbam') renderCbam();
   else if(currentTab==='analisi') renderAnalisi();
   else if(currentTab==='sold') renderSold(t);
   else if(currentTab==='scarti') renderScarti(t);
@@ -1564,6 +1591,78 @@ function renderCbam(){
       </tbody></table>
       <p class="an-note">La seconda riga usa i default CE con mark-up: è il "piano B" più caro. Ogni collo per cui ottieni il certificato emissioni verificato del fornitore esce da questo conteggio e costa meno.</p>
     </div>
+  </div>`;
+}
+
+
+/* ---------- GUIDA ---------- */
+const GUIDA=[
+{id:'schede',t:'Le sei schede',lead:'A cosa serve ognuna.',html:`
+<div class="gd-row"><div class="k">A magazzino</div><div>Merce già sdoganata e disponibile alla vendita. È l'unica scheda da cui puoi vendere.</div></div>
+<div class="gd-row"><div class="k">In navigazione</div><div>Merce comprata e in viaggio, non ancora sdoganata. Non è vendibile e non entra nel valore di magazzino.</div></div>
+<div class="gd-row"><div class="k">Storico vendite</div><div>Ogni riga è un collo venduto, con cliente, ordine, fattura, specifica completa, ricavo e margine.</div></div>
+<div class="gd-row"><div class="k">Scarti</div><div>Ogni taglio fatto: peso di partenza, peso dei pacchi ottenuti, scarto in chili e in percentuale.</div></div>
+<div class="gd-row"><div class="k">Analisi</div><div>Dove guadagni davvero: per canale, cliente, fornitore, origine, ordine, spessore. Più anzianità del magazzino.</div></div>
+<div class="gd-row"><div class="k">CBAM</div><div>Quanti certificati dovrai comprare, quanto costano e quando servono i soldi.</div></div>`},
+
+{id:'ciclo',t:'Il ciclo della merce',lead:'Dall\'acquisto alla vendita, i cinque passaggi.',html:`
+<div class="gd-step"><div class="n">1</div><div><b>Compri.</b> Se la merce viaggia, va <b>in navigazione</b>. Se la compri già nazionalizzata da un trader italiano, va direttamente <b>a magazzino</b>. In entrambi i casi puoi inserirla a mano con "Aggiungi coil" oppure caricare il packing list con "Importa distinta".</div></div>
+<div class="gd-step"><div class="n">2</div><div><b>Arriva e sdogani.</b> Premi <span class="gd-pill">Arrivato</span> sulla riga. Il collo passa a magazzino e la data di carico si mette da sola: quella data è anche la data di immissione in libera pratica, ed è lei a decidere il trimestre CBAM.</div></div>
+<div class="gd-step"><div class="n">3</div><div><b>Lavori la merce (se serve).</b> Apri "Modifica" su un coil a magazzino e usa "Taglia in pacchi": il coil sparisce e nascono i pacchi, con il costo ridistribuito sul peso effettivo e lo scarto registrato nella scheda Scarti. In alternativa carichi il file di resa di Combas con "Importa resa taglio".</div></div>
+<div class="gd-step"><div class="n">4</div><div><b>Vendi.</b> Pulsante <span class="gd-pill">Vendi</span> su una riga, o selezioni più colli e usi "Vendi selezionati". Metti cliente, ordine, prezzo e i costi di lavorazione: il margine te lo calcola prima che confermi.</div></div>
+<div class="gd-step"><div class="n">5</div><div><b>Controlli.</b> Le schede Analisi e CBAM leggono da sole tutto quello che hai registrato. Non c'è niente da compilare lì dentro, tranne il prezzo dei certificati.</div></div>`},
+
+{id:'costo',t:'Come si forma il costo',lead:'Il numero da cui dipende ogni margine.',html:`
+<p>Il <b>costo finale a tonnellata</b> è la somma di sei voci: prezzo di fattura, dazio, trasporto, taglio, CBAM e altro. Se compri in dollari inserisci il cambio e la conversione la fa l'app: tutte le altre voci si intendono già in euro.</p>
+<p>Quel costo moltiplicato per il peso dà il <b>valore</b> del collo, ed è quello che vedi nel totale di magazzino.</p>
+<p>Quando tagli un coil in pacchi, il valore totale resta lo stesso ma si spalma su meno chili, perché una parte è diventata scarto. Per questo il costo a tonnellata dei pacchi è più alto di quello del coil di partenza: è corretto, non è un errore.</p>
+<div class="gd-note">Se un coil ha costo zero, il margine della sua vendita risulterà del cento per cento e il magazzino sarà sottovalutato. La scheda Analisi te li segnala nel riquadro "Qualità dei dati".</div>`},
+
+{id:'campi',t:'I campi che contano',lead:'Perché vale la pena compilarli.',html:`
+<div class="gd-row"><div class="k">Paese origine<small>obbligatorio in import</small></div><div>È l'origine <b>della merce</b>, non del fornitore: da Titan puoi ricevere sia acciaio USA sia canadese. Decide il CBAM e distingue import diretto da acquisto da trader.</div></div>
+<div class="gd-row"><div class="k">Data di carico</div><div>Coincide con lo sdoganamento. Da qui escono i giorni di giacenza e il trimestre CBAM.</div></div>
+<div class="gd-row"><div class="k">N. ordine acquisto</div><div>Lega il collo all'ordine fornitore. Ti fa risalire da un pacco alla spedizione senza cercare tra le bolle.</div></div>
+<div class="gd-row"><div class="k">Ubicazione</div><div>Dove sta fisicamente: Combas, deposito, presso cliente.</div></div>
+<div class="gd-row"><div class="k">N. ordine cliente<small>in fase di vendita</small></div><div>Serve quando in una sola fattura consegni materiale di due ordini diversi: li tieni separati e vedi la redditività di ogni commessa.</div></div>
+<div class="gd-row"><div class="k">Scelta e note</div><div>Prima, seconda, botola. Le note con difetti (ammaccatura, buccia d'arancia, sospeso) vengono contate nel controllo qualità dati.</div></div>`},
+
+{id:'file',t:'Le tre importazioni da file',lead:'Cosa fa ciascuna e da dove si lancia.',html:`
+<div class="gd-row"><div class="k">Importa distinta</div><div>Carica il packing list. <b>Conta la scheda da cui parti</b>: da "A magazzino" i pacchi entrano nazionalizzati e disponibili, da "In navigazione" entrano come merce in arrivo. Legge spessore, larghezza, lunghezza, rivestimento, durezza, peso in chili, collo, e l'origine se c'è nel file. Se l'origine manca te la chiede e non procede senza.</div></div>
+<div class="gd-row"><div class="k">Importa resa taglio</div><div>Carica il file di Combas con taglio, rifilo e selezione, anche incatenati. Consuma i lotti d'origine dal magazzino e crea i pacchi risultanti, registrando lo scarto di ogni fase.</div></div>
+<div class="gd-row"><div class="k">Esporta / Importa backup</div><div>"Esporta" scarica tutto il database in un file. "Importa" lo rimette. Fallo ogni tanto: è la tua rete di sicurezza.</div></div>
+<div class="gd-note">Nella scheda Storico vendite c'è anche <b>Esporta storico</b>, che scarica in Excel tutte le vendite con specifiche, origine, canale, giorni di giacenza, costi e margini.</div>`},
+
+{id:'cbam',t:'Il CBAM in pratica',lead:'Cosa devi fare e cosa fa l\'app.',html:`
+<p>Il CBAM è un conto sulla CO₂ contenuta nella merce che importi da fuori Europa. Compri dei certificati, uno per tonnellata di CO₂. Oggi paghi poco perché l'Europa ti riconosce lo stesso sconto che dà alle acciaierie europee, ma lo sconto cala ogni anno fino a sparire nel 2034.</p>
+<div class="gd-step"><div class="n">1</div><div><b>Tu metti l'origine.</b> È l'unica cosa che devi fare al carico. L'app calcola le emissioni, sottrae lo sconto e scrive il costo a tonnellata nel campo CBAM.</div></div>
+<div class="gd-step"><div class="n">2</div><div><b>Il prezzo si stima da solo.</b> Se importi in un trimestre nuovo, l'app usa il prezzo del trimestre precedente e marca la riga come stima.</div></div>
+<div class="gd-step"><div class="n">3</div><div><b>Quando esce il prezzo ufficiale, correggi un numero.</b> Nella scheda CBAM scrivi il valore vero nella riga del trimestre. Si riallinea tutto da solo: magazzino, navigazione e anche le vendite già fatte.</div></div>
+<div class="gd-step"><div class="n">4</div><div><b>Guardi la copertura trimestrale.</b> Ti dice quanti certificati devi avere sul conto al 31 marzo, 30 giugno, 30 settembre e 31 dicembre. È liquidità da avere pronta, non un adempimento.</div></div>
+<div class="gd-note">Se il fornitore ti dà il certificato emissioni verificato, cambia "fonte dato" in <b>dati verificati del fornitore</b> e inserisci il numero: sparisce il mark-up sui valori standard e paghi meno. Con emissioni sotto il benchmark non paghi niente.</div>`},
+
+{id:'segnali',t:'I colori e i segnali',lead:'Cosa vuol dire quello che vedi.',html:`
+<div class="gd-row"><div class="k"><span style="color:var(--green);font-weight:700">Verde</span> nella colonna giacenza</div><div>Coil fermo da meno di 90 giorni.</div></div>
+<div class="gd-row"><div class="k"><span style="color:var(--amber);font-weight:700">Ambra</span></div><div>Fermo tra 90 e 180 giorni. Da tenere d'occhio.</div></div>
+<div class="gd-row"><div class="k"><span style="color:var(--rust);font-weight:700">Rosso</span></div><div>Fermo da oltre 180 giorni. È capitale bloccato che ti costa interessi.</div></div>
+<div class="gd-row"><div class="k">Sotto il collo</div><div><b>da [numero]</b> significa che quel pacco viene dal taglio di quel coil.</div></div>
+<div class="gd-row"><div class="k">Nella larghezza</div><div>La freccia con una seconda misura indica che il collo è stato venduto rifilato.</div></div>
+<div class="gd-row"><div class="k">STIMA / UFFICIALE</div><div>Nella scheda CBAM, dice se il costo di quel trimestre è ancora provvisorio o definitivo.</div></div>`},
+
+{id:'regole',t:'Tre regole che fanno la differenza',lead:'Se ricordi solo queste, va già bene.',html:`
+<p><b>Uno.</b> L'origine va messa sempre, anche sulla merce italiana. Senza, il costo che leggi è incompleto e l'analisi per canale non funziona.</p>
+<p><b>Due.</b> Il numero d'ordine cliente va messo in fase di vendita, non dopo. È l'unico modo per separare due commesse dentro la stessa fattura.</p>
+<p><b>Tre.</b> I costi di taglio, consegna e selezione vanno inseriti quando vendi. Se li lasci a zero il margine che vedi è più alto di quello vero, e finisci per fare prezzi sbagliati.</p>`}
+];
+function vaiSezione(id){
+  const el=document.getElementById('gd-'+id);
+  if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function renderGuida(){
+  document.getElementById('guidaWrap').innerHTML=`<div class="gd">
+    <div class="gd-idx"><h3>Indice</h3><ol>${GUIDA.map(g=>`<li><a onclick="vaiSezione('${g.id}')">${g.t}</a></li>`).join('')}</ol></div>
+    ${GUIDA.map(g=>`<div class="gd-s" id="gd-${g.id}">
+      <h2>${g.t}</h2><div class="gd-lead">${g.lead}</div>${g.html}
+    </div>`).join('')}
   </div>`;
 }
 
