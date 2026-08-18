@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Scheda Scardino</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Scheda">
+<meta name="theme-color" content="#14161A">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAACfklEQVR42u3dO05CQRSAYZjcJRgKSndA4wosqRBbKxbiQkhMKGx8NFq6Ahp34BJcg4VKEEURzcyce7+vQh5m5vDLwyi3fzAY9uAryQgQB+JAHIgDcSAOxIE4EAfiAHEgDsSBOBAH4kAciANxIA4QB+JAHIgDcSAOxIE4EAfiAHEgDsSBOBAH4kAciANxIA7EAeJAHIgDcSAOxIE4iK7532/3OD/8/gqj2ZOhR5lwyrnuHa9DJRNOOdetj1gTTpnXrY9AE075162PKBP2bgVxIA7EgTgQB+IgmKaq1ZzMT7dddDO7atPcQ+w0hZjXj5e2poyqdppCzKtNfQTaaYoyr3b0EWunXpAiDsSBOBAH4kAciANxVGI5PV5Oj9dPWI843u6JH8/p8nq6G8e2uZe6P2pbj6cVxIE4EAfiQByIA3HAu5L/mnB/u3g9cfF8t8etepeLD2dufJnfDuvZc6fP5x458LSCOBAH4kAcIA7EgTgQB1mV/PX5eHL2euJXHzewutX632aOJ2cbX+bfzi7r2W+npT7t2SMH4kAciANxIA7EgTgQR3FH1w+/Or9r6+n6I8fnuZe9J2pbzx81veBW06/kbqhtPV5zIA7EgTgQB+JAHIgDKolj9+MhRj9GZKydpkBTa8fRQwPtNEWZWpuOKxtlp024n6ou9OE1B+JAHIgDcYA4EAeF4hjNnrLdqptKTTgVWb0yQkw45V+9MqJMOGVevTICTbh/MBgaOt6tIA7EgTgQB+JAHIgDcSAOEAfiQByIA3EgDsSBOBAH4gBxIA7EgTgQB+JAHIgDcSAOxAHiQByIA3EgDsSBOBAH4kAcIA7EgTgQB+JAHIiD0F4Av3y4pmtUkk4AAAAASUVORK5CYII=">
+<link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAACfklEQVR42u3dO05CQRSAYZjcJRgKSndA4wosqRBbKxbiQkhMKGx8NFq6Ahp34BJcg4VKEEURzcyce7+vQh5m5vDLwyi3fzAY9uAryQgQB+JAHIgDcSAOxIE4EAfiAHEgDsSBOBAH4kAciANxIA4QB+JAHIgDcSAOxIE4EAfiAHEgDsSBOBAH4kAciANxIA7EAeJAHIgDcSAOxIE4iK7532/3OD/8/gqj2ZOhR5lwyrnuHa9DJRNOOdetj1gTTpnXrY9AE075162PKBP2bgVxIA7EgTgQB+IgmKaq1ZzMT7dddDO7atPcQ+w0hZjXj5e2poyqdppCzKtNfQTaaYoyr3b0EWunXpAiDsSBOBAH4kAciANxVGI5PV5Oj9dPWI843u6JH8/p8nq6G8e2uZe6P2pbj6cVxIE4EAfiQByIA3HAu5L/mnB/u3g9cfF8t8etepeLD2dufJnfDuvZc6fP5x458LSCOBAH4kAcIA7EgTgQB1mV/PX5eHL2euJXHzewutX632aOJ2cbX+bfzi7r2W+npT7t2SMH4kAciANxIA7EgTgQR3FH1w+/Or9r6+n6I8fnuZe9J2pbzx81veBW06/kbqhtPV5zIA7EgTgQB+JAHIgDKolj9+MhRj9GZKydpkBTa8fRQwPtNEWZWpuOKxtlp024n6ou9OE1B+JAHIgDcYA4EAeF4hjNnrLdqptKTTgVWb0yQkw45V+9MqJMOGVevTICTbh/MBgaOt6tIA7EgTgQB+JAHIgDcSAOEAfiQByIA3EgDsSBOBAH4gBxIA7EgTgQB+JAHIgDcSAOxAHiQByIA3EgDsSBOBAH4kAcIA7EgTgQB+JAHIiD0F4Av3y4pmtUkk4AAAAASUVORK5CYII=">
+<link rel="manifest" href="data:application/manifest+json,{%22name%22:%20%22Scheda%20Scardino%22,%20%22short_name%22:%20%22Scheda%22,%20%22start_url%22:%20%22./%22,%20%22display%22:%20%22standalone%22,%20%22background_color%22:%20%22%2314161A%22,%20%22theme_color%22:%20%22%2314161A%22,%20%22orientation%22:%20%22portrait%22,%20%22icons%22:%20[{%22src%22:%20%22data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAACfklEQVR42u3dO05CQRSAYZjcJRgKSndA4wosqRBbKxbiQkhMKGx8NFq6Ahp34BJcg4VKEEURzcyce7+vQh5m5vDLwyi3fzAY9uAryQgQB+JAHIgDcSAOxIE4EAfiAHEgDsSBOBAH4kAciANxIA4QB+JAHIgDcSAOxIE4EAfiAHEgDsSBOBAH4kAciANxIA7EAeJAHIgDcSAOxIE4iK7532/3OD/8/gqj2ZOhR5lwyrnuHa9DJRNOOdetj1gTTpnXrY9AE075162PKBP2bgVxIA7EgTgQB+IgmKaq1ZzMT7dddDO7atPcQ+w0hZjXj5e2poyqdppCzKtNfQTaaYoyr3b0EWunXpAiDsSBOBAH4kAciANxVGI5PV5Oj9dPWI843u6JH8/p8nq6G8e2uZe6P2pbj6cVxIE4EAfiQByIA3HAu5L/mnB/u3g9cfF8t8etepeLD2dufJnfDuvZc6fP5x458LSCOBAH4kAcIA7EgTgQB1mV/PX5eHL2euJXHzewutX632aOJ2cbX+bfzi7r2W+npT7t2SMH4kAciANxIA7EgTgQR3FH1w+/Or9r6+n6I8fnuZe9J2pbzx81veBW06/kbqhtPV5zIA7EgTgQB+JAHIgDKolj9+MhRj9GZKydpkBTa8fRQwPtNEWZWpuOKxtlp024n6ou9OE1B+JAHIgDcYA4EAeF4hjNnrLdqptKTTgVWb0yQkw45V+9MqJMOGVevTICTbh/MBgaOt6tIA7EgTgQB+JAHIgDcSAOEAfiQByIA3EgDsSBOBAH4gBxIA7EgTgQB+JAHIgDcSAOxAHiQByIA3EgDsSBOBAH4kAcIA7EgTgQB+JAHIiD0F4Av3y4pmtUkk4AAAAASUVORK5CYII=%22,%20%22sizes%22:%20%22180x180%22,%20%22type%22:%20%22image/png%22,%20%22purpose%22:%20%22any%20maskable%22}]}">
+<style>
+:root{
+  --ink:#14161A; --panel:#1E2227; --panel2:#262C32; --line:#333A42;
+  --chalk:#EDE9E1; --mute:#8A949C; --steel:#4E5B66;
+  --S:#E3B23C; --B:#67B26F; --D:#DE6A5E;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--ink);color:var(--chalk);font-family:var(--sans);font-size:15px;line-height:1.45;padding-bottom:calc(60px + env(safe-area-inset-bottom));-webkit-tap-highlight-color:transparent}
+.wrap{max-width:860px;margin:0 auto;padding:0 14px}
+
+header{background:linear-gradient(180deg,#0F1114,#191D21);border-bottom:1px solid var(--line);padding:calc(20px + env(safe-area-inset-top)) 0 16px;margin-bottom:14px}
+.eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--steel);margin-bottom:6px}
+h1{font-size:clamp(21px,5.6vw,32px);font-weight:800;letter-spacing:-.02em;line-height:1.05;text-transform:uppercase}
+h1 span{display:block;color:var(--mute);font-weight:500;font-size:.42em;letter-spacing:.14em;margin-top:8px;text-transform:uppercase}
+
+.switch{display:flex;gap:6px;margin-bottom:16px}
+.switch button{flex:1;background:var(--panel);border:1px solid var(--line);color:var(--mute);
+  border-radius:8px;padding:11px;font-size:13.5px;font-weight:700;cursor:pointer;transition:.15s}
+.switch button[aria-selected="true"]{background:var(--chalk);color:var(--ink);border-color:var(--chalk)}
+.switch button:focus-visible{outline:2px solid var(--S);outline-offset:2px}
+
+.engine{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:16px}
+.engine h2{font-size:11px;font-family:var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--mute);font-weight:500;margin-bottom:4px}
+.engine p.hint{font-size:12.5px;color:var(--mute);margin-bottom:12px}
+.maxes{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.maxbox{background:var(--panel2);border-radius:7px;padding:9px 10px;border-top:3px solid}
+.maxbox.s{border-color:var(--S)} .maxbox.b{border-color:var(--B)} .maxbox.d{border-color:var(--D)}
+.maxbox label{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin-bottom:5px}
+.maxbox input{width:100%;background:transparent;border:none;color:var(--chalk);font-family:var(--mono);font-size:20px;font-weight:600}
+.maxbox input:focus{outline:none}
+.maxbox input::placeholder{color:#4A545C}
+.maxbox .u{font-family:var(--mono);font-size:10px;color:var(--steel)}
+
+.tabrow{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:12px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.tabrow::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto;background:var(--panel);border:1px solid var(--line);color:var(--mute);border-radius:999px;
+  padding:7px 13px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;transition:.15s}
+.tab:hover{color:var(--chalk);border-color:var(--steel)}
+.tab[aria-selected="true"]{background:var(--chalk);color:var(--ink);border-color:var(--chalk)}
+.tab:focus-visible{outline:2px solid var(--S);outline-offset:2px}
+
+.meta{background:var(--panel);border-left:3px solid var(--steel);border-radius:0 8px 8px 0;padding:13px 15px;margin-bottom:14px}
+.meta h3{font-size:17px;font-weight:700;margin-bottom:3px}
+.meta .per{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);margin-bottom:9px}
+.meta p{font-size:13.5px;color:#BFC6CB}
+.meta .kcal{display:inline-block;margin-top:9px;font-family:var(--mono);font-size:11.5px;background:var(--panel2);border-radius:5px;padding:5px 9px}
+
+.weeks{display:flex;gap:6px;margin-bottom:12px}
+.wk{flex:1;background:var(--panel);border:1px solid var(--line);color:var(--mute);border-radius:7px;padding:8px 4px;
+  font-family:var(--mono);font-size:11px;font-weight:600;cursor:pointer;text-align:center;transition:.15s}
+.wk[aria-selected="true"]{background:var(--panel2);color:var(--chalk);border-color:var(--steel)}
+.wk small{display:block;font-size:9px;font-weight:400;color:var(--steel);margin-top:2px}
+.wk[aria-selected="true"] small{color:var(--mute)}
+
+.daybox{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:12px}
+.dayhead{padding:11px 14px;border-bottom:1px solid var(--line);background:var(--panel2);display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
+.dayhead .n{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--steel)}
+.dayhead .t{font-size:15px;font-weight:700;margin-top:1px}
+.dayhead .dur{font-family:var(--mono);font-size:11px;color:var(--mute);white-space:nowrap}
+
+.ex{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.045)}
+.ex:last-of-type{border-bottom:none}
+.ex.core{border-left:3px solid;padding-left:11px}
+.ex.core.s{border-color:var(--S)} .ex.core.b{border-color:var(--B)} .ex.core.d{border-color:var(--D)}
+.ex .name{flex:1;min-width:0}
+.ex .name b{font-weight:600;font-size:14px;display:block;line-height:1.3}
+.ex .name em{font-style:normal;font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--steel);display:block;margin-top:3px}
+.ex .right{flex:0 0 auto;text-align:right}
+.ex .presc{font-family:var(--mono);font-size:13px;font-weight:600;white-space:nowrap}
+.ex .presc .pct{color:var(--S)}
+.ex .sugg{font-family:var(--mono);font-size:10.5px;color:var(--steel);margin-top:2px;white-space:nowrap}
+.loadwrap{display:flex;align-items:center;justify-content:flex-end;gap:4px;margin-top:5px}
+.loadwrap input{width:78px;background:var(--panel2);border:1px solid var(--line);border-radius:6px;
+  color:var(--chalk);font-family:var(--mono);font-size:13px;font-weight:600;text-align:right;padding:5px 7px}
+.loadwrap input:focus{outline:none;border-color:var(--S)}
+.loadwrap input.filled{border-color:var(--B)}
+.loadwrap input::placeholder{color:#495359;font-weight:400}
+.loadwrap span{font-family:var(--mono);font-size:10px;color:var(--steel)}
+
+.note{padding:11px 14px;background:rgba(255,255,255,.025);font-size:12.5px;color:#B4BCC2}
+.note b{color:var(--chalk)}
+
+.vol{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:14px}
+.vol h4{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);font-weight:500;margin-bottom:11px}
+.vbar{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+.vbar .lab{flex:0 0 96px;font-size:12px;color:#C3CACF}
+.vbar .track{flex:1;height:7px;background:var(--panel2);border-radius:4px;overflow:hidden}
+.vbar .fill{height:100%;background:linear-gradient(90deg,var(--steel),#8FA3B0);border-radius:4px}
+.vbar .num{flex:0 0 46px;text-align:right;font-family:var(--mono);font-size:11.5px;color:var(--mute)}
+
+.rpe{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:16px}
+.rpe h4{font-size:14px;font-weight:700;margin-bottom:3px}
+.rpe .sub{font-size:12.5px;color:var(--mute);margin-bottom:12px}
+.rpe table{width:100%;border-collapse:collapse;font-size:13px}
+.rpe td{padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:top}
+.rpe td:first-child{font-family:var(--mono);font-weight:700;width:56px}
+.rpe tr:last-child td{border-bottom:none}
+.rpe .r10{color:var(--D)} .rpe .r6{color:var(--B)}
+.decode{margin-top:12px;padding:11px;background:var(--panel2);border-radius:7px;font-size:12.5px;color:#BFC6CB}
+.decode code{font-family:var(--mono);color:var(--S);font-size:12.5px}
+
+.macros{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:14px}
+.mac{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 8px;text-align:center}
+.mac .v{font-family:var(--mono);font-size:17px;font-weight:700;display:block}
+.mac .l{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);margin-top:3px;display:block}
+.meal{background:var(--panel);border:1px solid var(--line);border-radius:10px;margin-bottom:10px;overflow:hidden}
+.meal .mh{padding:10px 14px;background:var(--panel2);border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.meal .mh b{font-size:14px}
+.meal .mh span{font-family:var(--mono);font-size:11px;color:var(--mute)}
+.meal ul{list-style:none;padding:4px 14px 10px}
+.meal li{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:13.5px}
+.meal li:last-child{border-bottom:none}
+.meal li span{font-family:var(--mono);font-size:12.5px;color:var(--mute);white-space:nowrap}
+.introw{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.introw:last-child{border-bottom:none}
+.introw .k{flex:0 0 118px;font-size:12.5px;font-weight:600}
+.introw .v{flex:1;font-size:12.5px;color:#AAB3B9}
+
+details.tools{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:16px}
+details.tools summary{cursor:pointer;font-size:13px;font-weight:600;color:var(--mute);list-style:none}
+details.tools summary::-webkit-details-marker{display:none}
+details.tools textarea{width:100%;height:90px;margin-top:10px;background:var(--panel2);border:1px solid var(--line);
+  border-radius:7px;color:var(--chalk);font-family:var(--mono);font-size:11px;padding:8px;resize:vertical}
+details.tools .btns{display:flex;gap:7px;margin-top:8px}
+details.tools button{flex:1;background:var(--panel2);border:1px solid var(--line);color:var(--chalk);
+  border-radius:7px;padding:8px;font-size:12.5px;font-weight:600;cursor:pointer}
+details.tools button:hover{border-color:var(--steel)}
+details.tools p{font-size:12px;color:var(--steel);margin-top:8px}
+
+footer{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);font-size:11.5px;color:var(--steel);line-height:1.6}
+.hidden{display:none}
+@media(max-width:420px){
+  .ex .presc{font-size:12px}
+  .ex .name b{font-size:13.5px}
+  .loadwrap input{width:70px}
+  .vbar .lab{flex:0 0 82px;font-size:11.5px}
+  .macros{grid-template-columns:repeat(2,1fr)}
+  .introw .k{flex:0 0 100px}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header><div class="wrap">
+  <div class="eyebrow">4 giorni · nessuna seduta oltre i 90 minuti</div>
+  <h1>Marco Scardino<span>Settembre 2026 → Giugno 2027</span></h1>
+</div></header>
+
+<div class="wrap">
+
+  <div class="switch" role="tablist">
+    <button id="tabAll" role="tab" aria-selected="true">Allenamento</button>
+    <button id="tabNut" role="tab" aria-selected="false">Alimentazione</button>
+  </div>
+
+<div id="viewAll">
+
+  <section class="engine">
+    <h2>Motore 1RM</h2>
+    <p class="hint">Inserisci i massimali: ogni percentuale diventa un carico in kg. I carichi che scrivi seduta per seduta restano salvati.</p>
+    <div class="maxes">
+      <div class="maxbox s"><label>S · Squat</label><input id="mS" type="text" inputmode="decimal" placeholder="100"><span class="u">kg × 1</span></div>
+      <div class="maxbox b"><label>B · Panca</label><input id="mB" type="text" inputmode="decimal" placeholder="90"><span class="u">kg × 1</span></div>
+      <div class="maxbox d"><label>D · Stacco</label><input id="mD" type="text" inputmode="decimal" placeholder="160"><span class="u">kg × 1</span></div>
+    </div>
+  </section>
+
+  <section class="rpe">
+    <h4>Come si legge un @</h4>
+    <div class="sub">L'RPE dice quante ripetizioni ti restano in canna quando chiudi la serie.</div>
+    <table>
+      <tr><td class="r10">@10</td><td>Cedimento. Zero ripetizioni in riserva.</td></tr>
+      <tr><td>@9</td><td>Ne avresti fatta ancora <b>1</b>.</td></tr>
+      <tr><td>@8</td><td>Ne avresti fatte ancora <b>2</b>.</td></tr>
+      <tr><td>@7</td><td>Ne avresti fatte ancora <b>3</b>.</td></tr>
+      <tr><td class="r6">@6</td><td>Ne avresti fatte ancora <b>4</b>. Serie tecnica.</td></tr>
+    </table>
+    <div class="decode">
+      <code>3x8/10@8</code> = 3 serie, 8-10 ripetizioni, fermandoti a 2 dal cedimento.<br>
+      <code>1x5@8 + 3x8@8</code> = una serie pesante (top set) + 3 serie di scarico più leggere.<br>
+      <code>A ⟷ B</code> = superserie: i due esercizi si alternano senza pausa in mezzo.<br><br>
+      <b>Le percentuali sono indicative, l'RPE comanda.</b>
+    </div>
+  </section>
+
+  <div class="tabrow" id="blocktabs" role="tablist"></div>
+  <div id="meta"></div>
+  <div class="tabrow" id="daytabs" role="tablist"></div>
+  <div class="weeks" id="weektabs" role="tablist"></div>
+  <div id="content"></div>
+  <div id="volume"></div>
+
+  <details class="tools">
+    <summary>⌄ Backup dei carichi</summary>
+    <textarea id="dump" spellcheck="false" placeholder="Premi «Copia i miei dati» e conserva questo testo dove vuoi."></textarea>
+    <div class="btns">
+      <button id="btnExp">Copia i miei dati</button>
+      <button id="btnImp">Ripristina da testo</button>
+    </div>
+    <div class="btns">
+      <button id="btnDl">Scarica backup</button>
+      <button id="btnUp">Carica backup</button>
+    </div>
+    <input id="fileIn" type="file" accept="application/json,.json" style="display:none">
+    <p id="storeinfo"></p>
+  </details>
+</div>
+
+<div id="viewNut" class="hidden">
+  <div class="tabrow" id="nuttabs" role="tablist"></div>
+  <div id="nutbody"></div>
+</div>
+
+  <footer>
+    Le percentuali si calcolano sul 1RM aggiornato all'ultimo test. Ritesta nella settimana 25 e ricalibra tutto da lì.<br>
+    Programma pensato per un adulto sano. Non sostituisce il parere di un medico.
+  </footer>
+</div>
+
+<script>
+/* ============ STORAGE ============ */
+const Store=(()=>{
+  const remote=(typeof window!=='undefined'&&window.storage&&typeof window.storage.get==='function');
+  const mem={};
+  async function load(key){
+    if(remote){try{const r=await window.storage.get(key);if(r&&r.value)return JSON.parse(r.value);}catch(e){}}
+    try{const v=localStorage.getItem('ms_'+key);if(v)return JSON.parse(v);}catch(e){}
+    return mem[key]||null;
+  }
+  async function save(key,obj){
+    mem[key]=obj;
+    if(remote){try{await window.storage.set(key,JSON.stringify(obj));return 'salvato';}catch(e){}}
+    try{localStorage.setItem('ms_'+key,JSON.stringify(obj));return 'salvato';}catch(e){}
+    return 'solo in memoria';
+  }
+  return {load,save,remote};
+})();
+
+/* ============ DATI ============ */
+const G={petto:'Petto',dorso:'Dorso',spalle:'Spalle',deltp:'Delt. post.',bic:'Bicipiti',
+  tri:'Tricipiti',quad:'Quadricipiti',fem:'Femorali',polp:'Polpacci'};
+
+const W4=[['W1','carico'],['W2','carico'],['W3','picco'],['W4','scarico']];
+const W2=[['W1','tecnica'],['W2','carico']];
+
+const BLOCCHI=[
+{
+ id:'R',nome:'Riattivazione',per:'Settimane 1-2 · inizio settembre',weeks:W2,
+ desc:'Due settimane, non una di più. Carichi bassi, serie che finiscono facili, obiettivo unico: rimettere in riga articolazioni e schemi motori dopo lo stop. Dalla settimana 3 si allena sul serio.',
+ kcal:'3.100 kcal · mantenimento',
+ meso:'Sedute da 55-65 minuti. Se a fine settimana 2 non hai fastidi articolari e la tecnica è pulita, passi al Blocco 1.',
+ giorni:[
+ {n:'DAY 1',t:'PUSH — Petto / Spalle / Tricipiti',dur:'≈ 60 min',ex:[
+  {nome:'Dynamic stretch + rotator cuff',w:["8'","8'"]},
+  {nome:'Calf machine max stretch',m:'polp',w:['2x12@7 · 50kg','2x12@8 · 55kg']},
+  {nome:'Panca piana bilanciere',c:'B',m:'petto',w:['3x8@5 · [B50]','3x8@6 · [B58]']},
+  {nome:'Spinte manubri inclinata 30°',m:'petto',w:['3x10@6 · 20/20','3x10@6 · 22/22']},
+  {nome:'Alzate laterali manubri',m:'spalle',w:['3x12@7 · 7/7','3x12@7 · 8/8']},
+  {nome:'Push down barra',m:'tri',w:['3x12@6 · 40kg','3x12@7 · 45kg']},
+  {nome:'French press bilanciere Z',m:'tri',w:['3x12@6 · 15kg','3x12@7 · 17,5kg']}
+ ],note:'Se una serie ti costa fatica, hai caricato troppo. In queste due settimane devi uscire dalla palestra con la sensazione di poter rifare tutto da capo.'},
+ {n:'DAY 2',t:'PULL — Dorso / Bicipiti',dur:'≈ 60 min',ex:[
+  {nome:'Dynamic stretch + mobilità anche',w:["8'","8'"]},
+  {nome:'Calf machine max stretch',m:'polp',w:['2x12@7 · 50kg','2x12@8 · 55kg']},
+  {nome:'Stacco da terra',c:'D',m:'dorso',w:['3x6@5 · [D45]','3x6@6 · [D52]']},
+  {nome:'Lat machine presa larga',m:'dorso',w:['3x10@6 · 45kg','3x10@7 · 50kg']},
+  {nome:'Rematore manubrio',m:'dorso',w:['3x10@6 · 24/24','3x10@7 · 28/28']},
+  {nome:'Butterfly reverse',m:'deltp',w:['3x15@7 · 25kg','3x15@8 · 30kg']},
+  {nome:'Curl bilanciere Z',m:'bic',w:['3x10@6 · 15kg','3x10@7 · 17,5kg']}
+ ]},
+ {n:'DAY 3',t:'LEGS — Quadricipiti / Femorali / Polpacci',dur:'≈ 65 min',ex:[
+  {nome:'Dynamic stretch + mobilità caviglia',w:["10'","10'"]},
+  {nome:'Calf seduto',m:'polp',w:['3x15@8 · 35kg','3x15@8 · 40kg']},
+  {nome:'Squat bilanciere (high bar)',c:'S',m:'quad',w:['3x6@5 · [S48]','3x6@6 · [S55]']},
+  {nome:'Leg press',m:'quad',w:['3x12@6 · 90kg','3x12@7 · 100kg']},
+  {nome:'Stacco rumeno (RDL)',m:'fem',w:['3x10@6 · 45kg','3x10@7 · 55kg']},
+  {nome:'Leg extension',m:'quad',w:['3x15@7 · 35kg','3x15@8 · 40kg']},
+  {nome:'Leg curl sdraiato',m:'fem',w:['3x15@7 · 25kg','3x15@8 · 30kg']}
+ ],note:'Aspettati DOMS forti dopo il primo Day 3. È l\'unica volta in cui è normale: dalla seconda settimana devono essere già dimezzati.'},
+ {n:'DAY 4',t:'UPPER — Spalle / Braccia',dur:'≈ 55 min',ex:[
+  {nome:'Dynamic stretch + rotator cuff',w:["8'","8'"]},
+  {nome:'Calf machine max stretch',m:'polp',w:['2x12@7 · 50kg','2x12@8 · 55kg']},
+  {nome:'Spinte manubri seduto',m:'spalle',w:['3x10@6 · 16/16','3x10@7 · 18/18']},
+  {nome:'Lat machine presa supina',m:'dorso',w:['3x10@6 · 45kg','3x10@7 · 50kg']},
+  {nome:'Alzate laterali manubri',m:'spalle',w:['3x15@8 · 6/6','3x15@8 · 7/7']},
+  {nome:'Curl panca inclinata 45° ⟷ Estensioni cavo overhead',m:'bic',m2:'tri',w:['3x12@7','3x12@8']},
+  {nome:'Push down corda',m:'tri',w:['2x15@8 · 20kg','2x15@9 · 22,5kg']}
+ ]}
+ ]
+},
+{
+ id:1,nome:'Blocco 1 — Ipertrofia base',per:'Settimane 3-10 · settembre / ottobre',weeks:W4,
+ desc:'Da qui si allena davvero. Volume pieno, RPE che sale, carichi che salgono ogni settimana. Otto settimane per tornare dov\'eri prima dello stop e superarlo.',
+ kcal:'3.100 kcal · mantenimento',
+ meso:'Settimane 7-10: stessi esercizi, +1 di RPE su tutta la riga e +2,5/5 kg sui fondamentali. Settimana 10 = scarico identico alla W4.',
+ giorni:[
+ {n:'DAY 1',t:'PUSH — Petto / Spalle / Tricipiti',dur:'≈ 75 min',ex:[
+  {nome:'Dynamic stretch + rotator cuff',w:["8'","8'","8'","8'"]},
+  {nome:'Calf machine max stretch',m:'polp',w:['3x10/12@8 · 60kg','3x10/12@8 · 65kg','3x10/12@9 · 65kg','2x10@7 · 55kg']},
+  {nome:'Panca piana bilanciere',c:'B',m:'petto',w:['4x8@7 · [B65]','4x8@8 · [B68]','4x7@8 · [B72]','2x8@6 · [B58]']},
+  {nome:'Spinte manubri inclinata 30°',m:'petto',w:['3x10@7 · 24/24','3x10@8 · 26/26','4x10@8 · 28/28','2x10@6 · 24/24']},
+  {nome:'Croci ai cavi / Chest press',m:'petto',w:['3x12/15@8 · 55kg','3x12/15@9 · 60kg','3x12/15@9 · 60kg','2x12@7 · 50kg']},
+  {nome:'Alzate laterali manubri',m:'spalle',w:['3x12/15@8 · 8/8','3x12/15@9 · 9/9','4x12/15@9 · 10/10','2x12@7 · 8/8']},
+  {nome:'Alzate laterali cavo — myo-reps',m:'spalle',w:['2x15/20@10 · 5kg','2x15/20@10 · 6kg','2x15/20@10 · 6kg','—']},
+  {nome:'Push down barra',m:'tri',w:['4x10/12@8 · 50kg','4x10/12@8 · 55kg','4x10/12@9 · 55kg','2x10@6 · 45kg']},
+  {nome:'French press bilanciere Z',m:'tri',w:['3x10/12@8 · 20kg','3x10/12@9 · 22,5kg','3x10/12@9 · 22,5kg','2x10@6 · 17,5kg']}
+ ],note:'<b>Due esercizi di tricipite, non tre.</b> Uno di spinta pesante (push down barra) e uno in allungamento (french press): coprono capo laterale e capo lungo. Il terzo aggiungeva solo 10 minuti.'},
+ {n:'DAY 2',t:'PULL — Dorso / Bicipiti / Deltoide posteriore',dur:'≈ 75 min',ex:[
+  {nome:'Dynamic stretch + mobilità anche',w:["8'","8'","8'","8'"]},
+  {nome:'Calf machine max stretch',m:'polp',w:['3x10/12@8 · 60kg','3x10/12@8 · 65kg','3x10/12@9 · 65kg','2x10@7 · 55kg']},
+  {nome:'Stacco da terra',c:'D',m:'dorso',w:['4x6@7 · [D62]','4x6@8 · [D66]','4x5@8 · [D70]','2x6@6 · [D55]']},
+  {nome:'Lat machine presa larga',m:'dorso',w:['4x8/10@8 · 55kg','4x8/10@8 · 60kg','4x8/10@9 · 65kg','2x10@6 · 50kg']},
+  {nome:'Rematore manubrio',m:'dorso',w:['3x10/12@8 · 30/30','3x10/12@8 · 32/32','4x10/12@9 · 34/34','2x10@6 · 28/28']},
+  {nome:'Pulley basso presa stretta',m:'dorso',w:['3x12/15@9 · 50kg','3x12/15@9 · 55kg','3x12/15@10 · 55kg','2x12@7 · 45kg']},
+  {nome:'Butterfly reverse',m:'deltp',w:['3x15/20@9 · 35kg','3x15/20@9 · 40kg','4x15/20@10 · 40kg','2x15@7 · 30kg']},
+  {nome:'Curl bilanciere Z',m:'bic',w:['4x8/10@8 · 20kg','4x8/10@8 · 22,5kg','4x8/10@9 · 22,5kg','2x8@6 · 17,5kg']},
+  {nome:'Curl manubri martello',m:'bic',w:['3x10/12@9 · 12/12','3x10/12@9 · 12/12','3x10/12@10 · 14/14','2x10@7 · 10/10']}
+ ],note:'<b>Due esercizi di bicipite qui, due nel Day 4.</b> Quattro a settimana con carichi che salgono valgono più di sei fatti a fine seduta da stanco.'},
+ {n:'DAY 3',t:'LEGS — Quadricipiti / Femorali / Polpacci',dur:'≈ 80 min',ex:[
+  {nome:'Dynamic stretch + mobilità caviglia',w:["10'","10'","10'","10'"]},
+  {nome:'Calf seduto',m:'polp',w:['3x12/15@9 · 40kg','3x12/15@9 · 45kg','4x12/15@10 · 45kg','2x12@7 · 40kg']},
+  {nome:'Squat bilanciere (high bar)',c:'S',m:'quad',w:['4x6@7 · [S65]','4x6@8 · [S68]','4x6@8 · [S72]','2x6@6 · [S58]']},
+  {nome:'Leg press',m:'quad',w:['4x10/12@8 · 110kg','4x10/12@8 · 120kg','4x10/12@9 · 130kg','2x10@6 · 100kg']},
+  {nome:'Stacco rumeno (RDL)',m:'fem',w:['3x8/10@8 · 65kg','3x8/10@8 · 72,5kg','4x8/10@9 · 80kg','2x8@6 · 55kg']},
+  {nome:'Leg extension',m:'quad',w:['3x12/15@9 · 50kg','3x12/15@9 · 55kg','3x15@10 · 55kg','2x12@7 · 45kg']},
+  {nome:'Leg curl sdraiato',m:'fem',w:['3x12/15@9 · 32,5kg','3x12/15@9 · 35kg','3x12/15@10 · 35kg','2x12@7 · 30kg']},
+  {nome:'Calf in piedi / alla pressa',m:'polp',w:['3x12/15@9 · 90kg','3x12/15@9 · 100kg','3x15@10 · 100kg','2x12@7 · 80kg']}
+ ],note:'A 194 cm lo squat ti manda in avanti: <b>scarpe con tacco</b> e stance leggermente più larga. Se il busto si chiude comunque, il limite è la caviglia, non la forza.'},
+ {n:'DAY 4',t:'UPPER — Spalle / Braccia / Richiami',dur:'≈ 70 min',ex:[
+  {nome:'Dynamic stretch + rotator cuff',w:["8'","8'","8'","8'"]},
+  {nome:'Calf machine max stretch',m:'polp',w:['3x10/12@8 · 60kg','3x10/12@8 · 65kg','3x10/12@9 · 65kg','2x10@7 · 55kg']},
+  {nome:'Military press / spinte manubri seduto',m:'spalle',w:['4x8/10@8 · 20/20','4x8/10@8 · 22/22','4x8/10@9 · 24/24','2x8@6 · 18/18']},
+  {nome:'Panca Smith inclinata 30°',c:'B',m:'petto',w:['3x10/12@8 · [B58]','3x10/12@8 · [B62]','3x10/12@9 · [B62]','2x10@6 · [B52]']},
+  {nome:'Lat machine presa supina',m:'dorso',w:['4x10/12@8 · 55kg','4x10/12@8 · 60kg','4x10/12@9 · 60kg','2x10@6 · 50kg']},
+  {nome:'Alzate laterali — drop set ultima',m:'spalle',w:['4x15/20@10 · 8/8','4x15/20@10 · 8/8','4x15/20@10 · 9/9','2x15@7 · 7/7']},
+  {nome:'Curl panca inclinata 45° ⟷ Estensioni cavo overhead',m:'bic',m2:'tri',w:['4x10/12@9','4x10/12@9','4x10/12@10','2x12@7']},
+  {nome:'Curl cavo basso corda ⟷ Push down corda',m:'tri',m2:'bic',w:['3x15/20@10','3x15/20@10','3x15/20@10','2x15@7']}
+ ],note:'Le due superserie finali sono il blocco braccia: quattro esercizi in circa 12 minuti. È così che il Day 4 sta dentro i 70 minuti pur avendo il volume più alto della settimana su bicipiti e tricipiti.'}
+ ]
+},
+{
+ id:2,nome:'Blocco 2 — Ipertrofia intensiva',per:'Settimane 11-18 · novembre / dicembre',weeks:W4,
+ desc:'Top set + back-off sui fondamentali, accessori vicini al cedimento. È il blocco che costruisce la massa che a giugno vedrai scoperta.',
+ kcal:'3.350 kcal · +250 surplus',
+ meso:'Settimane 15-18: aggiungi 1 serie a un accessorio per gruppo e sali di RPE 1 sugli isolamenti. Settimana 18 = scarico.',
+ giorni:[
+ {n:'DAY 1',t:'PUSH — Petto / Spalle / Tricipiti',dur:'≈ 80 min',ex:[
+  {nome:'Dynamic stretch + rotator cuff',w:["8'","8'","8'","8'"]},
+  {nome:'Calf machine max stretch',m:'polp',w:['3x10/12@9','3x10/12@9','3x10/12@10','2x10@7']},
+  {nome:'Panca piana bilanciere',c:'B',m:'petto',w:['1x6@8 · [B78] + 3x8@8 · [B70]','1x6@9 · [B80] + 3x8@8 · [B72]','1x5@9 · [B82] + 4x8@9 · [B72]','2x6@6 · [B65]']},
+  {nome:'Spinte manubri inclinata 30°',m:'petto',w:['4x8/10@8','4x8/10@8','4x8/10@9','2x10@6']},
+  {nome:'Croci ai cavi / Chest press',m:'petto',w:['3x12/15@9','3x12/15@9','3x12/15@10','2x12@7']},
+  {nome:'Alzate laterali manubri',m:'spalle',w:['4x12/15@9','4x12/15@9','4x12/15@10','2x12@7']},
+  {nome:'Alzate laterali cavo — myo-reps',m:'spalle',w:['2x15/20@10','2x15/20@10','2x15/20@10 + drop','—']},
+  {nome:'Push down barra',m:'tri',w:['4x10/12@9','4x10/12@9','4x10/12@10','2x10@7']},
+  {nome:'French press bilanciere Z',m:'tri',w:['3x10/12@9','3x10/12@9','3x10/12@10','2x10@7']}
+ ],note:'<b>Myo-reps:</b> serie di attivazione a @10, poi 3-4 mini-serie da 3-5 ripetizioni con 15 secondi di pausa. Massimo stimolo, minimo tempo.'},
+ {n:'DAY 2',t:'PULL — Dorso / Bicipiti / Deltoide posteriore',dur:'≈ 80 min',ex:[
+  {nome:'Dynamic stretch + mobilità anche',w:["8'","8'","8'","8'"]},
+  {nome:'Calf machine max stretch',m:'polp',w:['3x10/12@9','3x10/12@9','3x10/12@10','2x10@7']},
+  {nome:'Stacco da terra',c:'D',m:'dorso',w:['1x5@8 · [D78] + 3x6@8 · [D70]','1x5@8 · [D80] + 3x6@8 · [D72]','1x4@9 · [D84] + 3x6@9 · [D72]','2x5@6 · [D65]']},
+  {nome:'Lat machine presa larga',m:'dorso',w:['4x8/10@8','4x8/10@8','4x8/10@9','2x10@6']},
+  {nome:'Rematore manubrio',m:'dorso',w:['4x10/12@8','4x10/12@8','4x10/12@9','2x10@6']},
+  {nome:'Pulley basso presa stretta',m:'dorso',w:['3x12/15@9','3x12/15@9','3x12/15@10','2x12@7']},
+  {nome:'Butterfly reverse',m:'deltp',w:['4x15/20@9','4x15/20@9','4x15/20@10','2x15@7']},
+  {nome:'Curl bilanciere Z',m:'bic',w:['4x8/10@8','4x8/10@8','4x8/10@9','2x8@6']},
+  {nome:'Curl manubri martello',m:'bic',w:['3x10/12@9','3x10/12@9','3x10/12@10','2x10@7']}
+ ]},
+ {n:'DAY 3',t:'LEGS — Quadricipiti / Femorali / Polpacci',dur:'≈ 85 min',ex:[
+  {nome:'Dynamic stretch + mobilità caviglia',w:["10'","10'","10'","10'"]},
+  {nome:'Calf seduto',m:'polp',w:['4x12/15@9','4x12/15@9','4x12/15@10','2x12@7']},
+  {nome:'Squat bilanciere (high bar)',c:'S',m:'quad',w:['1x6@8 · [S78] + 3x8@8 · [S70]','1x6@9 · [S80] + 3x8@8 · [S72]','1x5@9 · [S82] + 4x8@9 · [S72]','2x6@6 · [S65]']},
+  {nome:'Leg press',m:'quad',w:['4x10/12@8','4x10/12@8','4x10/12@9','2x10@6']},
+  {nome:'Stacco rumeno (RDL)',m:'fem',w:['4x8/10@8','4x8/10@8','4x8/10@9','2x8@6']},
+  {nome:'Leg extension — myo-reps ultima',m:'quad',w:['3x15@9','3x15@9','3x15@10','2x12@7']},
+  {nome:'Leg curl sdraiato',m:'fem',w:['3x12/15@9','3x12/15@9','3x12/15@10','2x12@7']},
+  {nome:'Calf in piedi / alla pressa',m:'polp',w:['4x12/15@10','4x12/15@10','4x12/15@10','2x12@7']}
+ ],note:'Recupero sui fondamentali: <b>3 minuti pieni</b>. Se tagli i recuperi tagli il carico, e il carico è tutto il punto del blocco.'},
+ {n:'DAY 4',t:'UPPER — Spalle / Braccia / Richiami',dur:'≈ 75 min',ex:[
+  {nome:'Dynamic stretch + rotator cuff',w:["8'","8'","8'","8'"]},
+  {nome:'Calf machine max stretch',m:'polp',w:['3x10/12@9','3x10/12@9','3x10/12@10','2x10@7']},
+  {nome:'Military press / spinte manubri seduto',m:'spalle',w:['4x8/10@8','4x8/10@8','4x8/10@9','2x8@6']},
+  {nome:'Panca Smith inclinata 30°',c:'B',m:'petto',w:['3x10/12@8 · [B62]','3x10/12@8 · [B65]','3x10/12@9 · [B65]','2x10@6 · [B55]']},
+  {nome:'Lat machine presa supina',m:'dorso',w:['4x10/12@8','4x10/12@8','4x10/12@9','2x10@6']},
+  {nome:'Alzate laterali — drop set ultima',m:'spalle',w:['4x15/20@10','4x15/20@10','4x15/20@10','2x15@7']},
+  {nome:'Curl panca inclinata 45° ⟷ Estensioni cavo overhead',m:'bic',m2:'tri',w:['4x10/12@9','4x10/12@9','4x10/12@10','2x12@7']},
+  {nome:'Curl concentrato ⟷ Push down corda',m:'tri',m2:'bic',w:['3x12/15@10','3x12/15@10','3x12/15@10','2x15@7']}
+ ]}
+ ]
+},
+{
+ id:3,nome:'Blocco 3 — Forza massimale',per:'Settimane 19-26 · gennaio / febbraio',weeks:W4,
+ desc:'Carichi alti, ripetizioni basse, recuperi lunghi. Il volume accessorio scende ma braccia e spalle restano coperte. Settimana 25 = test dei massimali.',
+ kcal:'3.300 kcal · +200 surplus',
+ meso:'Settimane 23-26: stessi schemi +2-3% sui fondamentali. <b>Settimana 25 = test</b> single su Squat, Panca e Stacco. Settimana 26 = scarico completo.',
+ giorni:[
+ {n:'DAY 1',t:'PANCA — Forza di spinta',dur:'≈ 80 min',ex:[
+  {nome:'Dynamic stretch + rotator cuff',w:["10'","10'","10'","10'"]},
+  {nome:'Calf machine max stretch',m:'polp',w:['2x10/12@8','2x10/12@8','2x10/12@9','2x10@7']},
+  {nome:'Panca piana bilanciere',c:'B',m:'petto',w:['5x4@7 · [B82]','5x4@8 · [B85]','5x3@9 · [B88]','3x4@6 · [B72]']},
+  {nome:'Panca presa stretta',m:'tri',w:['3x6/8@8 · [B68]','3x6/8@8 · [B70]','3x6/8@9 · [B72]','2x6@6 · [B62]']},
+  {nome:'Spinte manubri inclinata 30°',m:'petto',w:['3x8@8','3x8@8','3x8@9','2x8@6']},
+  {nome:'Alzate laterali manubri',m:'spalle',w:['3x12/15@9','3x12/15@9','3x12/15@10','2x12@7']},
+  {nome:'Push down barra ⟷ French press',m:'tri',w:['3x10/12@9','3x10/12@9','3x10/12@10','2x12@7']}
+ ],note:'Recupero fra le serie di panca: <b>4 minuti</b>. Non è tempo perso, è il tempo in cui il sistema nervoso si ricarica. Con recuperi da 2 minuti a @85% stai facendo un altro allenamento.'},
+ {n:'DAY 2',t:'STACCO — Forza di tirata',dur:'≈ 80 min',ex:[
+  {nome:'Dynamic stretch + mobilità anche',w:["10'","10'","10'","10'"]},
+  {nome:'Calf machine max stretch',m:'polp',w:['2x10/12@8','2x10/12@8','2x10/12@9','2x10@7']},
+  {nome:'Stacco da terra',c:'D',m:'dorso',w:['5x3@7 · [D82]','5x3@8 · [D85]','4x2@9 · [D90]','3x3@6 · [D72]']},
+  {nome:'Rematore bilanciere busto 45°',m:'dorso',w:['4x6/8@8','4x6/8@8','4x6/8@9','2x8@6']},
+  {nome:'Lat machine presa larga',m:'dorso',w:['4x8@8','4x8@8','4x8@9','2x8@6']},
+  {nome:'Butterfly reverse',m:'deltp',w:['3x15@9','3x15@9','3x15@10','2x15@7']},
+  {nome:'Curl bilanciere Z',m:'bic',w:['4x6/8@8','4x6/8@8','4x6/8@9','2x8@6']},
+  {nome:'Curl manubri martello',m:'bic',w:['3x10@9','3x10@9','3x10@10','2x10@7']}
+ ],note:'Sui doppi a @9 della settimana 3: se la seconda ripetizione rallenta visibilmente, chiudi lì. La velocità della barra è un dato, non una sensazione.'},
+ {n:'DAY 3',t:'SQUAT — Forza gambe',dur:'≈ 85 min',ex:[
+  {nome:'Dynamic stretch + mobilità caviglia',w:["12'","12'","12'","12'"]},
+  {nome:'Calf seduto',m:'polp',w:['3x12/15@9','3x12/15@9','3x12/15@10','2x12@7']},
+  {nome:'Squat bilanciere (high bar)',c:'S',m:'quad',w:['5x4@7 · [S82]','5x4@8 · [S85]','5x3@9 · [S88]','3x4@6 · [S72]']},
+  {nome:'Leg press',m:'quad',w:['4x8@8','4x8@8','4x8@9','2x8@6']},
+  {nome:'Stacco rumeno (RDL)',m:'fem',w:['4x6/8@8','4x6/8@8','4x6/8@9','2x8@6']},
+  {nome:'Leg extension',m:'quad',w:['3x10/12@8','3x10/12@8','3x10/12@9','2x12@6']},
+  {nome:'Leg curl sdraiato',m:'fem',w:['3x10/12@8','3x10/12@8','3x10/12@9','2x12@6']},
+  {nome:'Calf in piedi / alla pressa',m:'polp',w:['3x10/12@9','3x10/12@9','3x10/12@10','2x12@7']}
+ ],note:'Con femori lunghi il segnale che il carico è eccessivo non è la spinta: è il bacino che risale in ritardo rispetto alle spalle. Filma una serie a settimana.'},
+ {n:'DAY 4',t:'UPPER — Spalle / Braccia / Richiami',dur:'≈ 70 min',ex:[
+  {nome:'Dynamic stretch + rotator cuff',w:["8'","8'","8'","8'"]},
+  {nome:'Calf machine max stretch',m:'polp',w:['2x10/12@8','2x10/12@8','2x10/12@9','2x10@7']},
+  {nome:'Military press bilanciere',m:'spalle',w:['4x5/6@8','4x5/6@8','4x5/6@9','2x6@6']},
+  {nome:'Panca Smith inclinata 30°',c:'B',m:'petto',w:['4x8@8 · [B68]','4x8@8 · [B70]','4x8@9 · [B72]','2x8@6 · [B60]']},
+  {nome:'Lat machine presa supina',m:'dorso',w:['4x8/10@8','4x8/10@8','4x8/10@9','2x10@6']},
+  {nome:'Alzate laterali manubri',m:'spalle',w:['4x12/15@9','4x12/15@9','4x12/15@10','2x12@7']},
+  {nome:'Curl panca inclinata 45° ⟷ Estensioni cavo overhead',m:'bic',m2:'tri',w:['4x10/12@9','4x10/12@9','4x10/12@10','2x12@7']},
+  {nome:'Curl cavo corda ⟷ Push down corda',m:'tri',m2:'bic',w:['3x12/15@10','3x12/15@10','3x12/15@10','2x15@7']}
+ ]}
+ ]
+},
+{
+ id:4,nome:'Blocco 4 — Ipertrofia in deficit',per:'Settimane 27-34 · marzo / aprile',weeks:W4,
+ desc:'Inizia il taglio. Regola unica: <b>si mantiene l\'intensità e si riduce il volume</b>. Percentuali sui nuovi massimali di febbraio.',
+ kcal:'2.750 kcal · −350 deficit',
+ meso:'Settimane 31-34: se i carichi tengono, ripeti identico. Se calano per due settimane di fila, togli 1 serie per esercizio invece di forzare.',
+ giorni:[
+ {n:'DAY 1',t:'PUSH — Petto / Spalle / Tricipiti',dur:'≈ 70 min',ex:[
+  {nome:'Dynamic stretch + rotator cuff',w:["8'","8'","8'","8'"]},
+  {nome:'Calf machine max stretch',m:'polp',w:['3x10/12@9','3x10/12@9','3x10/12@10','2x10@7']},
+  {nome:'Panca piana bilanciere',c:'B',m:'petto',w:['4x6@8 · [B78]','4x6@8 · [B80]','4x5@9 · [B82]','2x6@6 · [B68]']},
+  {nome:'Spinte manubri inclinata 30°',m:'petto',w:['3x8/10@8','3x8/10@8','3x8/10@9','2x10@6']},
+  {nome:'Croci ai cavi',m:'petto',w:['3x12/15@9','3x12/15@9','3x12/15@10','2x12@7']},
+  {nome:'Alzate laterali manubri',m:'spalle',w:['3x15/20@9','3x15/20@9','3x15/20@10','2x15@7']},
+  {nome:'Push down barra ⟷ French press',m:'tri',w:['4x10/12@9','4x10/12@9','4x10/12@10','2x12@7']}
+ ],note:'Le superserie qui non servono a bruciare di più: servono a tenere la seduta sotto i 70 minuti quando mangi 350 kcal in meno e ogni recupero si allunga da solo.'},
+ {n:'DAY 2',t:'PULL — Dorso / Bicipiti / Deltoide posteriore',dur:'≈ 70 min',ex:[
+  {nome:'Dynamic stretch + mobilità anche',w:["8'","8'","8'","8'"]},
+  {nome:'Calf machine max stretch',m:'polp',w:['3x10/12@9','3x10/12@9','3x10/12@10','2x10@7']},
+  {nome:'Stacco da terra',c:'D',m:'dorso',w:['4x5@8 · [D78]','4x5@8 · [D80]','4x4@9 · [D82]','2x5@6 · [D68]']},
+  {nome:'Lat machine presa larga',m:'dorso',w:['4x8/10@8','4x8/10@8','4x8/10@9','2x10@6']},
+  {nome:'Rematore manubrio',m:'dorso',w:['3x10/12@8','3x10/12@8','3x10/12@9','2x10@6']},
+  {nome:'Butterfly reverse',m:'deltp',w:['3x15/20@9','3x15/20@9','3x15/20@10','2x15@7']},
+  {nome:'Curl bilanciere Z ⟷ Curl martello',m:'bic',w:['4x10/12@9','4x10/12@9','4x10/12@10','2x12@7']}
+ ]},
+ {n:'DAY 3',t:'LEGS — Quadricipiti / Femorali / Polpacci',dur:'≈ 75 min',ex:[
+  {nome:'Dynamic stretch + mobilità caviglia',w:["10'","10'","10'","10'"]},
+  {nome:'Calf seduto',m:'polp',w:['4x12/15@9','4x12/15@9','4x12/15@10','2x12@7']},
+  {nome:'Squat bilanciere (high bar)',c:'S',m:'quad',w:['4x6@8 · [S78]','4x6@8 · [S80]','4x5@9 · [S82]','2x6@6 · [S68]']},
+  {nome:'Leg press',m:'quad',w:['3x10/12@8','3x10/12@8','3x10/12@9','2x10@6']},
+  {nome:'Stacco rumeno (RDL)',m:'fem',w:['3x8/10@8','3x8/10@8','3x8/10@9','2x8@6']},
+  {nome:'Leg extension — rest-pause',m:'quad',w:['3x15/20@10','3x15/20@10','3x15/20@10','2x12@7']},
+  {nome:'Leg curl sdraiato',m:'fem',w:['3x12/15@9','3x12/15@9','3x12/15@10','2x12@7']},
+  {nome:'Calf in piedi / alla pressa',m:'polp',w:['4x12/15@10','4x12/15@10','4x12/15@10','2x12@7']}
+ ],note:'È il blocco in cui ti sentirai più leggero e più debole nello stesso momento. È normale e non è un problema, finché il carico sui fondamentali non scende.'},
+ {n:'DAY 4',t:'UPPER — Spalle / Braccia / Richiami',dur:'≈ 65 min',ex:[
+  {nome:'Dynamic stretch + rotator cuff',w:["8'","8'","8'","8'"]},
+  {nome:'Calf machine max stretch',m:'polp',w:['3x10/12@9','3x10/12@9','3x10/12@10','2x10@7']},
+  {nome:'Military press / spinte manubri seduto',m:'spalle',w:['4x8@8','4x8@8','4x8@9','2x8@6']},
+  {nome:'Panca Smith inclinata 30°',c:'B',m:'petto',w:['3x10@8 · [B65]','3x10@8 · [B68]','3x10@9 · [B68]','2x10@6 · [B58]']},
+  {nome:'Lat machine presa supina',m:'dorso',w:['3x10/12@8','3x10/12@8','3x10/12@9','2x10@6']},
+  {nome:'Alzate laterali — drop set ultima',m:'spalle',w:['4x15/20@10','4x15/20@10','4x15/20@10','2x15@7']},
+  {nome:'Curl inclinato ⟷ Estensioni cavo overhead',m:'bic',m2:'tri',w:['4x10/12@9','4x10/12@9','4x10/12@10','2x12@7']},
+  {nome:'Curl concentrato ⟷ Push down corda',m:'tri',m2:'bic',w:['2x15/20@10','2x15/20@10','2x15/20@10','—']}
+ ]}
+ ]
+},
+{
+ id:5,nome:'Blocco 5 — Ricomposizione finale',per:'Settimane 35-42 · maggio / giugno',weeks:W4,
+ desc:'Volume ridotto del 20-25%, intensità intatta. In deficit il recupero è compromesso: allenarsi di più qui non accelera niente, rallenta tutto. Mai a cedimento sui fondamentali.',
+ kcal:'2.550 kcal · −550 deficit',
+ meso:'Settimane 39-42: identico. Se la forza cala per due settimane consecutive e ti senti spento, fai <b>7 giorni a calorie di mantenimento</b> e riparti — funziona meglio che tagliare ancora.',
+ giorni:[
+ {n:'DAY 1',t:'PUSH — Petto / Spalle / Tricipiti',dur:'≈ 60 min',ex:[
+  {nome:'Dynamic stretch + rotator cuff',w:["10'","10'","10'","10'"]},
+  {nome:'Calf machine max stretch',m:'polp',w:['3x12/15@9','3x12/15@9','3x12/15@10','2x12@7']},
+  {nome:'Panca piana bilanciere',c:'B',m:'petto',w:['4x5@7 · [B80]','4x5@8 · [B82]','3x5@8 · [B82]','2x5@6 · [B70]']},
+  {nome:'Spinte manubri inclinata 30°',m:'petto',w:['3x8/10@8','3x8/10@8','3x8/10@8','2x10@6']},
+  {nome:'Croci ai cavi',m:'petto',w:['3x12/15@9','3x12/15@9','3x12/15@9','2x12@7']},
+  {nome:'Alzate laterali manubri',m:'spalle',w:['3x15/20@9','3x15/20@9','3x15/20@10','2x15@7']},
+  {nome:'Push down barra ⟷ French press',m:'tri',w:['3x10/12@9','3x10/12@9','3x10/12@9','2x12@7']}
+ ],note:'Da qui a giugno il tuo unico compito in palestra è <b>non perdere niente</b>. Ogni kg che resta sul bilanciere è un kg di muscolo che resta addosso.'},
+ {n:'DAY 2',t:'PULL — Dorso / Bicipiti / Deltoide posteriore',dur:'≈ 60 min',ex:[
+  {nome:'Dynamic stretch + mobilità anche',w:["10'","10'","10'","10'"]},
+  {nome:'Calf machine max stretch',m:'polp',w:['3x12/15@9','3x12/15@9','3x12/15@10','2x12@7']},
+  {nome:'Stacco da terra',c:'D',m:'dorso',w:['3x5@7 · [D78]','3x5@8 · [D80]','3x4@8 · [D80]','2x5@6 · [D68]']},
+  {nome:'Lat machine presa larga',m:'dorso',w:['3x8/10@8','3x8/10@8','3x8/10@8','2x10@6']},
+  {nome:'Rematore manubrio',m:'dorso',w:['3x10/12@8','3x10/12@8','3x10/12@8','2x10@6']},
+  {nome:'Butterfly reverse',m:'deltp',w:['3x15/20@9','3x15/20@9','3x15/20@10','2x15@7']},
+  {nome:'Curl bilanciere Z ⟷ Curl martello',m:'bic',w:['3x10/12@9','3x10/12@9','3x10/12@9','2x12@7']}
+ ]},
+ {n:'DAY 3',t:'LEGS — Quadricipiti / Femorali / Polpacci',dur:'≈ 70 min',ex:[
+  {nome:'Dynamic stretch + mobilità caviglia',w:["12'","12'","12'","12'"]},
+  {nome:'Calf seduto',m:'polp',w:['3x12/15@9','3x12/15@9','3x12/15@10','2x12@7']},
+  {nome:'Squat bilanciere (high bar)',c:'S',m:'quad',w:['4x5@7 · [S80]','4x5@8 · [S82]','3x5@8 · [S82]','2x5@6 · [S70]']},
+  {nome:'Leg press',m:'quad',w:['3x10/12@8','3x10/12@8','3x10/12@8','2x10@6']},
+  {nome:'Stacco rumeno (RDL)',m:'fem',w:['3x8/10@8','3x8/10@8','3x8/10@8','2x8@6']},
+  {nome:'Leg extension',m:'quad',w:['3x15@9','3x15@9','3x15@9','2x12@7']},
+  {nome:'Leg curl sdraiato',m:'fem',w:['3x12/15@9','3x12/15@9','3x12/15@9','2x12@7']},
+  {nome:'Calf in piedi / alla pressa',m:'polp',w:['3x12/15@10','3x12/15@10','3x12/15@10','2x12@7']}
+ ]},
+ {n:'DAY 4',t:'UPPER — Spalle / Braccia / Richiami',dur:'≈ 60 min',ex:[
+  {nome:'Dynamic stretch + rotator cuff',w:["8'","8'","8'","8'"]},
+  {nome:'Calf machine max stretch',m:'polp',w:['3x12/15@9','3x12/15@9','3x12/15@10','2x12@7']},
+  {nome:'Military press / spinte manubri seduto',m:'spalle',w:['3x8@8','3x8@8','3x8@8','2x8@6']},
+  {nome:'Panca Smith inclinata 30°',c:'B',m:'petto',w:['3x10@8 · [B65]','3x10@8 · [B65]','3x10@8 · [B65]','2x10@6 · [B58]']},
+  {nome:'Lat machine presa supina',m:'dorso',w:['3x10/12@8','3x10/12@8','3x10/12@8','2x10@6']},
+  {nome:'Alzate laterali — drop set ultima',m:'spalle',w:['4x15/20@10','4x15/20@10','4x15/20@10','2x15@7']},
+  {nome:'Curl inclinato ⟷ Estensioni cavo overhead',m:'bic',m2:'tri',w:['3x12/15@9','3x12/15@9','3x12/15@9','2x12@7']}
+ ],note:'Ultime settimane: nessuna tecnica nuova, nessun esercizio nuovo. Si finisce con quello che il corpo conosce già.'}
+ ]
+}
+];
+
+const NUTRIZIONE=[
+{
+ nome:'Mantenimento',per:'Riattivazione + Blocco 1 · settimane 1-10',
+ kcal:'3.100',p:'180 g',c:'425 g',g:'85 g',
+ obiettivo:'Peso stabile. Se la media settimanale non si muove, il numero è giusto. Se si sposta di più di 400 g in una direzione, aggiusta di 150 kcal sui carboidrati.',
+ pasti:[
+  {n:'Colazione',k:'≈ 800 kcal',i:[["Fiocchi d'avena",'100 g'],['Latte parzialmente scremato','250 ml'],['Albume','200 g'],['Uovo intero','1'],['Banana','120 g'],['Miele','15 g']]},
+  {n:'Spuntino',k:'≈ 350 kcal',i:[['Yogurt greco 0%','200 g'],['Mandorle','25 g'],['Frutta fresca','150 g']]},
+  {n:'Pranzo',k:'≈ 820 kcal',i:[['Riso o pasta (crudo)','120 g'],['Pollo o tacchino','200 g'],['Verdura','200 g'],['Olio EVO','15 g']]},
+  {n:'Pre-allenamento',k:'≈ 400 kcal',i:[['Pane','80 g'],['Bresaola o fesa di tacchino','80 g'],['Frutta fresca','150 g']]},
+  {n:'Cena',k:'≈ 730 kcal',i:[['Patate','300 g'],['Pesce azzurro, carne o uova','200 g'],['Verdura','a volontà'],['Olio EVO','10 g']]}
+ ]
+},
+{
+ nome:'Surplus di costruzione',per:'Blocco 2 · settimane 11-18',
+ kcal:'3.350',p:'180 g',c:'455 g',g:'90 g',
+ obiettivo:'+0,2 / +0,3 kg a settimana sulla media. Se sali più in fretta stai mettendo grasso, non muscolo: togli 150 kcal dai carboidrati.',
+ pasti:[
+  {n:'Colazione',k:'≈ 900 kcal',i:[["Fiocchi d'avena",'110 g'],['Latte parzialmente scremato','250 ml'],['Albume','200 g'],['Uovo intero','1'],['Banana','150 g'],['Miele','20 g']]},
+  {n:'Spuntino',k:'≈ 400 kcal',i:[['Yogurt greco 0%','200 g'],['Mandorle','30 g'],['Frutta fresca','150 g']]},
+  {n:'Pranzo',k:'≈ 870 kcal',i:[['Riso o pasta (crudo)','130 g'],['Pollo o tacchino','200 g'],['Verdura','200 g'],['Olio EVO','15 g']]},
+  {n:'Pre-allenamento',k:'≈ 460 kcal',i:[['Pane','100 g'],['Bresaola o fesa di tacchino','80 g'],['Frutta fresca','150 g']]},
+  {n:'Cena',k:'≈ 780 kcal',i:[['Patate','350 g'],['Pesce azzurro, carne o uova','200 g'],['Verdura','a volontà'],['Olio EVO','10 g']]}
+ ]
+},
+{
+ nome:'Surplus di forza',per:'Blocco 3 · settimane 19-26',
+ kcal:'3.300',p:'180 g',c:'445 g',g:'90 g',
+ obiettivo:'+0,2 kg a settimana. Nei giorni di Squat e Stacco sposta 50 g di carboidrati dalla cena al pasto pre-allenamento.',
+ pasti:[
+  {n:'Colazione',k:'≈ 890 kcal',i:[["Fiocchi d'avena",'110 g'],['Latte parzialmente scremato','250 ml'],['Albume','200 g'],['Uovo intero','1'],['Banana','150 g'],['Miele','15 g']]},
+  {n:'Spuntino',k:'≈ 410 kcal',i:[['Yogurt greco 0%','200 g'],['Mandorle','30 g'],['Frutta fresca','150 g']]},
+  {n:'Pranzo',k:'≈ 850 kcal',i:[['Riso o pasta (crudo)','125 g'],['Pollo o tacchino','200 g'],['Verdura','200 g'],['Olio EVO','15 g']]},
+  {n:'Pre-allenamento',k:'≈ 430 kcal',i:[['Pane','90 g'],['Bresaola o fesa di tacchino','80 g'],['Frutta fresca','150 g']]},
+  {n:'Cena',k:'≈ 720 kcal',i:[['Patate','350 g'],['Pesce azzurro, carne o uova','200 g'],['Verdura','a volontà'],['Olio EVO','10 g']]}
+ ]
+},
+{
+ nome:'Deficit leggero',per:'Blocco 4 · settimane 27-34',
+ kcal:'2.750',p:'195 g',c:'320 g',g:'75 g',
+ obiettivo:'−0,3 / −0,4 kg a settimana. Le proteine salgono mentre le calorie scendono: sono lo scudo contro la perdita di massa magra. Un giorno a settimana torna a 3.100 kcal con carboidrati alti (refeed).',
+ pasti:[
+  {n:'Colazione',k:'≈ 680 kcal',i:[["Fiocchi d'avena",'80 g'],['Latte parzialmente scremato','250 ml'],['Albume','250 g'],['Uovo intero','1'],['Banana','100 g']]},
+  {n:'Spuntino',k:'≈ 330 kcal',i:[['Yogurt greco 0%','250 g'],['Mandorle','20 g'],['Frutta fresca','150 g']]},
+  {n:'Pranzo',k:'≈ 740 kcal',i:[['Riso o pasta (crudo)','90 g'],['Pollo o tacchino','220 g'],['Verdura','250 g'],['Olio EVO','10 g']]},
+  {n:'Pre-allenamento',k:'≈ 340 kcal',i:[['Pane','60 g'],['Bresaola o fesa di tacchino','80 g'],['Frutta fresca','100 g']]},
+  {n:'Cena',k:'≈ 660 kcal',i:[['Patate','250 g'],['Pesce azzurro, carne o uova','220 g'],['Verdura','a volontà'],['Olio EVO','10 g']]}
+ ]
+},
+{
+ nome:'Deficit finale',per:'Blocco 5 · settimane 35-42',
+ kcal:'2.550',p:'200 g',c:'290 g',g:'65 g',
+ obiettivo:'−0,4 / −0,5 kg a settimana. Ti servono circa 6 kg di grasso in 18 settimane: è un ritmo tranquillo, non una guerra. Se a fine maggio sei in anticipo, <b>alza le calorie</b> invece di tagliare ancora.',
+ pasti:[
+  {n:'Colazione',k:'≈ 620 kcal',i:[["Fiocchi d'avena",'70 g'],['Latte parzialmente scremato','250 ml'],['Albume','250 g'],['Uovo intero','1'],['Banana','100 g']]},
+  {n:'Spuntino',k:'≈ 300 kcal',i:[['Yogurt greco 0%','250 g'],['Mandorle','15 g'],['Frutta fresca','150 g']]},
+  {n:'Pranzo',k:'≈ 700 kcal',i:[['Riso o pasta (crudo)','80 g'],['Pollo o tacchino','230 g'],['Verdura','250 g'],['Olio EVO','10 g']]},
+  {n:'Pre-allenamento',k:'≈ 310 kcal',i:[['Pane','50 g'],['Bresaola o fesa di tacchino','80 g'],['Frutta fresca','100 g']]},
+  {n:'Cena',k:'≈ 620 kcal',i:[['Patate','200 g'],['Pesce azzurro, carne o uova','230 g'],['Verdura','a volontà'],['Olio EVO','10 g']]}
+ ]
+}
+];
+
+const INTEGRAZIONE=[
+ ['Creatina','5 g monoidrato ogni giorno, anche nei giorni off. Nessun ciclo, nessuna fase di carico.'],
+ ['Whey','1-2 misurini, solo per arrivare al target proteico quando il cibo non basta.'],
+ ['Vitamina D3','2.000-4.000 UI da ottobre ad aprile, insieme a un pasto che contiene grassi.'],
+ ['Omega 3','1-2 g di EPA+DHA al giorno con i pasti.'],
+ ['Magnesio','300-400 mg di bisglicinato la sera.'],
+ ['Caffeina','200-350 mg 30 minuti prima, massimo 3-4 volte a settimana per non desensibilizzarti.'],
+ ['Non servono','BCAA, glutammina, testosterone booster, termogenici. Nessuna evidenza che giustifichi la spesa.']
+];
+
+/* ============ STATO ============ */
+let cb=0,cd=0,cw=0,cn=0;
+const maxes={S:null,B:null,D:null};
+let carichi={};
+let saveT=null;
+
+const round25=v=>Math.round(v/2.5)*2.5;
+const fmt=n=>(n%1===0?n:n.toFixed(1).replace('.',','))+' kg';
+const resolve=s=>s.replace(/\[([SBD])(\d+)\]/g,(m,l,p)=>maxes[l]?fmt(round25(maxes[l]*p/100)):'<span class="pct">'+p+'%</span>');
+function countSets(s){let t=0,m,re=/(\d+)\s*x/gi;while((m=re.exec(s))!==null)t+=parseInt(m[1],10);return t;}
+
+function queueSave(){
+  clearTimeout(saveT);
+  saveT=setTimeout(async()=>{
+    const w=await Store.save('carichi',carichi);
+    await Store.save('maxes',maxes);
+    const el=document.getElementById('storeinfo');
+    if(el)el.textContent='Ultimo salvataggio '+new Date().toLocaleTimeString('it-IT')+' — '+w+'.';
+  },500);
+}
+
+function renderTabs(){
+  const bt=document.getElementById('blocktabs');
+  bt.innerHTML=BLOCCHI.map((b,i)=>'<button class="tab" role="tab" aria-selected="'+(i===cb)+'" data-b="'+i+'">'+(b.id==='R'?'Riattivazione':'Blocco '+b.id)+'</button>').join('');
+  bt.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{cb=+t.dataset.b;cd=0;cw=0;render();});
+
+  const dt=document.getElementById('daytabs');
+  dt.innerHTML=BLOCCHI[cb].giorni.map((g,i)=>'<button class="tab" role="tab" aria-selected="'+(i===cd)+'" data-d="'+i+'">'+g.n+'</button>').join('');
+  dt.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{cd=+t.dataset.d;render();});
+
+  const wl=BLOCCHI[cb].weeks;
+  if(cw>=wl.length)cw=0;
+  const wt=document.getElementById('weektabs');
+  wt.innerHTML=wl.map((l,i)=>'<button class="wk" role="tab" aria-selected="'+(i===cw)+'" data-w="'+i+'">'+l[0]+'<small>'+l[1]+'</small></button>').join('');
+  wt.querySelectorAll('.wk').forEach(t=>t.onclick=()=>{cw=+t.dataset.w;render();});
+}
+
+function render(){
+  renderTabs();
+  const b=BLOCCHI[cb],g=b.giorni[cd];
+
+  document.getElementById('meta').innerHTML=
+    '<div class="meta"><h3>'+b.nome+'</h3><div class="per">'+b.per+'</div><p>'+b.desc+'</p>'+
+    '<span class="kcal">'+b.kcal+'</span>'+
+    '<p style="margin-top:11px;font-size:12.5px;color:#9AA4AB">'+b.meso+'</p></div>';
+
+  const rows=g.ex.map((e,idx)=>{
+    const cls=e.c?'ex core '+e.c.toLowerCase():'ex';
+    const raw=e.w[cw]||'—';
+    const parts=resolve(raw).split(' · ');
+    if(!e.m) return '<div class="'+cls+'"><div class="name"><b>'+e.nome+'</b></div><div class="right"><div class="presc">'+parts[0]+'</div></div></div>';
+    const sugg=parts[1]?'<div class="sugg">consigliato '+parts[1]+'</div>':'';
+    const key=cb+'-'+cd+'-'+idx+'-'+cw;
+    const val=carichi[key]||'';
+    return '<div class="'+cls+'"><div class="name"><b>'+e.nome+'</b><em>'+G[e.m]+(e.m2?' + '+G[e.m2]:'')+'</em></div>'+
+      '<div class="right"><div class="presc">'+parts[0]+'</div>'+sugg+
+      '<div class="loadwrap"><input type="text" inputmode="decimal" class="'+(val?'filled':'')+'" data-key="'+key+'" value="'+val+'" placeholder="carico"><span>kg</span></div></div></div>';
+  }).join('');
+
+  document.getElementById('content').innerHTML=
+    '<div class="daybox"><div class="dayhead"><div><div class="n">'+g.n+' · '+b.weeks[cw][0]+'/'+b.weeks.length+'</div><div class="t">'+g.t+'</div></div><div class="dur">'+g.dur+'</div></div>'+
+    rows+(g.note?'<div class="note">'+g.note+'</div>':'')+'</div>';
+
+  document.querySelectorAll('.loadwrap input').forEach(inp=>{
+    inp.addEventListener('input',e=>{
+      const k=e.target.dataset.key,v=e.target.value.trim();
+      if(v)carichi[k]=v;else delete carichi[k];
+      e.target.classList.toggle('filled',!!v);
+      queueSave();
+    });
+  });
+
+  const pk=b.weeks.length>2?2:1,tally={};
+  b.giorni.forEach(d=>d.ex.forEach(e=>{
+    if(!e.m)return;
+    const s=countSets(e.w[pk]||'');
+    if(!s)return;
+    tally[e.m]=(tally[e.m]||0)+s;
+    if(e.m2)tally[e.m2]=(tally[e.m2]||0)+s;
+  }));
+  const en=Object.entries(tally).sort((a,c)=>c[1]-a[1]);
+  const mx=Math.max.apply(null,en.map(e=>e[1]).concat([1]));
+  document.getElementById('volume').innerHTML=
+    '<div class="vol"><h4>Serie settimanali per gruppo — settimana di picco</h4>'+
+    en.map(e=>'<div class="vbar"><div class="lab">'+G[e[0]]+'</div><div class="track"><div class="fill" style="width:'+(e[1]/mx*100).toFixed(0)+'%"></div></div><div class="num">'+e[1]+' serie</div></div>').join('')+
+    '<p style="font-size:12px;color:#8A949C;margin-top:10px">Le superserie occupano una riga sola ma contengono due esercizi: bicipiti e tricipiti hanno volume dedicato in due sedute su quattro.</p></div>';
+}
+
+function renderNut(){
+  const nt=document.getElementById('nuttabs');
+  nt.innerHTML=NUTRIZIONE.map((n,i)=>'<button class="tab" role="tab" aria-selected="'+(i===cn)+'" data-n="'+i+'">'+n.nome+'</button>').join('');
+  nt.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{cn=+t.dataset.n;renderNut();});
+  const n=NUTRIZIONE[cn];
+  document.getElementById('nutbody').innerHTML=
+    '<div class="meta"><h3>'+n.nome+'</h3><div class="per">'+n.per+'</div><p>'+n.obiettivo+'</p></div>'+
+    '<div class="macros">'+
+      '<div class="mac"><span class="v">'+n.kcal+'</span><span class="l">kcal</span></div>'+
+      '<div class="mac"><span class="v">'+n.p+'</span><span class="l">proteine</span></div>'+
+      '<div class="mac"><span class="v">'+n.c+'</span><span class="l">carboidrati</span></div>'+
+      '<div class="mac"><span class="v">'+n.g+'</span><span class="l">grassi</span></div>'+
+    '</div>'+
+    n.pasti.map(p=>'<div class="meal"><div class="mh"><b>'+p.n+'</b><span>'+p.k+'</span></div><ul>'+
+      p.i.map(x=>'<li>'+x[0]+'<span>'+x[1]+'</span></li>').join('')+'</ul></div>').join('')+
+    '<div class="vol"><h4>Controllo settimanale</h4><p style="font-size:13.5px;color:#BFC6CB">Pesati 4-5 mattine a digiuno e guarda solo <b>la media della settimana</b>. Girovita all\'ombelico ogni 2 settimane, foto ogni 4. Se media del peso e girovita vanno nella direzione giusta, non toccare niente.</p></div>'+
+    '<div class="vol"><h4>Integrazione — vale per tutti i blocchi</h4>'+
+      INTEGRAZIONE.map(x=>'<div class="introw"><div class="k">'+x[0]+'</div><div class="v">'+x[1]+'</div></div>').join('')+
+    '</div>';
+}
+
+const tA=document.getElementById('tabAll'),tN=document.getElementById('tabNut');
+tA.onclick=()=>{tA.setAttribute('aria-selected','true');tN.setAttribute('aria-selected','false');
+  document.getElementById('viewAll').classList.remove('hidden');document.getElementById('viewNut').classList.add('hidden');};
+tN.onclick=()=>{tN.setAttribute('aria-selected','true');tA.setAttribute('aria-selected','false');
+  document.getElementById('viewNut').classList.remove('hidden');document.getElementById('viewAll').classList.add('hidden');renderNut();};
+
+['S','B','D'].forEach(k=>{
+  document.getElementById('m'+k).addEventListener('input',e=>{
+    const v=parseFloat(String(e.target.value).replace(',','.'));
+    maxes[k]=(v>0&&v<500)?v:null;
+    render();queueSave();
+  });
+});
+
+document.getElementById('btnExp').onclick=()=>{
+  document.getElementById('dump').value=JSON.stringify({carichi:carichi,maxes:maxes});
+  document.getElementById('storeinfo').textContent='Dati pronti nel riquadro: selezionali e copiali.';
+};
+document.getElementById('btnImp').onclick=()=>{
+  try{
+    const o=JSON.parse(document.getElementById('dump').value);
+    if(o.carichi)carichi=o.carichi;
+    if(o.maxes)['S','B','D'].forEach(k=>{if(o.maxes[k]){maxes[k]=o.maxes[k];document.getElementById('m'+k).value=o.maxes[k];}});
+    render();queueSave();
+    document.getElementById('storeinfo').textContent='Dati ripristinati.';
+  }catch(err){
+    document.getElementById('storeinfo').textContent='Testo non valido: incolla il contenuto copiato in precedenza.';
+  }
+};
+
+document.getElementById('btnDl').onclick=()=>{
+  const blob=new Blob([JSON.stringify({carichi:carichi,maxes:maxes},null,1)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='scheda-carichi-'+new Date().toISOString().slice(0,10)+'.json';
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000);
+  document.getElementById('storeinfo').textContent='Backup scaricato nei file del telefono.';
+};
+document.getElementById('btnUp').onclick=()=>document.getElementById('fileIn').click();
+document.getElementById('fileIn').onchange=e=>{
+  const f=e.target.files&&e.target.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const o=JSON.parse(r.result);
+      if(o.carichi)carichi=o.carichi;
+      if(o.maxes)['S','B','D'].forEach(k=>{if(o.maxes[k]){maxes[k]=o.maxes[k];document.getElementById('m'+k).value=o.maxes[k];}});
+      render();queueSave();
+      document.getElementById('storeinfo').textContent='Backup caricato.';
+    }catch(err){document.getElementById('storeinfo').textContent='File non valido.';}
+  };
+  r.readAsText(f);
+  e.target.value='';
+};
+
+(async()=>{
+  const c=await Store.load('carichi'); if(c)carichi=c;
+  const m=await Store.load('maxes');
+  if(m)['S','B','D'].forEach(k=>{if(m[k]){maxes[k]=m[k];document.getElementById('m'+k).value=m[k];}});
+  render();
+  document.getElementById('storeinfo').textContent='I carichi si salvano da soli mentre li scrivi. Usa «Copia i miei dati» per tenerne una copia di sicurezza.';
+})();
+</script>
+</body>
+</html>
