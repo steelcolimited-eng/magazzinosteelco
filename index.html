@@ -608,44 +608,6 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
   </div>
 </div>
 
-<!-- ============ ORDINE DI TAGLIO MODAL ============ -->
-<div class="overlay" id="otOverlay">
-  <div class="modal wide">
-    <div class="modal-head">
-      <div><h2>Ordine di taglio</h2><div class="sub" id="otSub"></div></div>
-      <button class="x" onclick="closeOrdineTaglio()">×</button>
-    </div>
-    <div class="modal-body">
-      <p class="split-hint">Genera l'Excel da inviare al centro servizi. Le specifiche dei colli sono già compilate; tu completi solo le colonne della lavorazione (larghezza di rifilo, nastri, lunghezza di taglio, pacchi). Il numero di lotto esportato è lo stesso che il centro servizi ti rimanderà nella resa, così l'import "Importa resa taglio" riaggancia i colli da solo.</p>
-      <div class="field-row-3">
-        <div class="field"><label>Centro servizi</label><input type="text" id="otCentro" placeholder="es. Combass" list="ubicazioniList"></div>
-        <div class="field"><label>Riferimento ordine</label><input type="text" id="otRif" placeholder="es. TAG-2026-001"></div>
-        <div class="field"><label>Data ordine</label><input type="date" id="otData"></div>
-      </div>
-      <div class="field-row-3">
-        <div class="field"><label>Ritiro / consegna richiesta</label><input type="date" id="otRitiro"></div>
-        <div class="field"><label>Lavorazione richiesta</label>
-          <select id="otLav">
-            <option value="TAGLIO A MISURA">Taglio a misura</option>
-            <option value="RIFILO">Rifilo</option>
-            <option value="TAGLIO + RIFILO">Taglio + rifilo</option>
-            <option value="SELEZIONE">Selezione</option>
-            <option value="">— da indicare riga per riga</option>
-          </select>
-        </div>
-        <div class="field"><label>Ubicazione merce (per il ritiro)</label><input type="text" id="otUbic" placeholder="es. Combass" list="ubicazioniList"></div>
-      </div>
-      <div class="field"><label>Note per il centro servizi</label><input type="text" id="otNote" placeholder="es. imballo su skid, pacchi max 3 t, reso c/lavoro"></div>
-      <div class="section-label">Colli inclusi (<span id="otCount">0</span>)</div>
-      <div id="otPreviewWrap" class="bulk-list" style="max-height:280px"></div>
-    </div>
-    <div class="modal-foot">
-      <button class="btn-ghost" onclick="closeOrdineTaglio()">Annulla</button>
-      <button class="btn-confirm" onclick="confirmOrdineTaglio()">Scarica Excel</button>
-    </div>
-  </div>
-</div>
-
 <!-- ============ IMPORTA RESA TAGLIO MODAL ============ -->
 <div class="overlay" id="resaOverlay">
   <div class="modal wide">
@@ -1888,78 +1850,27 @@ function exportSelezione(){
   showToast(`${coils.length} posizioni esportate`);
 }
 
-/* ---------- ORDINE DI TAGLIO (Excel da mandare al centro servizi) ---------- */
-function otSelected(){ return [...selected].filter(id=>state.stock.some(c=>c.id===id)).map(id=>state.stock.find(c=>c.id===id)).filter(Boolean); }
-function otNextRif(){
-  const y=new Date().getFullYear();
-  const seq=parseInt(localStorage.getItem('otSeq_'+y)||'0',10)+1;
-  return `TAG-${y}-${String(seq).padStart(3,'0')}`;
-}
-function otDataIt(iso){ if(!iso) return ''; const p=iso.split('-'); return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:iso; }
+/* ---------- ORDINE DI TAGLIO (Excel per il centro servizi) ---------- */
 function openOrdineTaglio(){
-  const coils=otSelected();
-  if(!coils.length){ alert('Seleziona almeno un coil a magazzino.'); return; }
-  const tot=coils.reduce((a,c)=>a+(c.peso||0),0);
-  document.getElementById('otSub').textContent=`${coils.length} colli · ${fmtT(tot)} t da inviare in lavorazione`;
-  document.getElementById('otCount').textContent=coils.length;
-  document.getElementById('otCentro').value=localStorage.getItem('otCentro')||'';
-  document.getElementById('otRif').value=otNextRif();
-  document.getElementById('otData').value=oggi();
-  document.getElementById('otRitiro').value='';
-  document.getElementById('otNote').value='';
-  const ubics=[...new Set(coils.map(c=>(c.ubicazione||'').trim()).filter(Boolean))];
-  document.getElementById('otUbic').value=ubics.length===1?ubics[0]:'';
-  document.getElementById('otPreviewWrap').innerHTML=coils.map(c=>`<div class="bi"><span class="mono">${c.collo||'—'} · ${c.fornitore||''} · ${c.spessore}×${c.larghezza}${c.lunghezza?'×'+c.lunghezza:''} · ${c.rivestimento||''} ${c.durezza||''}</span><span class="mono">${Math.round((c.peso||0)*1000).toLocaleString('it-IT')} kg</span></div>`).join('');
-  document.getElementById('otOverlay').classList.add('show');
-}
-function closeOrdineTaglio(){ document.getElementById('otOverlay').classList.remove('show'); }
-function confirmOrdineTaglio(){
-  const coils=otSelected();
-  if(!coils.length){ closeOrdineTaglio(); return; }
-  const centro=document.getElementById('otCentro').value.trim();
-  const rif=document.getElementById('otRif').value.trim();
-  const dataOrd=document.getElementById('otData').value||oggi();
-  const ritiro=document.getElementById('otRitiro').value||'';
-  const lav=document.getElementById('otLav').value;
-  const ubic=document.getElementById('otUbic').value.trim();
-  const note=document.getElementById('otNote').value.trim();
-  const kg=c=>Math.round((c.peso||0)*1000);
-  const totKg=coils.reduce((a,c)=>a+kg(c),0);
-
-  const HEAD=['N.','LOTTO','FORNITORE','UBICAZIONE','SPESS. mm','LARGH. mm','LUNGH. mm','RIVESTIMENTO','TEMPERA','SCELTA','PESO kg',
-              '▸ LAVORAZIONE','▸ LARGH. RIFILATA mm','▸ N. NASTRI','▸ LUNGH. TAGLIO mm','▸ N. PACCHI','▸ PESO DA LAVORARE kg','▸ NOTE'];
-  const righe=coils.map((c,i)=>[i+1,c.collo||'',c.fornitore||'',c.ubicazione||'',c.spessore||'',c.larghezza||'',c.lunghezza||'',
-    c.rivestimento||'',c.durezza||'',c.scelta||'',kg(c),lav,'','','','',kg(c),'']);
-
-  const aoa=[
-    ['ORDINE DI TAGLIO — STEELCO LIMITED SRL'],
-    ['Via San Giacomo 30, 80133 Napoli'],
-    [],
-    ['Centro servizi',centro,'','Riferimento ordine',rif],
-    ['Data ordine',otDataIt(dataOrd),'','Ritiro / consegna richiesta',otDataIt(ritiro)],
-    ['Merce presso',ubic,'','Colli',coils.length,'','Peso totale kg',totKg],
-    ['Note',note],
-    [],
-    ['Le colonne contrassegnate con ▸ indicano la lavorazione richiesta. Il campo LOTTO va riportato invariato nella resa.'],
-    [],
-    HEAD,
-    ...righe,
-    [],
-    ['','TOTALE','','','','','','','','',totKg,'','','','','',totKg,'']
-  ];
-  const ws=XLSX.utils.aoa_to_sheet(aoa);
-  ws['!cols']=[{wch:5},{wch:16},{wch:14},{wch:13},{wch:10},{wch:10},{wch:10},{wch:14},{wch:9},{wch:10},{wch:11},
-               {wch:18},{wch:20},{wch:11},{wch:19},{wch:11},{wch:20},{wch:26}];
-  ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:10}},{s:{r:1,c:0},e:{r:1,c:10}},{s:{r:8,c:0},e:{r:8,c:10}},{s:{r:6,c:1},e:{r:6,c:10}}];
+  const ids=[...selected].filter(id=>state.stock.some(c=>c.id===id));
+  if(!ids.length){ alert('Seleziona almeno un coil a magazzino.'); return; }
+  const coils=ids.map(id=>state.stock.find(c=>c.id===id)).filter(Boolean);
+  const data=coils.map(c=>({
+    'LOTTO':c.collo||'',
+    'SPESSORE':c.spessore||'',
+    'LARGHEZZA':c.larghezza||'',
+    'LUNGHEZZA':c.lunghezza||'',
+    'RIVESTIMENTO':c.rivestimento||'',
+    'TEMPERA':c.durezza||'',
+    'PESO KG':Math.round((c.peso||0)*1000),
+    'TAGLIO':''
+  }));
+  const ws=XLSX.utils.json_to_sheet(data);
+  ws['!cols']=[{wch:18},{wch:11},{wch:12},{wch:12},{wch:15},{wch:10},{wch:11},{wch:30}];
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,'Ordine di taglio');
-  XLSX.writeFile(wb,`Ordine_taglio_${(rif||dataOrd).replace(/[^\w-]/g,'_')}.xlsx`);
-
-  if(centro) localStorage.setItem('otCentro',centro);
-  const m=/^TAG-(\d{4})-(\d+)$/.exec(rif);
-  if(m) localStorage.setItem('otSeq_'+m[1],String(parseInt(m[2],10)));
-  closeOrdineTaglio();
-  showToast(`Ordine di taglio: ${coils.length} colli · ${totKg.toLocaleString('it-IT')} kg`);
+  XLSX.writeFile(wb,`Ordine_taglio_${new Date().toISOString().slice(0,10)}.xlsx`);
+  showToast(`${coils.length} coil nell'ordine di taglio`);
 }
 
 function exportStorico(){
