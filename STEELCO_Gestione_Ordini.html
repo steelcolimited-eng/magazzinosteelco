@@ -436,6 +436,8 @@ tbody tr.clickable:hover{background:var(--steel-bg)}
         <th style="width:130px">Prezzo/ton</th><th style="width:110px">Esito</th><th style="width:34px"></th>
       </tr></thead><tbody id="tbRighe"></tbody></table>
       <button class="addrow" onclick="addRiga()">+ aggiungi consegna</button>
+      <button class="addrow" onclick="ricavaConsegne()">&#128269; ricava dai documenti</button>
+      <div id="boxRicava"></div>
 
       <div class="sec-title">Fatture</div>
       <table class="subtable"><thead><tr>
@@ -1942,6 +1944,216 @@ function disegnaRighe(){
     <td><button class="del" onclick="modaleRighe.splice(${i},1);disegnaRighe()">×</button></td></tr>`).join('');
 }
 function addRiga(){ modaleRighe.push({dataConsegna:'',ddt:'',kg:null,prezzo:'',esito:'Positivo'}); disegnaRighe(); }
+
+/* ============ RICAVA LE CONSEGNE DAI DOCUMENTI ALLEGATI ======================
+   Legge i DDT gia' attaccati all'ordine e tira fuori numero e data (e i kg
+   quando il documento li dice chiaramente). NON scrive mai da solo: ti mostra
+   un elenco da spuntare e aggiunge solo quello che confermi tu. Non tocca mai
+   una consegna gia' scritta e non ripropone un DDT gia' presente.
+   Nessun OCR e nessuna invenzione: se il PDF e' una scansione senza testo
+   dentro, si ferma al nome del file e te lo dice riga per riga.            */
+
+const MESI_IT={gennaio:1,febbraio:2,marzo:3,aprile:4,maggio:5,giugno:6,
+               luglio:7,agosto:8,settembre:9,ottobre:10,novembre:11,dicembre:12};
+let ricavati=[];
+
+function rcNorm(s){ return String(s||'').toUpperCase().replace(/[^0-9A-Z\/]/g,''); }
+
+function rcIso(g,m,a){
+  g=parseInt(g,10); m=parseInt(m,10); a=parseInt(a,10);
+  if(!g||!m||g>31||m>12) return '';
+  if(a<100) a=2000+a;
+  if(a<2015||a>2100) return '';
+  return a+'-'+String(m).padStart(2,'0')+'-'+String(g).padStart(2,'0');
+}
+function rcData(t){
+  const s=String(t||'').replace(/\s+/g,' ');
+  let m=/(\d{1,2})\s*[\/\.\-]\s*(\d{1,2})\s*[\/\.\-]\s*(\d{2,4})/.exec(s);
+  if(m) return rcIso(m[1],m[2],m[3]);
+  m=/(\d{1,2})\s+(gennaio|febbraio|marzo|aprile|maggio|giugno|luglio|agosto|settembre|ottobre|novembre|dicembre)\s+(\d{4})/i.exec(s);
+  if(m) return rcIso(m[1],MESI_IT[m[2].toLowerCase()],m[3]);
+  return '';
+}
+/* il numero: solo se accanto c'e' la parola che dice di che documento si
+   tratta (DDT, bolla, lettera di trasferimento, CMR). Un numero qualsiasi
+   trovato in giro per la pagina non vale, e una data non viene mai scambiata
+   per un numero di documento. Prendo anche la data solo se sta attaccata al
+   numero ("DDT n. 216 del 06/02/26"): cosi' non rischio di pescare la data
+   dell'ordine o della fattura che sta scritta piu' in la'.               */
+const RC_NUM='([0-9]{1,7}(?:\\s*[\\/-]\\s*[0-9A-Z]{1,6})?)';
+const RC_ET=['DDT', '(?:d\\.?\\s?d\\.?\\s?t\\.?|documento di trasporto|bolla di consegna|bolla)',
+             'L.T.','(?:l\\.?\\s?t\\.?|lettera di trasferimento|richiesta di trasferimento)',
+             'CMR', '(?:cmr)'];
+function rcNumero(t){
+  const s=' '+String(t||'').replace(/[_]+/g,' ').replace(/\s+/g,' ')+' ';
+  for(let i=0;i<RC_ET.length;i+=2){
+    const et=RC_ET[i+1];
+    const conN =new RegExp('\\b'+et+'[A-Za-zÀ-ÿ\'. ]{0,20}?\\s*n[°ºro.]*\\s*'+RC_NUM,'i');
+    const attac=new RegExp('\\b'+et+'[ .:]{0,3}'+RC_NUM,'i');
+    const m=conN.exec(s)||attac.exec(s);
+    if(m){
+      const num=m[1].replace(/\s+/g,'');
+      if(/^\d{1,2}[\/-]\d{1,2}$/.test(num)) continue;          /* e' una data */
+      const dopo=s.slice(m.index+m[0].length, m.index+m[0].length+18);
+      const d=/^[ ,.]*(?:del|in data)?[ ]*(\d{1,2}\s*[\/\.\-]\s*\d{1,2}\s*[\/\.\-]\s*\d{2,4})/i.exec(dopo);
+      return {tipo:RC_ET[i], num:num, data: d? rcData(d[1]) : ''};
+    }
+  }
+  return null;
+}
+/* i kg: li prendo solo se il documento li chiama per nome (peso netto,
+   totale kg…). Mai un numero preso a caso.                                */
+function rcKg(t){
+  const s=String(t||'').replace(/\s+/g,' ');
+  const m=/(?:peso\s*netto|kg\s*nett|netto\s*kg|totale\s*kg|kg\s*totali|totale\s*peso)\D{0,14}([0-9]{1,3}(?:[.\s][0-9]{3})+(?:,[0-9]{1,3})?|[0-9]{3,6}(?:,[0-9]{1,3})?)/i.exec(s);
+  if(!m) return null;
+  const n=parseFloat(m[1].replace(/[.\s]/g,'').replace(',','.'));
+  return (n>=100 && n<=300000)? Math.round(n) : null;
+}
+function rcEtichetta(tipo,num,data){
+  return tipo+' N. '+num+(data? ' DEL '+fdata(data) : '');
+}
+
+/* i byte del documento: dalla cartella dell'archivio o dal cloud.
+   Se non ci arrivo (file spostato, oppure il cloud non lascia leggere il
+   contenuto da questa pagina) restituisco null e si va avanti col nome.  */
+async function rcBytes(d){
+  try{
+    if(d.percorso){
+      const f=await fileDaDisco(d.percorso);
+      return f? await f.arrayBuffer() : null;
+    }
+    if(d.url){
+      const r=await fetch(d.url);
+      if(!r.ok) return null;
+      return await r.arrayBuffer();
+    }
+  }catch(e){ return null; }
+  return null;
+}
+async function rcTesto(buf){
+  if(!pdfjsPronta()||!buf) return '';
+  try{
+    const doc=await pdfjsLib.getDocument({data:buf}).promise;
+    const n=Math.min(doc.numPages,3);
+    let t='';
+    for(let i=1;i<=n;i++){
+      const p=await doc.getPage(i);
+      const c=await p.getTextContent();
+      t+=' '+c.items.map(function(x){return x.str;}).join(' ');
+    }
+    return t;
+  }catch(e){ return ''; }
+}
+
+function rcAvviso(t){
+  return '<div style="margin-top:10px;padding:10px 13px;background:var(--grey-bg);'+
+         'border:1px solid var(--line-strong);border-radius:8px;font-size:12.5px">'+t+'</div>';
+}
+
+async function ricavaConsegne(){
+  const box=el('boxRicava'); if(!box) return;
+  const o = editId? tutti().find(function(x){ return x.id===editId; }) : null;
+
+  const docs=[];
+  (modaleAllegati||[]).forEach(function(f){ docs.push({nome:f.nome,url:f.url}); });
+  if(o && o.fileLocali) o.fileLocali.forEach(function(f){ docs.push({nome:f.nome,percorso:f.percorso}); });
+  if(!docs.length){
+    box.innerHTML=rcAvviso('Questo ordine non ha documenti allegati: non c\'&egrave; niente da leggere. '+
+      'Allega i DDT qui sopra e riprova.'); return;
+  }
+  const ddt=docs.filter(function(d){
+    return tipiDocumento(d.nome,d.percorso).indexOf('DDT')>=0 || segnaliDaNome(d.nome).ddt;
+  });
+  if(!ddt.length){
+    box.innerHTML=rcAvviso('Tra i '+docs.length+' documenti allegati non ne riconosco nessuno come DDT. '+
+      'Se ci sono, rinominali con &laquo;DDT&raquo; nel nome oppure etichettali dalla scheda Documenti.'); return;
+  }
+
+  box.innerHTML=rcAvviso('Leggo '+ddt.length+' document'+(ddt.length===1?'o':'i')+'&hellip;');
+
+  ricavati=[];
+  let chiusi=0;
+  for(let i=0;i<ddt.length;i++){
+    const d=ddt[i];
+    const daNome=rcNumero(d.nome);
+    const dataNome=(daNome && daNome.data) || rcData(d.nome);
+    const buf=await rcBytes(d);
+    const testo=await rcTesto(buf);
+    if(buf && !testo) chiusi++;
+
+    const daTesto = testo? rcNumero(testo) : null;
+    const kg = testo? rcKg(testo) : null;
+
+    const n = daTesto || daNome;
+    if(!n) continue;
+    const data = daTesto? (daTesto.data || dataNome) : dataNome;
+    ricavati.push({
+      nome:d.nome,
+      tipo:n.tipo, num:n.num, data:data, kg:kg,
+      ddt:rcEtichetta(n.tipo,n.num,data),
+      fonte: daTesto? 'letto dentro il documento' : (testo? 'letto dal nome del file' :
+             (buf? 'scansione senza testo: letto dal nome del file' : 'letto dal nome del file'))
+    });
+  }
+
+  /* niente doppioni: se il numero c'e' gia' in una consegna, lo salto */
+  const gia=(modaleRighe||[]).map(function(r){ return rcNorm(r.ddt||r.nDdt); });
+  const nuovi=ricavati.filter(function(c){
+    const k=rcNorm(c.num);
+    return !gia.some(function(g){ return g && k && (g.indexOf(k)>=0); });
+  });
+  const saltati=ricavati.length-nuovi.length;
+  ricavati=nuovi;
+
+  if(!ricavati.length){
+    box.innerHTML=rcAvviso(saltati
+      ? 'Tutti i '+saltati+' DDT che ho letto sono gi&agrave; nelle consegne qui sopra: non c\'&egrave; niente da aggiungere.'
+      : 'Ho aperto i documenti ma non ci ho trovato un numero di DDT scritto in chiaro. '+
+        'Aggiungi le consegne a mano con &laquo;+ aggiungi consegna&raquo;.');
+    return;
+  }
+
+  box.innerHTML=
+    '<div style="margin-top:10px;padding:13px;border:1px solid var(--steel-2);border-radius:10px;background:var(--steel-bg)">'+
+    '<div style="font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:9px">'+
+      'Trovate '+ricavati.length+' consegne &middot; controlla e conferma</div>'+
+    ricavati.map(function(c,i){
+      return '<label style="display:flex;align-items:flex-start;gap:9px;padding:8px 0;border-top:1px solid var(--line-strong)">'+
+        '<input type="checkbox" id="rc'+i+'" checked style="margin-top:3px">'+
+        '<span style="font-size:12.5px;line-height:1.5">'+
+          '<b>'+esc(c.ddt)+'</b>'+
+          (c.kg? ' &middot; '+kg(c.kg) : '')+
+          (c.data? '' : ' <span style="color:var(--rust)">(senza data: mettila tu)</span>')+
+          '<br><span class="dim" style="font-size:11.5px">'+esc(c.nome)+' &middot; '+esc(c.fonte)+'</span>'+
+        '</span></label>';
+    }).join('')+
+    '<div style="display:flex;gap:10px;align-items:center;margin-top:11px;flex-wrap:wrap">'+
+      '<button class="btn-primary" onclick="aggiungiConsegneRicavate()">Aggiungi le consegne spuntate</button>'+
+      '<button class="btn-primary btn-ghost" onclick="el(\'boxRicava\').innerHTML=\'\'">Annulla</button>'+
+      '<span class="dim" style="font-size:11.5px">'+
+        (saltati? saltati+' gi&agrave; presenti, saltate. ' : '')+
+        (chiusi? chiusi+' scansion'+(chiusi===1?'e':'i')+' senza testo dentro. ' : '')+
+        'Dopo l\'aggiunta controlla la tabella e premi Salva.</span>'+
+    '</div></div>';
+}
+
+function aggiungiConsegneRicavate(){
+  let n=0;
+  ricavati.forEach(function(c,i){
+    const cb=el('rc'+i);
+    if(cb && cb.checked){
+      modaleRighe.push({dataConsegna:c.data||'', ddt:c.ddt, kg:c.kg||null, prezzo:'', esito:''});
+      n++;
+    }
+  });
+  ricavati=[];
+  disegnaRighe();
+  try{ ricalcolaAnteprima(); }catch(e){}
+  el('boxRicava').innerHTML = n
+    ? rcAvviso('Aggiunte '+n+' consegne. Controllale nella tabella qui sopra — kg, prezzo ed esito li metti tu — poi premi <b>Salva</b>.')
+    : '';
+}
 function disegnaFatture(){
   el('tbFatture').innerHTML=modaleFatture.map((f,i)=>`<tr>
     <td><input value="${esc(f.numero||'')}" onchange="modaleFatture[${i}].numero=this.value"></td>
