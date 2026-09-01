@@ -530,7 +530,7 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
     <div class="modal-body">
       <div class="section-label">Dati comuni a tutti i pacchi importati</div>
       <div class="field-row">
-        <div class="field"><label>Fornitore comune (usato se il pacco non ne ha uno proprio)</label><input type="text" id="dFornitore" placeholder="es. TECNOSID"></div>
+        <div class="field"><label>Fornitore comune (usato se il pacco non ne ha uno proprio)</label><input type="text" id="dFornitore" placeholder="es. TECNOSID" oninput="onDistintaOrigine()"></div>
         <div class="field"><label>Destinazione</label>
           <select id="dDestinazione" onchange="onDistintaDest()"><option value="stock">A magazzino (merce già nazionalizzata)</option><option value="sailing">In navigazione (merce in arrivo)</option></select>
           <div class="hint-inline" id="dDestHint"></div>
@@ -641,7 +641,7 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
     <div class="modal-body">
       <div class="section-label">Identificazione</div>
       <div class="field-row">
-        <div class="field"><label>Fornitore</label><input type="text" id="eFornitore" placeholder="TITAN / REYNOLDS / HBIS / JSW…" list="fornitoriList"></div>
+        <div class="field"><label>Fornitore</label><input type="text" id="eFornitore" placeholder="TITAN / REYNOLDS / HBIS / JSW…" list="fornitoriList" oninput="onOrigineChange()"></div>
         <div class="field"><label>Collo</label><input type="text" id="eCollo" placeholder="es. X241387C-6.P008"></div>
       </div>
       <datalist id="fornitoriList"></datalist>
@@ -810,13 +810,32 @@ const CBAM_DEF={
   fattore:{2026:2.5,2027:5,2028:10,2029:22.5,2030:48.5,2031:61,2032:73.5,2033:86,2034:100},
   markup:{2026:10,2027:20,2028:30},   // maggiorazione sui default value, dal 2028 resta 30
   emisBase:{IT:0,UE:0,US:1.44,CA:1.51,RS:2.10,IN:2.55,CN:2.30,TR:2.00,KR:1.95,JP:1.80,XX:1.83},
-  prezzi:[{periodo:'2026-Q1',prezzo:75.36,provvisorio:false}]
+  prezzi:[{periodo:'2026-Q1',prezzo:75.36,provvisorio:false}],
+  /* Dati verificati comunicati dal fornitore: sostituiscono il default e NON prendono mark-up.
+     Chiave: PAESE|FORNITORE (prima parola del nome fornitore, maiuscolo). */
+  fornitori:{'RS|HBIS':{em:2.136,nota:'Impianto Šabac — comunicazione periodo 2025, emissioni dirette'}}
 };
 function cbamCfg(){
   if(!state.cbam) state.cbam=JSON.parse(JSON.stringify(CBAM_DEF));
   const c=state.cbam;
   if(!c.prezzi||!c.prezzi.length) c.prezzi=[{periodo:'2026-Q1',prezzo:0}];
+  if(!c.fornitori) c.fornitori=JSON.parse(JSON.stringify(CBAM_DEF.fornitori));
   return c;
+}
+/* Chiave del registro: paese + prima parola del fornitore. "HBIS GROUP" e "hbis" danno la stessa chiave. */
+const chiaveForn=(o,f)=>{
+  const t=String(f||'').toUpperCase().split(/[^A-Z0-9]+/).filter(Boolean)[0]||'';
+  return `${String(o||'').toUpperCase()}|${t}`;
+};
+function emisVerificate(o,f){
+  const tab=cbamCfg().fornitori||{};
+  const v=tab[chiaveForn(o,f)];
+  return v&&+v.em>0?+v.em:0;
+}
+function notaVerificate(o,f){
+  const tab=cbamCfg().fornitori||{};
+  const v=tab[chiaveForn(o,f)];
+  return v?(v.nota||''):'';
 }
 const annoDi=d=>d?+String(d).slice(0,4):new Date().getFullYear();
 function fattoreAnno(y){ const f=cbamCfg().fattore; return (f[y]!=null?f[y]:(y>=2034?100:2.5))/100; }
@@ -905,12 +924,19 @@ function onOrigineChange(){
   const o=document.getElementById('eOrigine').value;
   document.getElementById('eCanale').value=canaleLabel(canaleDa(o))||'';
   const hint=document.getElementById('cbamHint');
-  const cbamEl=document.getElementById('eCbam');
-  if(!o){ hint.innerHTML=''; return; }
-  const sugg=CBAM_T[o]||0;
-  if(sugg===0){ hint.innerHTML='Origine UE: nessun CBAM dovuto.'; return; }
-  hint.innerHTML=`Indicativo per ${paeseLabel(o)}: <b>€${sugg}/t</b> · <a onclick="applicaCbam(${sugg})">applica</a>`;
-  if(!(+cbamEl.value>0)){ cbamEl.value=sugg; calcValue(); }
+  const emEl=document.getElementById('eEmissioni');
+  const fonteEl=document.getElementById('eFonteEmis');
+  if(!o){ hint.innerHTML=''; calcCbamRiga(); return; }
+  if(o==='IT'||o==='UE'){ hint.innerHTML='Origine UE: nessun CBAM dovuto.'; calcCbamRiga(); return; }
+  const forn=document.getElementById('eFornitore').value;
+  const ev=emisVerificate(o,forn);
+  if(ev>0){
+    if(!(+emEl.value>0)){ emEl.value=ev; fonteEl.value='FORNITORE'; }
+    hint.innerHTML=`Dato verificato ${chiaveForn(o,forn).split('|')[1]}: <b>${fi3(ev)}</b> tCO₂e/t, nessun mark-up. ${notaVerificate(o,forn)}`;
+  } else {
+    hint.innerHTML=`Nessun dato verificato per questo fornitore: si usa il default ${paeseLabel(o)} <b>${fi3(cbamCfg().emisBase[o]||0)}</b> con mark-up.`;
+  }
+  calcCbamRiga();
 }
 function applicaCbam(v){ document.getElementById('eCbam').value=v; calcValue(); }
 const oggi=()=>new Date().toISOString().slice(0,10);
@@ -1405,6 +1431,54 @@ function setCbamCfg(k,v){ const c=cbamCfg(); c[k]=+v||0; saveState(); renderCbam
 function setCbamFattore(y,v){ cbamCfg().fattore[y]=+v||0; saveState(); renderCbam(); }
 function setCbamMarkup(y,v){ cbamCfg().markup[y]=+v||0; saveState(); renderCbam(); }
 function setCbamEmis(o,v){ cbamCfg().emisBase[o]=+v||0; saveState(); renderCbam(); }
+function setCbamForn(k,campo,v){
+  const t=cbamCfg().fornitori; if(!t[k]) return;
+  if(campo==='em') t[k].em=+v||0; else t[k].nota=v;
+  saveState(); renderCbam();
+}
+function addCbamForn(){
+  const o=(prompt('Paese di origine (sigla: RS, TR, IN, CN…)')||'').trim().toUpperCase();
+  if(!o) return;
+  const f=(prompt('Fornitore (basta la prima parola, es. HBIS)')||'').trim();
+  if(!f) return;
+  const em=+(prompt('Emissioni verificate in tCO₂e/t (usa il punto decimale)')||'').replace(',','.');
+  if(!(em>0)){ alert('Valore emissioni non valido.'); return; }
+  cbamCfg().fornitori[chiaveForn(o,f)]={em,nota:''};
+  saveState(); renderCbam();
+}
+function delCbamForn(k){
+  if(!confirm('Elimino il dato verificato '+k+'?\n\nI colli già caricati non cambiano: restano con il valore che hanno adesso.')) return;
+  delete cbamCfg().fornitori[k]; saveState(); renderCbam();
+}
+/* Riallinea i colli già in magazzino/navigazione ai dati verificati del registro. */
+function allineaEmisFornitore(){
+  const tab=cbamCfg().fornitori||{};
+  const da=[];
+  ['stock','sailing'].forEach(lista=>state[lista].forEach(c=>{
+    if(!c.origine||c.origine==='IT'||c.origine==='UE') return;
+    const ev=emisVerificate(c.origine,c.fornitore);
+    if(!ev) return;
+    if(c.fonteEmissioni==='FORNITORE' && Math.abs((+c.emissioniSpec||0)-ev)<1e-9) return;
+    da.push({lista,c,ev});
+  }));
+  if(!da.length){ alert('Niente da allineare: i colli con un dato verificato disponibile lo hanno già.'); return; }
+  const peso=da.reduce((a,x)=>a+(x.c.peso||0),0);
+  let delta=0;
+  da.forEach(({c,ev})=>{
+    const vecchio=+cbamCoil(c).costoT||0;
+    const nuovo=+cbamCoil({...c,fonteEmissioni:'FORNITORE',emissioniSpec:ev}).costoT||0;
+    delta+=(nuovo-vecchio)*(c.peso||0);
+  });
+  const segno=delta<0?'in meno':'in più';
+  if(!confirm(`Allineo ${da.length} colli (${fmtT(peso)} t) ai dati verificati del fornitore.\n\nIl costo CBAM cambia di circa ${fmtEur(Math.abs(delta))} ${segno} in totale, e con esso il prezzo di acquisto finale e il valore di magazzino.\n\nProcedo?`)) return;
+  da.forEach(({c,ev})=>{
+    c.fonteEmissioni='FORNITORE'; c.emissioniSpec=ev;
+    const nuovo=+cbamCoil(c).costoT.toFixed(2), vecchio=+c.cbam||0;
+    c.cbam=nuovo; c.prezzoAcqFinale=(+c.prezzoAcqFinale||0)-vecchio+nuovo;
+    c.valoreTotale=c.prezzoAcqFinale*(c.peso||0);
+  });
+  saveState(); showToast(`${da.length} colli allineati ai dati del fornitore`); render();
+}
 function setCbamPrezzo(i,campo,v){
   const p=cbamCfg().prezzi[i]; if(!p) return;
   const perVecchio=p.periodo;
@@ -1544,6 +1618,17 @@ function renderCbam(){
   const anniPar=Object.keys(cfg.fattore).map(Number).sort();
   const paesiPar=Object.keys(cfg.emisBase).filter(k=>k!=='IT'&&k!=='UE');
 
+  const fornKeys=Object.keys(cfg.fornitori||{}).sort();
+  const fornRows=fornKeys.length?fornKeys.map(k=>{
+    const v=cfg.fornitori[k], p=k.split('|');
+    const n=state.stock.concat(state.sailing).filter(c=>chiaveForn(c.origine,c.fornitore)===k).length;
+    return `<tr>
+      <td><b>${paeseLabel(p[0])} · ${p[1]}</b><span class="an-sub">${n} colli a magazzino</span></td>
+      <td class="n"><input type="number" step="0.001" value="${v.em}" onchange="setCbamForn('${k}','em',this.value)"></td>
+      <td><input type="text" value="${(v.nota||'').replace(/"/g,'&quot;')}" onchange="setCbamForn('${k}','nota',this.value)"></td>
+      <td class="n"><button class="mini-btn danger" onclick="delCbamForn('${k}')" title="Elimina">✕</button></td>
+    </tr>`;}).join(''):'<tr><td colspan="4" class="dim">Nessun dato verificato inserito: si usano i default CE con mark-up.</td></tr>';
+
   document.getElementById('cbamWrap').innerHTML=`
   <div class="an-grid">
     <div class="an-card"><h3>Prezzo certificato per periodo</h3>
@@ -1610,6 +1695,16 @@ function renderCbam(){
       </tr>`).join('')}
       </tbody></table>
       <p class="an-note">Usando i default CE si applica una maggiorazione crescente: 10% nel 2026, 20% nel 2027, 30% dal 2028. Con i dati verificati del fornitore il mark-up non si applica — è lì che sta il risparmio, se riesci a farteli dare.</p>
+    </div>
+
+    <div class="an-card"><h3>Dati verificati dei fornitori</h3>
+      <table><colgroup><col style="width:26%"><col style="width:20%"><col style="width:42%"><col style="width:12%"></colgroup>
+      <thead><tr><th>Origine · fornitore</th><th class="n">tCO₂e/t</th><th>Nota</th><th class="n"></th></tr></thead><tbody>
+      ${fornRows}
+      </tbody></table>
+      <button class="split-add" onclick="addCbamForn()">+ Aggiungi fornitore</button>
+      <button class="split-add" onclick="allineaEmisFornitore()">Allinea i colli già caricati</button>
+      <p class="an-note">Quando in una riga o in una distinta metti insieme questo paese e questo fornitore, il valore qui sotto entra da solo come <b>dato verificato</b>: sostituisce il default e non prende mark-up. Il pulsante di allineamento aggiorna i colli inseriti prima, ricalcola il costo CBAM e lo riporta sul prezzo di acquisto finale e sul valore di magazzino. Metti qui solo le <b>emissioni dirette</b> del certificato: per l'acciaio le indirette non entrano nel conteggio.</p>
     </div>
 
     <div class="an-card"><h3>Quanto del conto è ancora una stima</h3>
@@ -2465,7 +2560,8 @@ function onDistintaOrigine(){
   const o=document.getElementById('dOrigine').value;
   const hint=document.getElementById('dCbamHint');
   const emEl=document.getElementById('dEmissioni');
-  if(o && !(+emEl.value>0) && cbamCfg().emisBase[o]!=null && cbamCfg().emisBase[o]>0) emEl.value=cbamCfg().emisBase[o];
+  const evd=emisVerificate(o,document.getElementById('dFornitore').value);
+  if(o && !(+emEl.value>0) && evd>0){ emEl.value=evd; document.getElementById('dFonteEmis').value='FORNITORE'; }
   if(!o){ hint.innerHTML='<b>Indica il paese di origine.</b> Non era nel file: senza questo dato il CBAM non si calcola e il costo a tonnellata resta incompleto.'; return; }
   if(o==='IT'||o==='UE'){ hint.innerHTML='Origine UE: nessun CBAM dovuto, il campo resta a zero.'; document.getElementById('dCbam').value=0; calcDistintaTotals(); return; }
   const finto={origine:o,fonteEmissioni:document.getElementById('dFonteEmis').value,
@@ -2473,7 +2569,8 @@ function onDistintaOrigine(){
     dataCarico:document.getElementById('dDataCarico').value||oggi(),peso:1};
   const r=cbamCoil(finto);
   document.getElementById('dCbam').value=r.costoT.toFixed(2);
-  hint.innerHTML=`${paeseLabel(o)} · emissioni applicate <b>${fi3(r.em)}</b> tCO₂e/t · meno allocazione gratuita ${fi3(r.sefa)} · restano ${fi3(r.netti)} · prezzo ${r.periodo}${r.provvisorio?' <b style="color:var(--amber)">(stima)</b>':''} → <b>€${r.costoT.toFixed(2)}/t</b> caricati nel campo CBAM.`;
+  const tagFonte=r.fonte==='FORNITORE'?'<b style="color:var(--green)">dato fornitore, nessun mark-up</b>':`default CE +${Math.round(r.markup*100)}%`;
+  hint.innerHTML=`${paeseLabel(o)} · emissioni applicate <b>${fi3(r.em)}</b> tCO₂e/t (${tagFonte}) · meno allocazione gratuita ${fi3(r.sefa)} · restano ${fi3(r.netti)} · prezzo ${r.periodo}${r.provvisorio?' <b style="color:var(--amber)">(stima)</b>':''} → <b>€${r.costoT.toFixed(2)}/t</b> caricati nel campo CBAM.`;
   calcDistintaTotals();
 }
 function handleDistintaFile(e){
