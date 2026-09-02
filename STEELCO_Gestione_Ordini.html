@@ -2467,10 +2467,25 @@ function scegliFile(){ el('inputAllegati').click(); }
 async function caricaAllegati(files){
   if(!files||!files.length) return;
   const stato=el('statoUpload');
+  /* 0) un ordine appena creato non ha ancora un numero interno, e senza quello
+        l'app non sapeva dove scrivere: saltava del tutto l'archivio e finiva
+        tutto in un angolo del cloud. Adesso l'ordine lo salvo io qui. */
+  if(!editId){
+    const nuovo=raccogliModale();
+    if(!parteDi(nuovo)){
+      alert('Prima di allegare i documenti devo sapere di chi e\' l\'ordine.\n\n'+
+            'Scrivi il '+(modaleTipo==='V'?'cliente':'fornitore')+', poi ritrascina il file: '+
+            'l\'ordine lo salvo io e gli creo la cartella nell\'archivio.');
+      return;
+    }
+    const arr = nuovo.tipo==='V'? state.vendite : nuovo.tipo==='A'? state.acquisti : state.lavorazione;
+    nuovo.id=state.nextId++; arr.push(nuovo); editId=nuovo.id; salva(); render();
+    if(stato) stato.textContent='Ordine salvato: ora gli posso creare la cartella nell\'archivio.';
+  }
   /* 1) prima di tutto: scrivi il file nella cartella dell'archivio sul computer.
         Ma prima chiedo a te dove va e cosa c'e' dentro: un PDF solo puo' contenere
         contratto + proforma + dichiarazione, e non deve finire tutto in "2 DOCUMENTI". */
-  if(cartellaRadice && editId){
+  if(await archivioPronto()){
     const o=tutti().find(x=>x.id===editId);
     const voci=[];
     for(let i=0;i<files.length;i++){
@@ -3027,6 +3042,23 @@ async function ricollegaCartella(silenzioso){
   }catch(e){ return false; }
 }
 
+/* Chrome ritira il consenso alla cartella a ogni riapertura. Prima di scrivere
+   qualcosa sul disco lo richiedo qui: il click o il trascinamento dell'utente
+   e' un gesto valido, quindi la richiesta va a buon fine invece di fallire
+   in silenzio come faceva prima. */
+async function archivioPronto(){
+  if(!cartellaRadice) return false;
+  try{
+    let p=await cartellaRadice.queryPermission({mode:'readwrite'});
+    if(p!=='granted') p=await cartellaRadice.requestPermission({mode:'readwrite'});
+    if(p==='granted'){ nascondiBanner(); return true; }
+  }catch(e){}
+  alert('L\'archivio sul computer non e\' autorizzato: non posso creare la cartella '+
+        'dell\'ordine ne\' scriverci dentro i documenti.\n\n'+
+        'Premi "Riattiva l\'archivio" nella fascia gialla in alto e riprova.');
+  return false;
+}
+
 /* scandisce l'albero e associa ogni file al suo ordine */
 async function scansionaCartella(){
   const box=el('statoCartella'); const msg=t=>{ if(box) box.innerHTML=t; };
@@ -3223,6 +3255,7 @@ async function promemoriaAltrove(o, v, percorso){
 /* rigenera tutte le cartelle e le schede: la cartella diventa lo specchio del gestionale */
 async function sincronizzaCartelle(){
   if(!cartellaRadice){ alert('Prima collega la cartella dell\'archivio.'); return; }
+  if(!await archivioPronto()) return;
   const box=el('statoCartella'); const msg=t=>{ if(box) box.innerHTML=t; };
   const lista=tutti();
   if(!confirm('Creo dentro "'+cartellaRadice.name+'" la cartella di ogni ordine con le 5 sottocartelle e la scheda aggiornata.\n\n'+
