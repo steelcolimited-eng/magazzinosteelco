@@ -2780,8 +2780,9 @@ function nomeCartellaOrdine(o){
     if(n && n.length>2) return pulisci(n);
   }
   if(o.tipo==='V'){
+    /* stesso ordine degli acquisti: prima il nome, poi il numero */
     const num=o.ordCliente||o.num||'senza numero';
-    return pulisci(num+' '+(o.cliente||''));
+    return pulisci((o.cliente||'')+' '+num);
   }
   /* acquisti: fornitore + il riferimento che ti da' lui, senza date davanti */
   return pulisci((o.fornitore||'')+' '+(o.num||'')) || 'senza numero';
