@@ -609,6 +609,10 @@ tbody tr.clickable:hover{background:var(--steel-bg)}
       <div class="note warn">
         <b>Per allegare i documenti</b> serve anche lo Storage: menu a sinistra → <b>Storage</b> → <b>Inizia</b> → conferma, e nelle sue Regole metti la stessa riga del punto 3.
         Senza Storage l'app funziona lo stesso, solo che non puoi caricare i PDF nel cloud.
+        <div style="margin-top:11px">
+          <button class="btn-primary btn-ghost" onclick="provaCloud()">Prova il cloud adesso</button>
+        </div>
+        <div id="esitoCloud" style="font-size:12.5px;margin-top:9px"></div>
       </div>
 
       <div class="sec-title">La cartella dell'archivio sul computer</div>
@@ -1356,6 +1360,34 @@ function setSync(mode){
            error:['⚠︎','Errore di connessione'],notconfigured:['⚙︎','Cloud non configurato'],
            locale:['💾','Solo su questo dispositivo']};
   const [i,l]=m[mode]||m.error; e.textContent=i+' '+l; e.className='sync-badge sync-'+(mode==='locale'?'connecting':mode);
+}
+/* Carica un file di prova nello Storage e dice esattamente perche' fallisce,
+   invece di lasciare che i documenti spariscano senza spiegazione. */
+async function provaCloud(){
+  const box=el('esitoCloud'); const msg=t=>{ if(box) box.innerHTML=t; };
+  if(!utente){ msg('<span style="color:var(--rust)">Non hai ancora fatto l\'accesso con email e password: entra e riprova.</span>'); return; }
+  if(!bucket){ msg('<span style="color:var(--rust)"><b>Lo Storage non risulta attivo su questo progetto.</b> '+
+                   'Console Firebase &rarr; Storage &rarr; Inizia.</span>'); return; }
+  msg('Carico un file di prova&hellip;');
+  try{
+    const ref=bucket.ref('diagnostica/prova_'+Date.now()+'.txt');
+    await ref.putString('prova STEELCO '+new Date().toISOString());
+    await ref.getDownloadURL();
+    try{ await ref.delete(); }catch(e){}
+    msg('<span style="color:var(--green)"><b>Il cloud funziona.</b> Il file di prova &egrave; stato caricato e poi tolto. '+
+        'Se un documento non ci arriva lo stesso, il problema non &egrave; il cloud.</span>');
+  }catch(e){
+    const m=(e&&e.code?e.code+' — ':'')+String(e&&e.message||e);
+    let aiuto='';
+    if(/unauthorized|permission|denied/i.test(m))
+      aiuto='Le regole dello Storage non ti lasciano scrivere. Console Firebase → Storage → Regole, metti allow read, write: if request.auth != null; e premi Pubblica.';
+    else if(/bucket|not-found|no default|unknown/i.test(m))
+      aiuto='Lo Storage non è mai stato attivato su questo progetto. Console Firebase → Storage → Inizia, e conferma.';
+    else if(/network|retry-limit|cors/i.test(m))
+      aiuto='Sembra la rete, o il browser che blocca la connessione. Riprova da un altro collegamento.';
+    msg('<span style="color:var(--rust)"><b>Il cloud rifiuta il caricamento.</b><br>'+esc(m)+
+        (aiuto?('<br><br>'+esc(aiuto)):'')+'</span>');
+  }
 }
 function initFirebase(){
   const cfg=loadFirebaseConfig();
