@@ -1361,6 +1361,12 @@ function setSync(mode){
            locale:['💾','Solo su questo dispositivo']};
   const [i,l]=m[mode]||m.error; e.textContent=i+' '+l; e.className='sync-badge sync-'+(mode==='locale'?'connecting':mode);
 }
+/* Nessuna attesa senza fine: se il cloud non risponde entro il tempo dato,
+   l'operazione fallisce e ce lo dice. */
+function conScadenza(promessa, ms, cosa){
+  return Promise.race([promessa, new Promise((_,no)=>setTimeout(
+    ()=>no(new Error('Il cloud non ha risposto entro '+Math.round(ms/1000)+' secondi ('+cosa+').')), ms))]);
+}
 /* Carica un file di prova nello Storage e dice esattamente perche' fallisce,
    invece di lasciare che i documenti spariscano senza spiegazione. */
 async function provaCloud(){
@@ -1371,8 +1377,8 @@ async function provaCloud(){
   msg('Carico un file di prova&hellip;');
   try{
     const ref=bucket.ref('diagnostica/prova_'+Date.now()+'.txt');
-    await ref.putString('prova STEELCO '+new Date().toISOString());
-    await ref.getDownloadURL();
+    await conScadenza(ref.putString('prova STEELCO '+new Date().toISOString()),25000,'caricamento');
+    await conScadenza(ref.getDownloadURL(),15000,'lettura');
     try{ await ref.delete(); }catch(e){}
     msg('<span style="color:var(--green)"><b>Il cloud funziona.</b> Il file di prova &egrave; stato caricato e poi tolto. '+
         'Se un documento non ci arriva lo stesso, il problema non &egrave; il cloud.</span>');
@@ -1383,8 +1389,8 @@ async function provaCloud(){
       aiuto='Le regole dello Storage non ti lasciano scrivere. Console Firebase → Storage → Regole, metti allow read, write: if request.auth != null; e premi Pubblica.';
     else if(/bucket|not-found|no default|unknown/i.test(m))
       aiuto='Lo Storage non è mai stato attivato su questo progetto. Console Firebase → Storage → Inizia, e conferma.';
-    else if(/network|retry-limit|cors/i.test(m))
-      aiuto='Sembra la rete, o il browser che blocca la connessione. Riprova da un altro collegamento.';
+    else if(/network|retry-limit|cors|non ha risposto/i.test(m))
+      aiuto='Il cloud non risponde affatto. Quasi sempre vuol dire che lo Storage non e\' mai stato acceso su questo progetto: Console Firebase → Storage. Se ti mostra il bottone "Inizia", la causa e\' quella.';
     msg('<span style="color:var(--rust)"><b>Il cloud rifiuta il caricamento.</b><br>'+esc(m)+
         (aiuto?('<br><br>'+esc(aiuto)):'')+'</span>');
   }
@@ -1394,7 +1400,13 @@ function initFirebase(){
   if(!cfg){ setSync('notconfigured'); state=JSON.parse(JSON.stringify(SEED)); render(); showSetup(); return; }
   try{
     firebase.initializeApp(cfg); db=firebase.firestore();
-    try{ bucket=firebase.storage(); }catch(e){ bucket=null; }
+    try{
+      bucket=firebase.storage();
+      /* di serie Firebase riprova a caricare per dieci minuti senza dire niente:
+         cosi' un documento sembrava sparito. Venti secondi e poi si lamenta. */
+      bucket.setMaxUploadRetryTime(20000);
+      bucket.setMaxOperationRetryTime(20000);
+    }catch(e){ bucket=null; }
     try{ db.enablePersistence({synchronizeTabs:true}); }catch(e){}
     setSync('connecting');
     firebase.auth().onAuthStateChanged(u=>{
@@ -2514,6 +2526,7 @@ async function caricaAllegati(files){
     nuovo.id=state.nextId++; arr.push(nuovo); editId=nuovo.id; salva(); render();
     if(stato) stato.textContent='Ordine salvato: ora gli posso creare la cartella nell\'archivio.';
   }
+  let suDisco=0;
   /* 1) prima di tutto: scrivi il file nella cartella dell'archivio sul computer.
         Ma prima chiedo a te dove va e cosa c'e' dentro: un PDF solo puo' contenere
         contratto + proforma + dichiarazione, e non deve finire tutto in "2 DOCUMENTI". */
@@ -2533,6 +2546,7 @@ async function caricaAllegati(files){
           stato.textContent='Divido il fascicolo… '+files[i].name;
           const fatti=await eseguiSplit(o, v.piano);
           stato.textContent=fatti.length+' documenti creati da '+files[i].name;
+          suDisco++;
           continue;
         }
         stato.textContent='Salvo in '+v.cartella+'… '+files[i].name;
@@ -2541,6 +2555,7 @@ async function caricaAllegati(files){
           o.fileLocali=o.fileLocali||[]; o.fileLocali.push({nome:files[i].name,percorso:p});
           etichette()[p]=v.tipi.slice();
           if(v.promemoria) await promemoriaAltrove(o, v, p);
+          suDisco++;
         }
       }catch(e){ console.warn('scrittura su disco',e); alert('Non sono riuscito a salvare "'+files[i].name+'":\n'+e.message); }
     }
@@ -2552,6 +2567,14 @@ async function caricaAllegati(files){
       stato.textContent='Spuntato in automatico: '+fatte.join(', ')+'. Premi Salva.'; }
     setTimeout(function(){ stato.textContent=''; },5000);
     salva();
+  }
+  /* Se l'archivio sul computer ha preso tutti i documenti, qui abbiamo finito:
+     sono nella cartella di OneDrive e da li' si sincronizzano da soli su ogni
+     dispositivo. Il cloud non serve, e soprattutto non si resta ad aspettarlo. */
+  if(suDisco===files.length){
+    stato.textContent='Salvati nella cartella dell\'archivio. Premi Salva.';
+    setTimeout(function(){ stato.textContent=''; },5000);
+    disegnaAllegati(); return;
   }
   if(!bucket){
     stato.textContent = cartellaRadice
@@ -2570,8 +2593,8 @@ async function caricaAllegati(files){
     try{
       const path=cartella+Date.now()+'_'+f.name.replace(/[^\w.\- ]/g,'_');
       const ref=bucket.ref(path);
-      await ref.put(f);
-      const url=await ref.getDownloadURL();
+      await conScadenza(ref.put(f),90000,'caricamento di '+f.name);
+      const url=await conScadenza(ref.getDownloadURL(),20000,'lettura di '+f.name);
       modaleAllegati.push({nome:f.name,url,path,size:f.size,quando:new Date().toISOString()});
       disegnaAllegati();
     }catch(e){
