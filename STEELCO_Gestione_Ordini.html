@@ -2512,6 +2512,11 @@ function rimuoviAllegato(i){
 function scegliFile(){ el('inputAllegati').click(); }
 async function caricaAllegati(files){
   if(!files||!files.length) return;
+  /* ATTENZIONE: l'elenco dei file trascinati vive solo dentro l'evento del
+     trascinamento. Al primo await (il consenso alla cartella) si svuota, e da li'
+     in poi l'app crede che non ci sia nessun file. Lo copio subito in un elenco
+     mio, prima di qualsiasi attesa. */
+  files=Array.prototype.slice.call(files);
   const stato=el('statoUpload');
   /* 0) un ordine appena creato non ha ancora un numero interno, e senza quello
         l'app non sapeva dove scrivere: saltava del tutto l'archivio e finiva
@@ -2627,7 +2632,7 @@ function initDropZone(){
     e.preventDefault(); e.stopPropagation(); dz.style.background='var(--steel-bg)'; dz.style.borderColor='var(--steel-2)';}));
   ['dragleave','drop'].forEach(ev=>dz.addEventListener(ev,e=>{
     e.preventDefault(); e.stopPropagation(); dz.style.background=''; dz.style.borderColor='';}));
-  dz.addEventListener('drop',e=>caricaAllegati(e.dataTransfer.files));
+  dz.addEventListener('drop',e=>caricaAllegati(Array.prototype.slice.call(e.dataTransfer.files)));
 }
 
 /* ===================== ACCESSO CON EMAIL E PASSWORD ===================== */
