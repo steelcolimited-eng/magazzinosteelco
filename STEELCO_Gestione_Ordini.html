@@ -2480,7 +2480,9 @@ function disegnaAllegati(){
         (cart?'<span class="dim" style="font-size:11px">'+cart+'</span>':'')+
         '<span class="dim" style="font-size:11px">'+esc(tipiDocumento(f.nome,f.percorso).join(' + '))+'</span>'+
         '<button class="btn-primary btn-ghost" style="padding:2px 8px;font-size:11px" '+
-        'onclick="sistemaFile(\''+p+'\')">sistema</button></span>';
+        'onclick="sistemaFile(\''+p+'\')">sistema</button>'+
+        '<button class="del" style="width:20px;height:20px;font-size:12px" '+
+        'onclick="togliDocumentoLocale(\''+p+'\')">&times;</button></span>';
     }).join('');
   }
   if(cloud.length){
@@ -2524,6 +2526,10 @@ async function caricaAllegati(files){
     }
     const arr = nuovo.tipo==='V'? state.vendite : nuovo.tipo==='A'? state.acquisti : state.lavorazione;
     nuovo.id=state.nextId++; arr.push(nuovo); editId=nuovo.id; salva(); render();
+    /* da adesso l'ordine esiste: se l'hai creato per sbaglio lo devi poter buttare */
+    const be=el('btnElimina'); if(be) be.style.display='';
+    const ti=el('moTitolo');
+    if(ti) ti.textContent=ti.textContent.replace('Nuovo ordine','Ordine');
     if(stato) stato.textContent='Ordine salvato: ora gli posso creare la cartella nell\'archivio.';
   }
   let suDisco=0;
@@ -3277,6 +3283,36 @@ async function spostaDocumento(o, percorso, versoCartella){
           percorso.split('/').slice(-2,-1)[0]+'" non si e\' lasciata togliere.\n\nToglila tu da OneDrive quando puoi.');
   }
   return nuovo;
+}
+
+/* Toglie un documento dall'ordine e dalla cartella su OneDrive. Non lo distrugge:
+   lo sposta nella cartella CESTINO in cima all'archivio, cosi' resta recuperabile. */
+async function togliDocumentoLocale(percorso){
+  const nome=percorso.split('/').pop();
+  if(!confirm('Togliere "'+nome+'" da questo ordine?\n\n'+
+              'Non viene cancellato: lo sposto nella cartella CESTINO dell\'archivio, '+
+              'su OneDrive. Da li\' lo recuperi o lo butti quando vuoi.')) return;
+  if(!await archivioPronto()) return;
+  const o = editId? tutti().find(function(x){ return x.id===editId; }) : null;
+  try{
+    const f=await fileDaDisco(percorso);
+    if(!f){ alert('Non riesco a leggere "'+nome+'".\n\nPremi "Rileggi la cartella" nelle impostazioni e riprova.'); return; }
+    const cest=await cartellaRadice.getDirectoryHandle('CESTINO',{create:true});
+    let finale=nome;
+    try{ await cest.getFileHandle(nome); finale=String(Date.now())+'_'+nome; }catch(e){}
+    const fh=await cest.getFileHandle(finale,{create:true});
+    const w=await fh.createWritable(); await w.write(f); await w.close();
+    /* tolgo l'originale solo dopo che la copia nel cestino c'e' davvero */
+    const parti=percorso.split('/');
+    let dir=DIRH.get(parti.slice(0,-1).join('/'));
+    if(!dir){ dir=cartellaRadice; for(let i=0;i<parti.length-1;i++) dir=await dir.getDirectoryHandle(parti[i]); }
+    await dir.removeEntry(nome);
+    HANDLE.delete(percorso);
+    if(o) o.fileLocali=(o.fileLocali||[]).filter(function(x){ return x.percorso!==percorso; });
+    salva(); disegnaAllegati();
+    const st=el('statoUpload');
+    if(st){ st.textContent='"'+nome+'" spostato in CESTINO.'; setTimeout(function(){ st.textContent=''; },5000); }
+  }catch(e){ alert('Non sono riuscito a togliere "'+nome+'":\n'+e.message); }
 }
 
 /* quando un unico PDF contiene piu' documenti, lascio un foglietto nelle altre cartelle */
