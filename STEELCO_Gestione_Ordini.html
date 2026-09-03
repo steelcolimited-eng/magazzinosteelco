@@ -2532,7 +2532,7 @@ async function caricaAllegati(files){
     if(ti) ti.textContent=ti.textContent.replace('Nuovo ordine','Ordine');
     if(stato) stato.textContent='Ordine salvato: ora gli posso creare la cartella nell\'archivio.';
   }
-  let suDisco=0;
+  let suDisco=0; const scritti=[];
   /* 1) prima di tutto: scrivi il file nella cartella dell'archivio sul computer.
         Ma prima chiedo a te dove va e cosa c'e' dentro: un PDF solo puo' contenere
         contratto + proforma + dichiarazione, e non deve finire tutto in "2 DOCUMENTI". */
@@ -2544,7 +2544,8 @@ async function caricaAllegati(files){
       voci.push({nome:files[i].name,file:files[i],tipi:t,cartella:cartellaPreferita(t),manuale:false,promemoria:true,piano:null});
     }
     const scelta=await chiediDestinazione(voci,'Dove metto '+(files.length>1?('questi '+files.length+' documenti'):'questo documento')+'?');
-    if(!scelta){ stato.textContent=''; return; }
+    if(!scelta){ stato.textContent='Annullato: non ho salvato niente nell\'archivio.';
+      setTimeout(function(){ stato.textContent=''; },5000); return; }
     for(let i=0;i<files.length;i++){
       try{
         const v=scelta[i];
@@ -2561,7 +2562,10 @@ async function caricaAllegati(files){
           o.fileLocali=o.fileLocali||[]; o.fileLocali.push({nome:files[i].name,percorso:p});
           etichette()[p]=v.tipi.slice();
           if(v.promemoria) await promemoriaAltrove(o, v, p);
-          suDisco++;
+          suDisco++; scritti.push(p);
+        } else {
+          alert('Non sono riuscito a trovare ne\' a creare la cartella di questo ordine '+
+                'dentro l\'archivio, quindi "'+files[i].name+'" non e\' stato salvato.');
         }
       }catch(e){ console.warn('scrittura su disco',e); alert('Non sono riuscito a salvare "'+files[i].name+'":\n'+e.message); }
     }
@@ -2578,7 +2582,10 @@ async function caricaAllegati(files){
      sono nella cartella di OneDrive e da li' si sincronizzano da soli su ogni
      dispositivo. Il cloud non serve, e soprattutto non si resta ad aspettarlo. */
   if(suDisco===files.length){
-    stato.textContent='Salvati nella cartella dell\'archivio. Premi Salva.';
+    /* dico sempre DOVE l'ho messo: se finisce nel posto sbagliato lo si vede subito */
+    stato.textContent = scritti.length===1
+      ? 'Salvato in: '+scritti[0]+' — premi Salva.'
+      : 'Salvati '+scritti.length+' documenti in: '+scritti.map(function(x){return x.split('/').slice(0,-1).join('/');})[0]+' — premi Salva.';
     setTimeout(function(){ stato.textContent=''; },5000);
     disegnaAllegati(); return;
   }
