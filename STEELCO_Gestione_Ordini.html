@@ -2741,8 +2741,26 @@ function renderCestino(){
 }
 
 /* ===================== ESPORTA L'ARCHIVIO COMPLETO (cartella in uno zip) ===================== */
+/* Chrome non accetta qualsiasi nome di cartella o di file: rifiuta i separatori di
+   percorso, i nomi riservati di Windows e - questo ci ha fregati - quelli che
+   finiscono con un punto o uno spazio. "MACOSID S.R.L." finiva rifiutato in blocco
+   con "Name is not allowed". Qui ripuliamo una volta sola, per tutti. */
+function nomeSicuro(s, ripiego){
+  let n=String(s||'').replace(/[\/\\:*?"<>|]/g,'-').replace(/[\x00-\x1f]/g,'').replace(/\s+/g,' ').trim();
+  n=n.replace(/^[. ]+/,'').replace(/[. ]+$/,'');
+  if(/^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/i.test(n)) n=n+'_';
+  return n || (ripiego||'senza nome');
+}
+/* come sopra, ma per i file: l'estensione va conservata */
+function nomeFileSicuro(s){
+  const g=String(s||'documento');
+  const i=g.lastIndexOf('.');
+  if(i<=0) return nomeSicuro(g,'documento');
+  const est=g.slice(i+1).replace(/[^A-Za-z0-9]/g,'');
+  return nomeSicuro(g.slice(0,i),'documento')+(est?'.'+est:'');
+}
 function nomeCartellaOrdine(o){
-  const pulisci=s=>String(s||'').replace(/[\/\\:*?"<>|]/g,'-').replace(/\s+/g,' ').trim();
+  const pulisci=s=>nomeSicuro(s,'senza numero');
   /* se questo ordine ha gia' la sua cartella nell'archivio, si usa quel nome:
      altrimenti nascono doppioni (TSC #122054 accanto a TITAN STEEL CORP. #122054). */
   if(o.cartella){
@@ -2799,7 +2817,7 @@ async function trovaCartellaOrdine(dirGenitore, o){
    atteso), e la crea SOLO se davvero non c'e' ancora nulla per questo ordine.               */
 async function cartellaOrdine(o){
   if(!cartellaRadice) return null;
-  const pulisci=s=>String(s||'').replace(/[\/\\:*?"<>|]/g,'-').replace(/\s+/g,' ').trim();
+  const pulisci=s=>nomeSicuro(s,'senza nome');
   const rad = o.tipo==='V' ? 'S_O VENDITE' : (o.tipo==='A' ? 'S_O ACQUISTI' : 'CONTO LAVORAZIONE');
   const anno = String(o.anno||new Date().getFullYear());
   const sottoNome = o.tipo==='L' ? anno : rad+' '+anno;
@@ -2814,7 +2832,7 @@ async function cartellaOrdine(o){
   }
   /* 2) il numero ordine non basta a cercarla (troppo corto) ma magari esiste gia' col nome atteso */
   const nomeAtteso=nomeCartellaOrdine(o);
-  try{ return await dirSotto.getDirectoryHandle(nomeAtteso); }catch(e){ /* non c'e': la creo */ }
+  try{ return await dirSotto.getDirectoryHandle(nomeSicuro(nomeAtteso)); }catch(e){ /* non c'e': la creo */ }
   /* 3) non esiste davvero: la creo, e mi segno il nome usato */
   const dir=await dirSotto.getDirectoryHandle(pulisci(nomeAtteso),{create:true});
   if(o.cartella!==nomeAtteso){ o.cartella=nomeAtteso; salva(); }
@@ -2825,7 +2843,7 @@ async function cartellaDentro(dirBase, percorsi){
   let dir=dirBase;
   for(const p of percorsi){
     if(!p) continue;
-    dir=await dir.getDirectoryHandle(p.replace(/[\/\\:*?"<>|]/g,'-'),{create:true});
+    dir=await dir.getDirectoryHandle(nomeSicuro(p),{create:true});
   }
   return dir;
 }
@@ -3213,7 +3231,7 @@ async function cartellaPer(percorsi){          // crea i livelli se non ci sono
   let dir=cartellaRadice;
   for(const p of percorsi){
     if(!p) continue;
-    dir=await dir.getDirectoryHandle(p.replace(/[\/\\:*?"<>|]/g,'-'),{create:true});
+    dir=await dir.getDirectoryHandle(nomeSicuro(p),{create:true});
   }
   return dir;
 }
@@ -3252,7 +3270,7 @@ async function scriviDocumento(o, file, dove){
   const dirOrdine=await cartellaOrdine(o);
   if(!dirOrdine) return null;
   const dir=await cartellaDentro(dirOrdine, sotto?[sotto]:[]);
-  let nome=file.name.replace(/[\/\\]/g,'-');
+  let nome=nomeFileSicuro(file.name);
   try{ await dir.getFileHandle(nome); const p=nome.lastIndexOf('.');
        nome=(p>0?nome.slice(0,p):nome)+' ('+Date.now().toString().slice(-4)+')'+(p>0?nome.slice(p):''); }
   catch(e){ /* non esiste: bene */ }
@@ -3905,6 +3923,23 @@ document.querySelectorAll('.modal-bg,.overlay').forEach(m=>m.addEventListener('c
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'){
   if(el('modalDest')&&el('modalDest').classList.contains('show')){ chiudiDest(); return; }
   chiudiModale(); chiudiMini(); hideSetup(); } });
+/* Aperta dalla copia sulla scrivania? Per Chrome e' un altro indirizzo: la
+   cartella dell'archivio non risulta collegata e i documenti non ci arrivano.
+   Meglio dirlo forte prima che qualcuno ci perda mezz'ora. */
+(function avvisoCopiaLocale(){
+  if(location.protocol!=='file:') return;
+  const VERO='https://steelcolimited-eng.github.io/magazzinosteelco/STEELCO_Gestione_Ordini.html';
+  const b=document.createElement('div');
+  b.style.cssText='background:#7a1f1f;color:#fff;padding:13px 20px;display:flex;align-items:center;'+
+    'gap:14px;flex-wrap:wrap;font-size:13.5px;line-height:1.5';
+  b.innerHTML='<b>Stai usando la copia salvata sulla scrivania.</b>'+
+    '<span>Da qui l&rsquo;archivio su OneDrive non risulta collegato, quindi i documenti che trascini '+
+    'non vengono salvati da nessuna parte. Apri l&rsquo;app dal suo indirizzo.</span>'+
+    '<div style="flex:1"></div>'+
+    '<a href="'+VERO+'" style="background:#fff;color:#7a1f1f;font-weight:700;padding:8px 15px;'+
+    'border-radius:8px;text-decoration:none">Apri l&rsquo;indirizzo giusto</a>';
+  document.body.insertBefore(b, document.body.firstChild);
+})();
 initFirebase();
 avvioCartella();
 </script>
