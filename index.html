@@ -478,6 +478,7 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
     <div class="sp"></div>
     <button class="b-clear" onclick="clearSel()">Deseleziona</button>
     <button class="b-export" id="bulkOriginBtn" onclick="openBulkOrigine()">Imposta origine</button>
+    <button class="b-export" id="bulkUbicBtn" onclick="openBulkUbic()">Imposta ubicazione</button>
     <button class="b-export" id="bulkExportBtn" onclick="exportSelezione()">Esporta selezione ↓</button>
     <button class="b-export" id="bulkTaglioBtn" onclick="openOrdineTaglio()" title="Genera l'Excel da mandare al centro servizi">Ordine di taglio ↓</button>
     <button class="b-sell" id="bulkSellBtn" onclick="openBulkSell()">Vendi selezionati →</button>
@@ -562,6 +563,27 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
     <div class="modal-foot">
       <button class="btn-ghost" onclick="closeEditSale()">Annulla</button>
       <button class="btn-confirm" onclick="confirmEditSale()">Salva correzioni</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ UBICAZIONE MASSIVA MODAL ============ -->
+<div class="overlay" id="ubicOverlay">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-head">
+      <div><h2>Imposta ubicazione</h2><div class="sub" id="ubicSub"></div></div>
+      <button class="x" onclick="closeBulkUbic()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="field"><label>Ubicazione da assegnare a tutti i coil selezionati</label>
+        <input type="text" id="buUbicazione" placeholder="es. Combas" list="ubicazioniList" onkeydown="if(event.key==='Enter')confirmBulkUbic()">
+      </div>
+      <div id="buSuggeriti" style="margin:-2px 0 4px"></div>
+      <p class="split-hint" id="buAvviso" style="margin:2px 0 0"></p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeBulkUbic()">Annulla</button>
+      <button class="btn-confirm" onclick="confirmBulkUbic()">Assegna ubicazione</button>
     </div>
   </div>
 </div>
@@ -2171,6 +2193,42 @@ function confirmBulkOrigine(){
   });
   saveState(); closeBulkOrigine(); clearSel();
   showToast(`${n} coil impostati su origine ${paeseLabel(origine)}`);
+  render();
+}
+
+/* ---------- UBICAZIONE MASSIVA ---------- */
+let ubicIds=[];
+function openBulkUbic(){
+  const coils=selezionatiCorrenti();
+  if(!coils.length){ alert('Seleziona prima i coil a cui vuoi assegnare l\'ubicazione.'); return; }
+  ubicIds=coils.map(c=>c.id);
+  const peso=coils.reduce((a,c)=>a+(c.peso||0),0);
+  const vuoti=coils.filter(c=>!c.ubicazione).length;
+  const gia=[...new Set(coils.map(c=>c.ubicazione).filter(Boolean))];
+  document.getElementById('ubicSub').textContent=`${coils.length} coil · ${fmtT(peso)} t`;
+  document.getElementById('buAvviso').innerHTML = gia.length
+    ? `${vuoti} senza ubicazione, ${coils.length-vuoti} già ubicati in <b>${gia.map(esc).join(', ')}</b>: verranno tutti sovrascritti con il valore che inserisci.`
+    : `Tutti e ${coils.length} sono senza ubicazione.`;
+  /* scorciatoie sulle ubicazioni già usate, per non riscriverle a mano e non creare doppioni */
+  const usate=[...new Set(state.stock.concat(state.sailing,state.sold).map(c=>c.ubicazione).filter(Boolean))].sort();
+  document.getElementById('buSuggeriti').innerHTML = usate.length
+    ? `<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><span style="font-size:11.5px;opacity:.55;font-weight:700">GIÀ USATE:</span>${
+        usate.map(u=>`<button type="button" class="mini-btn" onclick="document.getElementById('buUbicazione').value=this.dataset.u" data-u="${esc(u)}">${esc(u)}</button>`).join('')}</div>`
+    : '';
+  document.getElementById('buUbicazione').value = usate.length===1 ? usate[0] : '';
+  document.getElementById('ubicOverlay').classList.add('show');
+  setTimeout(()=>document.getElementById('buUbicazione').focus(),60);
+}
+function closeBulkUbic(){ document.getElementById('ubicOverlay').classList.remove('show'); ubicIds=[]; }
+function confirmBulkUbic(){
+  const v=document.getElementById('buUbicazione').value.trim();
+  if(!v){ const el=document.getElementById('buUbicazione'); el.style.outline='2px solid var(--rust)'; el.focus(); setTimeout(()=>el.style.outline='',1400); return; }
+  let n=0;
+  ['stock','sailing'].forEach(lista=>{
+    state[lista].forEach(c=>{ if(ubicIds.includes(c.id)){ c.ubicazione=v; n++; } });
+  });
+  saveState(); closeBulkUbic(); clearSel();
+  showToast(`${n} coil ubicati in ${v}`);
   render();
 }
 
