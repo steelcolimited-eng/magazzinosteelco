@@ -78,6 +78,78 @@ main{max-width:1500px;margin:0 auto;padding:22px 20px 60px}
   padding:10px 12px;border:1px solid var(--line-strong);border-radius:9px;font-size:13px;
   font-family:inherit;background:var(--panel);color:var(--ink);cursor:pointer;font-weight:500;
 }
+
+/* ---- filtri multipli stile Excel ---- */
+.mfilter{position:relative;display:inline-block}
+.mf-btn{
+  display:flex;align-items:center;gap:7px;padding:10px 12px;border:1px solid var(--line-strong);
+  border-radius:9px;font-size:13px;font-family:inherit;background:var(--panel);color:var(--ink);
+  cursor:pointer;font-weight:500;white-space:nowrap;max-width:230px;
+}
+.mf-btn:hover{border-color:var(--steel-2)}
+.mfilter.on .mf-btn{border-color:var(--steel);background:var(--steel-bg,#eef3f9);color:var(--steel);font-weight:700}
+.mf-btn .mf-lbl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mf-btn .mf-n{background:var(--steel);color:#fff;border-radius:20px;font-size:11px;font-weight:700;padding:1px 7px}
+.mf-btn .mf-car{opacity:.5;flex-shrink:0}
+.mf-pop{
+  display:none;position:absolute;z-index:60;top:calc(100% + 5px);left:0;width:260px;
+  background:var(--panel);border:1px solid var(--line-strong);border-radius:10px;
+  box-shadow:0 12px 30px rgba(0,0,0,.16);padding:9px;
+}
+.mfilter.open .mf-pop{display:block}
+.mf-pop .mf-search{
+  width:100%;padding:7px 9px;border:1px solid var(--line-strong);border-radius:7px;
+  font-size:13px;font-family:inherit;background:var(--panel);color:var(--ink);margin-bottom:7px;
+}
+.mf-acts{display:flex;gap:12px;font-size:12px;padding:0 3px 7px;border-bottom:1px solid var(--line);margin-bottom:6px}
+.mf-acts a{color:var(--steel);cursor:pointer;font-weight:600}
+.mf-acts a:hover{text-decoration:underline}
+.mf-acts .sp{flex:1}
+.mf-list{max-height:270px;overflow-y:auto}
+.mf-list label{
+  display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:6px;
+  font-size:13px;cursor:pointer;user-select:none;
+}
+.mf-list label:hover{background:var(--line)}
+.mf-list label input{cursor:pointer;flex-shrink:0}
+.mf-list label .mf-v{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mf-list label .mf-c{font-size:11px;opacity:.5;font-variant-numeric:tabular-nums}
+.mf-empty{font-size:12px;opacity:.5;padding:8px 6px}
+.mf-reset{
+  padding:10px 12px;border:1px dashed var(--line-strong);border-radius:9px;font-size:13px;
+  background:transparent;color:var(--ink);cursor:pointer;font-family:inherit;font-weight:600;opacity:.75;
+}
+.mf-reset:hover{opacity:1;border-color:var(--rust);color:var(--rust)}
+
+/* ---- pannello riepilogo quantitativi ---- */
+.summary{background:var(--panel);border:1px solid var(--line-strong);border-radius:11px;margin-bottom:12px;overflow:hidden}
+.sum-head{display:flex;align-items:center;gap:16px;padding:11px 15px;flex-wrap:wrap;background:var(--line)}
+.sum-tot{display:flex;gap:20px;flex-wrap:wrap;align-items:baseline}
+.sum-tot .st{display:flex;flex-direction:column;line-height:1.25}
+.sum-tot .st .l{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;opacity:.55;font-weight:700}
+.sum-tot .st .v{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums}
+.sum-head .sp{flex:1}
+.sum-head .gbl{font-size:12px;opacity:.6;font-weight:700}
+.sum-head select{
+  padding:7px 10px;border:1px solid var(--line-strong);border-radius:8px;font-size:13px;
+  font-family:inherit;background:var(--panel);color:var(--ink);cursor:pointer;font-weight:600;
+}
+.sum-head .sum-toggle{background:none;border:0;font-family:inherit;font-size:12px;font-weight:700;color:var(--steel);cursor:pointer}
+.sum-body{max-height:340px;overflow-y:auto}
+table.sumtab{width:100%;border-collapse:collapse;font-size:13px}
+table.sumtab th{
+  text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;opacity:.55;
+  padding:8px 15px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);
+}
+table.sumtab td{padding:7px 15px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+table.sumtab tr:last-child td{border-bottom:0}
+table.sumtab tr.sum-row:hover{background:var(--line);cursor:pointer}
+table.sumtab tr.sum-row.picked{background:var(--steel-bg,#eef3f9)}
+table.sumtab .g{font-weight:700}
+table.sumtab .num{text-align:right}
+table.sumtab tr.sum-tot-row td{font-weight:800;background:var(--line)}
+.sum-pick{font-size:11px;color:var(--steel);font-weight:700;opacity:0}
+table.sumtab tr.sum-row:hover .sum-pick{opacity:1}
 .btn-primary{
   background:var(--steel);color:#fff;border:0;padding:10px 15px;border-radius:9px;font-size:13px;
   font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:.02em;transition:.15s;
@@ -363,24 +435,41 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
       <input type="text" id="searchBox" placeholder="Cerca collo, fornitore, rivestimento, nota…" oninput="render()">
     </div>
-    <select class="filter" id="supplierFilter" onchange="render()"><option value="">Tutti i fornitori</option></select>
-    <select class="filter" id="thickFilter" onchange="render()"><option value="">Ogni spessore</option></select>
-    <select class="filter" id="widthFilter" onchange="render()"><option value="">Ogni larghezza</option></select>
-    <select class="filter" id="coatFilter" onchange="render()"><option value="">Ogni rivestimento</option></select>
-    <select class="filter" id="sceltaFilter" onchange="render()">
-      <option value="">Ogni scelta</option>
-      <option value="PRIMA">Prima</option>
-      <option value="SECONDA">Seconda</option>
-      <option value="TERZA">Terza</option>
-      <option value="QUINTA">Quinta</option>
-      <option value="BOTOLA">Botola</option>
-    </select>
+    <div class="mfilter" id="supplierFilter"></div>
+    <div class="mfilter" id="thickFilter"></div>
+    <div class="mfilter" id="widthFilter"></div>
+    <div class="mfilter" id="coatFilter"></div>
+    <div class="mfilter" id="sceltaFilter"></div>
+    <div class="mfilter" id="ubicFilter"></div>
+    <button class="mf-reset" id="mfReset" onclick="mfResetAll()" title="Azzera tutti i filtri">Azzera filtri</button>
     <button class="btn-primary btn-add" id="addCoilBtn" onclick="openAdd()">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>Aggiungi coil
     </button>
     <button class="btn-primary btn-add" id="exportSoldBtn" style="display:none;background:var(--ink)" onclick="exportStorico()" title="Scarica lo storico vendite in Excel, con tutte le specifiche">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>Esporta storico
     </button>
+  </div>
+
+  <div class="summary" id="summary">
+    <div class="sum-head">
+      <div class="sum-tot" id="sumTot"></div>
+      <div class="sp"></div>
+      <span class="gbl">Raggruppa per</span>
+      <select id="groupBy" onchange="renderSummary()">
+        <option value="ubicazione">Ubicazione</option>
+        <option value="spessore">Spessore</option>
+        <option value="larghezza">Larghezza</option>
+        <option value="misura">Spessore × Larghezza</option>
+        <option value="misura3">Spess. × Largh. × Lungh.</option>
+        <option value="rivestimento">Rivestimento</option>
+        <option value="durezza">Durezza</option>
+        <option value="scelta">Scelta</option>
+        <option value="fornitore">Fornitore</option>
+        <option value="none">Nessun raggruppamento</option>
+      </select>
+      <button class="sum-toggle" id="sumToggle" onclick="toggleSummary()">Nascondi</button>
+    </div>
+    <div class="sum-body" id="sumBody"></div>
   </div>
 
   <div class="bulkbar" id="bulkbar">
@@ -1075,9 +1164,10 @@ function switchTab(t){
   document.getElementById('kpiAnalisi').style.display = t==='analisi'?'grid':'none';
   document.getElementById('kpiCbam').style.display = t==='cbam'?'grid':'none';
   const isScarti = t==='scarti', isAnalisi = t==='analisi'||t==='cbam'||t==='guida';
-  ['supplierFilter','thickFilter','widthFilter','coatFilter','sceltaFilter','addCoilBtn'].forEach(id=>{
-    document.getElementById(id).style.display = (isScarti||isAnalisi)?'none':'';
+  ['supplierFilter','thickFilter','widthFilter','coatFilter','sceltaFilter','ubicFilter','mfReset','addCoilBtn'].forEach(id=>{
+    const e=document.getElementById(id); if(e) e.style.display = (isScarti||isAnalisi)?'none':'';
   });
+  document.getElementById('summary').style.display = (isScarti||isAnalisi)?'none':'';
   document.getElementById('tableWrap').style.display = isAnalisi?'none':'';
   document.getElementById('analisiWrap').style.display = t==='analisi'?'':'none';
   document.getElementById('cbamWrap').style.display = t==='cbam'?'':'none';
@@ -1098,32 +1188,119 @@ function refreshDatalists(){
   dl('ubicazioniList',all.map(c=>c.ubicazione));
 }
 
-/* ---------- FILTERS ---------- */
-function refreshFilterOptions(){
-  const all = state.stock.concat(state.sailing,state.sold);
-  fill('supplierFilter','Tutti i fornitori',[...new Set(all.map(c=>c.fornitore))].filter(Boolean).sort());
-  fill('thickFilter','Ogni spessore',[...new Set(all.map(c=>c.spessore))].filter(v=>v).sort((a,b)=>a-b));
-  fill('widthFilter','Ogni larghezza',[...new Set(all.map(c=>c.larghezza))].filter(v=>v).sort((a,b)=>a-b));
-  fill('coatFilter','Ogni rivestimento',[...new Set(all.map(c=>c.rivestimento))].filter(Boolean).sort());
+/* ---------- FILTERS (multi-selezione, stile Excel) ---------- */
+const NONE_KEY=' vuoto';
+const MF = {
+  supplierFilter:{field:'fornitore',   all:'Tutti i fornitori', one:'fornitore',   many:'fornitori',    num:false, sel:new Set(), q:''},
+  thickFilter:   {field:'spessore',    all:'Ogni spessore',     one:'spessore',    many:'spessori',     num:true,  sel:new Set(), q:''},
+  widthFilter:   {field:'larghezza',   all:'Ogni larghezza',    one:'larghezza',   many:'larghezze',    num:true,  sel:new Set(), q:''},
+  coatFilter:    {field:'rivestimento',all:'Ogni rivestimento', one:'rivestimento',many:'rivestimenti', num:false, sel:new Set(), q:''},
+  sceltaFilter:  {field:'scelta',      all:'Ogni scelta',       one:'scelta',      many:'scelte',       num:false, sel:new Set(), q:''},
+  ubicFilter:    {field:'ubicazione',  all:'Ogni ubicazione',   one:'ubicazione',  many:'ubicazioni',   num:false, sel:new Set(), q:''}
+};
+const MF_IDS = Object.keys(MF);
+function mfVal(c,field){ const v=c[field]; return (v===undefined||v===null||v==='')?NONE_KEY:String(v); }
+function mfLabel(id,v){
+  if(v===NONE_KEY) return '— non indicato —';
+  if(id==='sceltaFilter') return sceltaLabel(v);
+  return v;
 }
-function fill(id,first,opts){
-  const sel=document.getElementById(id); const cur=sel.value;
-  sel.innerHTML=`<option value="">${first}</option>`+opts.map(o=>`<option value="${o}">${o}</option>`).join('');
-  if(opts.map(String).includes(cur)) sel.value=cur;
+/* conteggi calcolati sulla lista attiva già filtrata dagli ALTRI filtri (come Excel) */
+function mfCounts(id){
+  const f=MF[id]; const m=new Map();
+  activeList().filter(c=>mfPass(c,id)).forEach(c=>{ const v=mfVal(c,f.field); m.set(v,(m.get(v)||0)+1); });
+  return m;
 }
+function mfPass(c,skipId){
+  for(const id of MF_IDS){
+    if(id===skipId) continue;
+    const f=MF[id];
+    if(f.sel.size && !f.sel.has(mfVal(c,f.field))) return false;
+  }
+  return true;
+}
+function refreshFilterOptions(){ MF_IDS.forEach(id=>renderMF(id)); syncResetBtn(); }
+function renderMF(id){
+  const box=document.getElementById(id); if(!box) return;
+  const f=MF[id];
+  const counts=mfCounts(id);
+  /* mantiene visibili anche i valori selezionati che al momento hanno conteggio 0 */
+  const vals=[...new Set([...counts.keys(),...f.sel])];
+  vals.sort((a,b)=>{
+    if(a===NONE_KEY) return 1; if(b===NONE_KEY) return -1;
+    if(f.num) return parseFloat(a)-parseFloat(b);
+    return String(mfLabel(id,a)).localeCompare(String(mfLabel(id,b)),'it',{numeric:true});
+  });
+  const q=f.q.toLowerCase().trim();
+  const shown=q?vals.filter(v=>String(mfLabel(id,v)).toLowerCase().includes(q)):vals;
+  const n=f.sel.size;
+  const lbl = n===0 ? f.all : (n===1 ? String(mfLabel(id,[...f.sel][0])) : f.many);
+  const wasOpen=box.classList.contains('open');
+  box.classList.toggle('on',n>0);
+  box.innerHTML=`
+    <button type="button" class="mf-btn" onclick="mfToggleOpen('${id}',event)">
+      ${n>1?`<span class="mf-n">${n}</span>`:''}
+      <span class="mf-lbl">${esc(lbl)}</span>
+      <svg class="mf-car" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <div class="mf-pop" onclick="event.stopPropagation()">
+      <input class="mf-search" placeholder="Cerca ${esc(f.one)}…" value="${esc(f.q)}" oninput="mfSearch('${id}',this.value)">
+      <div class="mf-acts">
+        <a onclick="mfSetAll('${id}',true)">Seleziona tutto</a>
+        <a onclick="mfSetAll('${id}',false)">Nessuno</a>
+        <span class="sp"></span>
+        <span style="opacity:.5;font-weight:600">${shown.length} valori</span>
+      </div>
+      <div class="mf-list">${
+        shown.length? shown.map(v=>`<label>
+          <input type="checkbox" ${f.sel.has(v)?'checked':''} onchange="mfPick('${id}',this.dataset.v,this.checked)" data-v="${esc(v)}">
+          <span class="mf-v">${esc(mfLabel(id,v))}</span>
+          <span class="mf-c">${counts.get(v)||0}</span>
+        </label>`).join('') : '<div class="mf-empty">Nessun valore</div>'
+      }</div>
+    </div>`;
+  if(wasOpen){ box.classList.add('open'); const s=box.querySelector('.mf-search'); if(s){ s.focus(); s.setSelectionRange(s.value.length,s.value.length); } }
+}
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function mfToggleOpen(id,ev){
+  if(ev) ev.stopPropagation();
+  const box=document.getElementById(id); const wasOpen=box.classList.contains('open');
+  document.querySelectorAll('.mfilter.open').forEach(b=>b.classList.remove('open'));
+  if(!wasOpen){ box.classList.add('open'); const s=box.querySelector('.mf-search'); if(s) s.focus(); }
+}
+function mfSearch(id,v){ MF[id].q=v; renderMF(id); }
+function mfPick(id,v,on){
+  const f=MF[id];
+  if(on) f.sel.add(v); else f.sel.delete(v);
+  render();
+}
+function mfSetAll(id,on){
+  const f=MF[id];
+  if(!on){ f.sel.clear(); }
+  else {
+    const counts=mfCounts(id);
+    const q=f.q.toLowerCase().trim();
+    [...counts.keys()].filter(v=>!q||String(mfLabel(id,v)).toLowerCase().includes(q)).forEach(v=>f.sel.add(v));
+  }
+  render();
+}
+function mfResetAll(){ MF_IDS.forEach(id=>{ MF[id].sel.clear(); MF[id].q=''; }); const s=document.getElementById('searchBox'); if(s) s.value=''; render(); }
+function syncResetBtn(){
+  const b=document.getElementById('mfReset'); if(!b) return;
+  const any=MF_IDS.some(id=>MF[id].sel.size)||!!document.getElementById('searchBox').value.trim();
+  b.style.opacity=any?'1':'.45';
+  b.textContent=any?'Azzera filtri':'Nessun filtro';
+}
+document.addEventListener('click',()=>{ document.querySelectorAll('.mfilter.open').forEach(b=>b.classList.remove('open')); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') document.querySelectorAll('.mfilter.open').forEach(b=>b.classList.remove('open')); });
+
 function filtered(list){
   const q=document.getElementById('searchBox').value.toLowerCase().trim();
-  const sup=document.getElementById('supplierFilter').value;
-  const th=document.getElementById('thickFilter').value;
-  const wd=document.getElementById('widthFilter').value;
-  const co=document.getElementById('coatFilter').value;
-  const sc=document.getElementById('sceltaFilter').value;
   return list.filter(c=>{
-    if(sup&&c.fornitore!==sup) return false;
-    if(th&&String(c.spessore)!==th) return false;
-    if(wd&&String(c.larghezza)!==wd) return false;
-    if(co&&c.rivestimento!==co) return false;
-    if(sc&&c.scelta!==sc) return false;
+    for(const id of MF_IDS){
+      const f=MF[id];
+      if(f.sel.size && !f.sel.has(mfVal(c,f.field))) return false;
+    }
     if(!q) return true;
     return [c.fornitore,c.collo,c.origineCoil,c.rivestimento,c.durezza,c.scelta,c.nota,c.cliente,c.fatturaVendita,
             c.ordineCliente,c.ordineAcquisto,c.ubicazione,paeseLabel(c.origine),canaleLabel(canaleDiRiga(c)),
@@ -1218,8 +1395,82 @@ function render(){
   else if(currentTab==='sold') renderSold(t);
   else if(currentTab==='scarti') renderScarti(t);
   else renderInv(t);
+  renderSummary();
   updateBulkbar();
 }
+
+/* ---------- RIEPILOGO QUANTITATIVI ---------- */
+let sumOpen = true, sumRows = [];
+function toggleSummary(){
+  sumOpen=!sumOpen;
+  document.getElementById('sumBody').style.display=sumOpen?'':'none';
+  document.getElementById('sumToggle').textContent=sumOpen?'Nascondi':'Mostra dettaglio';
+}
+function sumPeso(c){ return currentTab==='sold' ? (c.pesoVenduto||0) : (c.peso||0); }
+function sumValore(c){ return currentTab==='sold' ? (c.ricavo||0) : (c.valoreTotale||0); }
+function groupKeyOf(c,gb){
+  const d=v=>(v===undefined||v===null||v==='')?'—':v;
+  if(gb==='misura')  return `${d(c.spessore)} × ${d(c.larghezza)}`;
+  if(gb==='misura3') return `${d(c.spessore)} × ${d(c.larghezza)} × ${d(c.lunghezza)}`;
+  if(gb==='scelta')  return c.scelta?sceltaLabel(c.scelta):'—';
+  return d(c[gb]);
+}
+function renderSummary(){
+  const wrap=document.getElementById('summary');
+  if(currentTab==='scarti'||currentTab==='analisi'||currentTab==='cbam'||currentTab==='guida'){ wrap.style.display='none'; return; }
+  wrap.style.display='';
+  const list=filtered(activeList());
+  const tot=list.reduce((a,c)=>{a.n++;a.p+=sumPeso(c);a.v+=sumValore(c);return a;},{n:0,p:0,v:0});
+  const totAll=activeList().length;
+  const filtri=MF_IDS.filter(id=>MF[id].sel.size).length + (document.getElementById('searchBox').value.trim()?1:0);
+  document.getElementById('sumTot').innerHTML=`
+    <div class="st"><span class="l">Coil a video</span><span class="v">${tot.n}${filtri?` <span style="font-size:12px;font-weight:600;opacity:.5">su ${totAll}</span>`:''}</span></div>
+    <div class="st"><span class="l">${currentTab==='sold'?'Peso venduto':'Peso totale'}</span><span class="v">${fmtT(tot.p)} t</span></div>
+    <div class="st"><span class="l">${currentTab==='sold'?'Ricavo':'Valore'}</span><span class="v">${fmtEur(tot.v)}</span></div>
+    ${filtri?`<div class="st"><span class="l">Filtri attivi</span><span class="v" style="color:var(--steel)">${filtri}</span></div>`:''}`;
+
+  const gb=document.getElementById('groupBy').value;
+  const body=document.getElementById('sumBody');
+  body.style.display=sumOpen?'':'none';
+  if(gb==='none'){ body.innerHTML=''; return; }
+  if(!list.length){ body.innerHTML='<div class="mf-empty" style="padding:14px 15px">Nessun coil con i filtri attuali.</div>'; return; }
+
+  const g=new Map();
+  list.forEach(c=>{
+    const k=groupKeyOf(c,gb);
+    if(!g.has(k)) g.set(k,{k,n:0,p:0,v:0,ids:[]});
+    const r=g.get(k); r.n++; r.p+=sumPeso(c); r.v+=sumValore(c); r.ids.push(c.id);
+  });
+  const numeric=(gb==='spessore'||gb==='larghezza');
+  const rows=[...g.values()].sort((a,b)=> numeric ? (parseFloat(a.k)||0)-(parseFloat(b.k)||0) : b.p-a.p );
+  const gbLabel={ubicazione:'Ubicazione',spessore:'Spessore',larghezza:'Larghezza',misura:'Spess. × Largh.',misura3:'Spess. × Largh. × Lungh.',rivestimento:'Rivestimento',durezza:'Durezza',scelta:'Scelta',fornitore:'Fornitore'}[gb]||gb;
+  const selectable=(currentTab==='stock'||currentTab==='sailing');
+  body.innerHTML=`<table class="sumtab">
+    <thead><tr>
+      <th>${gbLabel}</th><th class="num">Coil</th><th class="num">Peso (t)</th><th class="num">% peso</th><th class="num">Valore</th>${selectable?'<th></th>':''}
+    </tr></thead><tbody>
+    ${rows.map((r,i)=>{
+      const allSel=r.ids.every(id=>selected.has(id));
+      return `<tr class="sum-row ${allSel?'picked':''}" ${selectable?`onclick="pickGroup(${i})"`:''} title="${selectable?'Clicca per selezionare / deselezionare tutti i coil di questa riga':''}">
+        <td class="g">${esc(r.k)}</td>
+        <td class="num">${r.n}</td>
+        <td class="num"><b>${fmtT(r.p)}</b></td>
+        <td class="num" style="opacity:.6">${tot.p?((r.p/tot.p)*100).toFixed(1):'0.0'}%</td>
+        <td class="num">${fmtEur(r.v)}</td>
+        ${selectable?`<td class="num"><span class="sum-pick">${allSel?'deseleziona':'seleziona'}</span></td>`:''}
+      </tr>`;
+    }).join('')}
+    <tr class="sum-tot-row"><td>TOTALE — ${rows.length} ${rows.length===1?'gruppo':'gruppi'}</td><td class="num">${tot.n}</td><td class="num">${fmtT(tot.p)}</td><td class="num">100%</td><td class="num">${fmtEur(tot.v)}</td>${selectable?'<td></td>':''}</tr>
+    </tbody></table>`;
+  sumRows=rows;
+}
+function pickGroup(i){
+  const r=sumRows[i]; if(!r) return;
+  const allSel=r.ids.every(id=>selected.has(id));
+  r.ids.forEach(id=>{ if(allSel) selected.delete(id); else selected.add(id); });
+  render();
+}
+
 function renderInv(t){
   const list=applySort(filtered(activeList()));
   const isStock=currentTab==='stock';
