@@ -39,7 +39,10 @@ header{
 .tab.active{color:var(--ink);background:var(--amber)}
 .tab .badge{font-size:11px;opacity:.75;margin-left:5px;font-weight:700}
 .spacer{flex:1}
-.io-btns{display:flex;gap:8px}
+.io-btns{display:flex;gap:6px}
+.show-sm{display:none}
+@media(max-width:1400px){.hide-sm{display:none}.show-sm{display:inline}.brand small{display:none}.sync-badge{max-width:30px;overflow:hidden}}
+@media(max-width:1500px){.io-btns button{padding:6px 8px;font-size:11px;white-space:nowrap}.io-btns button svg{display:none}.tab{padding:8px 8px}header{gap:10px}}
 .io-btns button{
   background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:#fff;
   font-size:12px;font-weight:600;padding:7px 12px;border-radius:7px;cursor:pointer;font-family:inherit;
@@ -78,78 +81,6 @@ main{max-width:1500px;margin:0 auto;padding:22px 20px 60px}
   padding:10px 12px;border:1px solid var(--line-strong);border-radius:9px;font-size:13px;
   font-family:inherit;background:var(--panel);color:var(--ink);cursor:pointer;font-weight:500;
 }
-
-/* ---- filtri multipli stile Excel ---- */
-.mfilter{position:relative;display:inline-block}
-.mf-btn{
-  display:flex;align-items:center;gap:7px;padding:10px 12px;border:1px solid var(--line-strong);
-  border-radius:9px;font-size:13px;font-family:inherit;background:var(--panel);color:var(--ink);
-  cursor:pointer;font-weight:500;white-space:nowrap;max-width:230px;
-}
-.mf-btn:hover{border-color:var(--steel-2)}
-.mfilter.on .mf-btn{border-color:var(--steel);background:var(--steel-bg,#eef3f9);color:var(--steel);font-weight:700}
-.mf-btn .mf-lbl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.mf-btn .mf-n{background:var(--steel);color:#fff;border-radius:20px;font-size:11px;font-weight:700;padding:1px 7px}
-.mf-btn .mf-car{opacity:.5;flex-shrink:0}
-.mf-pop{
-  display:none;position:absolute;z-index:60;top:calc(100% + 5px);left:0;width:260px;
-  background:var(--panel);border:1px solid var(--line-strong);border-radius:10px;
-  box-shadow:0 12px 30px rgba(0,0,0,.16);padding:9px;
-}
-.mfilter.open .mf-pop{display:block}
-.mf-pop .mf-search{
-  width:100%;padding:7px 9px;border:1px solid var(--line-strong);border-radius:7px;
-  font-size:13px;font-family:inherit;background:var(--panel);color:var(--ink);margin-bottom:7px;
-}
-.mf-acts{display:flex;gap:12px;font-size:12px;padding:0 3px 7px;border-bottom:1px solid var(--line);margin-bottom:6px}
-.mf-acts a{color:var(--steel);cursor:pointer;font-weight:600}
-.mf-acts a:hover{text-decoration:underline}
-.mf-acts .sp{flex:1}
-.mf-list{max-height:270px;overflow-y:auto}
-.mf-list label{
-  display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:6px;
-  font-size:13px;cursor:pointer;user-select:none;
-}
-.mf-list label:hover{background:var(--line)}
-.mf-list label input{cursor:pointer;flex-shrink:0}
-.mf-list label .mf-v{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.mf-list label .mf-c{font-size:11px;opacity:.5;font-variant-numeric:tabular-nums}
-.mf-empty{font-size:12px;opacity:.5;padding:8px 6px}
-.mf-reset{
-  padding:10px 12px;border:1px dashed var(--line-strong);border-radius:9px;font-size:13px;
-  background:transparent;color:var(--ink);cursor:pointer;font-family:inherit;font-weight:600;opacity:.75;
-}
-.mf-reset:hover{opacity:1;border-color:var(--rust);color:var(--rust)}
-
-/* ---- pannello riepilogo quantitativi ---- */
-.summary{background:var(--panel);border:1px solid var(--line-strong);border-radius:11px;margin-bottom:12px;overflow:hidden}
-.sum-head{display:flex;align-items:center;gap:16px;padding:11px 15px;flex-wrap:wrap;background:var(--line)}
-.sum-tot{display:flex;gap:20px;flex-wrap:wrap;align-items:baseline}
-.sum-tot .st{display:flex;flex-direction:column;line-height:1.25}
-.sum-tot .st .l{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;opacity:.55;font-weight:700}
-.sum-tot .st .v{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums}
-.sum-head .sp{flex:1}
-.sum-head .gbl{font-size:12px;opacity:.6;font-weight:700}
-.sum-head select{
-  padding:7px 10px;border:1px solid var(--line-strong);border-radius:8px;font-size:13px;
-  font-family:inherit;background:var(--panel);color:var(--ink);cursor:pointer;font-weight:600;
-}
-.sum-head .sum-toggle{background:none;border:0;font-family:inherit;font-size:12px;font-weight:700;color:var(--steel);cursor:pointer}
-.sum-body{max-height:340px;overflow-y:auto}
-table.sumtab{width:100%;border-collapse:collapse;font-size:13px}
-table.sumtab th{
-  text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;opacity:.55;
-  padding:8px 15px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);
-}
-table.sumtab td{padding:7px 15px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
-table.sumtab tr:last-child td{border-bottom:0}
-table.sumtab tr.sum-row:hover{background:var(--line);cursor:pointer}
-table.sumtab tr.sum-row.picked{background:var(--steel-bg,#eef3f9)}
-table.sumtab .g{font-weight:700}
-table.sumtab .num{text-align:right}
-table.sumtab tr.sum-tot-row td{font-weight:800;background:var(--line)}
-.sum-pick{font-size:11px;color:var(--steel);font-weight:700;opacity:0}
-table.sumtab tr.sum-row:hover .sum-pick{opacity:1}
 .btn-primary{
   background:var(--steel);color:#fff;border:0;padding:10px 15px;border-radius:9px;font-size:13px;
   font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:.02em;transition:.15s;
@@ -287,6 +218,15 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
   animation:pop .18s ease;
 }
 .modal.wide{max-width:680px}
+.modal.xwide{max-width:1020px}
+.rtab{width:100%;border-collapse:collapse;font-size:12px}
+.rtab th{text-align:left;font-size:11px;color:var(--ink-soft);font-weight:700;padding:6px 8px;border-bottom:1px solid var(--line-strong);white-space:nowrap}
+.rtab td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.rtab .num{text-align:right}
+.lav-tag{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;background:var(--steel-bg);color:var(--steel);white-space:nowrap}
+.lav-RIFILO{background:var(--amber-bg);color:var(--amber)}
+.lav-SELEZIONE{background:var(--sail-bg);color:var(--sail)}
+.lav-MANUALE{background:var(--grey-bg);color:var(--ink-soft)}
 @keyframes pop{from{transform:translateY(8px) scale(.98);opacity:0}to{transform:none;opacity:1}}
 .modal-head{padding:18px 24px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-start}
 .modal-head h2{font-size:18px;font-weight:800;letter-spacing:-.01em}
@@ -368,6 +308,7 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
     <button onclick="resetFirebaseConfig()" title="Cambia la connessione cloud su questo dispositivo">
       ⚙ Cloud
     </button>
+    <button onclick="openVersioni()" title="Torna a una versione precedente del magazzino">⟲ Versioni</button>
     <button onclick="exportData()" title="Scarica un backup con tutti i dati">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>Esporta
     </button>
@@ -376,11 +317,11 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
     </button>
     <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
     <button onclick="document.getElementById('distintaFile').click()" title="Carica una distinta pacchi da Excel/CSV">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M8 4v16"/></svg>Importa distinta
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M8 4v16"/></svg><span class="hide-sm">Importa distinta</span><span class="show-sm">Distinta</span>
     </button>
     <input type="file" id="distintaFile" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleDistintaFile(event)">
     <button onclick="document.getElementById('resaFile').click()" title="Carica una resa taglio/rifilo/selezione da un centro servizi (es. Combass)">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 7l8-4 8 4M4 7v10l8 4 8-4V7M4 7l8 4m0 0l8-4m-8 4v10"/></svg>Importa resa taglio
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 7l8-4 8 4M4 7v10l8 4 8-4V7M4 7l8 4m0 0l8-4m-8 4v10"/></svg><span class="hide-sm">Importa resa taglio</span><span class="show-sm">Resa taglio</span>
     </button>
     <input type="file" id="resaFile" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleResaFile(event)">
   </div>
@@ -423,8 +364,8 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
     <div class="kpi accent-green"><div class="label">Capitale immobilizzato</div><div class="val" id="aCapitale">€0</div></div>
   </div>
   <div class="kpis" id="kpiScarti" style="display:none">
-    <div class="kpi accent-steel"><div class="label">Tagli effettuati (anno)</div><div class="val" id="tCount">0</div></div>
-    <div class="kpi accent-ink"><div class="label">Peso tagliato (anno)</div><div class="val" id="tWeight">0<small>t</small></div></div>
+    <div class="kpi accent-steel"><div class="label">Lavorazioni (anno)</div><div class="val" id="tCount">0</div></div>
+    <div class="kpi accent-ink"><div class="label">Peso lavorato (anno)</div><div class="val" id="tWeight">0<small>t</small></div></div>
     <div class="kpi accent-rust"><div class="label">Scarto totale (anno)</div><div class="val" id="tScarto">0<small>t</small></div></div>
     <div class="kpi accent-amber"><div class="label">% scarto media (anno)</div><div class="val" id="tScartoPct">0%</div></div>
     <div class="kpi accent-green"><div class="label">Pacchi generati (anno)</div><div class="val" id="tPacchi">0</div></div>
@@ -435,13 +376,18 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
       <input type="text" id="searchBox" placeholder="Cerca collo, fornitore, rivestimento, nota…" oninput="render()">
     </div>
-    <div class="mfilter" id="supplierFilter"></div>
-    <div class="mfilter" id="thickFilter"></div>
-    <div class="mfilter" id="widthFilter"></div>
-    <div class="mfilter" id="coatFilter"></div>
-    <div class="mfilter" id="sceltaFilter"></div>
-    <div class="mfilter" id="ubicFilter"></div>
-    <button class="mf-reset" id="mfReset" onclick="mfResetAll()" title="Azzera tutti i filtri">Azzera filtri</button>
+    <select class="filter" id="supplierFilter" onchange="render()"><option value="">Tutti i fornitori</option></select>
+    <select class="filter" id="thickFilter" onchange="render()"><option value="">Ogni spessore</option></select>
+    <select class="filter" id="widthFilter" onchange="render()"><option value="">Ogni larghezza</option></select>
+    <select class="filter" id="coatFilter" onchange="render()"><option value="">Ogni rivestimento</option></select>
+    <select class="filter" id="sceltaFilter" onchange="render()">
+      <option value="">Ogni scelta</option>
+      <option value="PRIMA">Prima</option>
+      <option value="SECONDA">Seconda</option>
+      <option value="TERZA">Terza</option>
+      <option value="QUINTA">Quinta</option>
+      <option value="BOTOLA">Botola</option>
+    </select>
     <button class="btn-primary btn-add" id="addCoilBtn" onclick="openAdd()">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>Aggiungi coil
     </button>
@@ -450,35 +396,12 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
     </button>
   </div>
 
-  <div class="summary" id="summary">
-    <div class="sum-head">
-      <div class="sum-tot" id="sumTot"></div>
-      <div class="sp"></div>
-      <span class="gbl">Raggruppa per</span>
-      <select id="groupBy" onchange="renderSummary()">
-        <option value="ubicazione">Ubicazione</option>
-        <option value="spessore">Spessore</option>
-        <option value="larghezza">Larghezza</option>
-        <option value="misura">Spessore × Larghezza</option>
-        <option value="misura3">Spess. × Largh. × Lungh.</option>
-        <option value="rivestimento">Rivestimento</option>
-        <option value="durezza">Durezza</option>
-        <option value="scelta">Scelta</option>
-        <option value="fornitore">Fornitore</option>
-        <option value="none">Nessun raggruppamento</option>
-      </select>
-      <button class="sum-toggle" id="sumToggle" onclick="toggleSummary()">Nascondi</button>
-    </div>
-    <div class="sum-body" id="sumBody"></div>
-  </div>
-
   <div class="bulkbar" id="bulkbar">
     <span class="count"><b id="bulkN">0</b> coil selezionati</span>
     <span class="bw" id="bulkW"></span>
     <div class="sp"></div>
     <button class="b-clear" onclick="clearSel()">Deseleziona</button>
     <button class="b-export" id="bulkOriginBtn" onclick="openBulkOrigine()">Imposta origine</button>
-    <button class="b-export" id="bulkUbicBtn" onclick="openBulkUbic()">Imposta ubicazione</button>
     <button class="b-export" id="bulkExportBtn" onclick="exportSelezione()">Esporta selezione ↓</button>
     <button class="b-export" id="bulkTaglioBtn" onclick="openOrdineTaglio()" title="Genera l'Excel da mandare al centro servizi">Ordine di taglio ↓</button>
     <button class="b-sell" id="bulkSellBtn" onclick="openBulkSell()">Vendi selezionati →</button>
@@ -521,6 +444,7 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
         <div class="field"><label>Costo rifilo (€/t)</label><input type="number" id="fCostoRifilo" value="0" oninput="calcMargin()"></div>
         <div class="field"><label>Rifila a (mm) — vuoto = nessun rifilo</label><input type="number" id="fRifiloLarghezza" placeholder="es. 800" oninput="calcMargin()"></div>
       </div>
+      <div id="sellSpecWrap"></div>
       <div class="calc-preview" id="calcPreview"></div>
     </div>
     <div class="modal-foot">
@@ -563,27 +487,6 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
     <div class="modal-foot">
       <button class="btn-ghost" onclick="closeEditSale()">Annulla</button>
       <button class="btn-confirm" onclick="confirmEditSale()">Salva correzioni</button>
-    </div>
-  </div>
-</div>
-
-<!-- ============ UBICAZIONE MASSIVA MODAL ============ -->
-<div class="overlay" id="ubicOverlay">
-  <div class="modal" style="max-width:520px">
-    <div class="modal-head">
-      <div><h2>Imposta ubicazione</h2><div class="sub" id="ubicSub"></div></div>
-      <button class="x" onclick="closeBulkUbic()">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="field"><label>Ubicazione da assegnare a tutti i coil selezionati</label>
-        <input type="text" id="buUbicazione" placeholder="es. Combas" list="ubicazioniList" onkeydown="if(event.key==='Enter')confirmBulkUbic()">
-      </div>
-      <div id="buSuggeriti" style="margin:-2px 0 4px"></div>
-      <p class="split-hint" id="buAvviso" style="margin:2px 0 0"></p>
-    </div>
-    <div class="modal-foot">
-      <button class="btn-cancel" onclick="closeBulkUbic()">Annulla</button>
-      <button class="btn-confirm" onclick="confirmBulkUbic()">Assegna ubicazione</button>
     </div>
   </div>
 </div>
@@ -721,13 +624,13 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
 
 <!-- ============ IMPORTA RESA TAGLIO MODAL ============ -->
 <div class="overlay" id="resaOverlay">
-  <div class="modal wide">
+  <div class="modal xwide">
     <div class="modal-head">
       <div><h2>Importa resa taglio</h2><div class="sub" id="resaSub">Carica la resa Excel del centro servizi (taglio / rifilo / selezione)</div></div>
       <button class="x" onclick="closeResa()">×</button>
     </div>
     <div class="modal-body">
-      <p class="split-hint">Ogni lotto d'origine viene cercato tra i coil/semilavorati già a magazzino e consumato; i lotti generati e già consumati da una fase successiva <b>nello stesso foglio</b> (es. semilavorato tagliato poi rifilato) non vengono messi a magazzino: passano direttamente al risultato finale, ma lo scarto di ogni fase resta comunque registrato nello storico. Il bilancio peso è calcolato per fase (non riga per riga), perché il taglio reale mescola fogli di lotti adiacenti.</p>
+      <p class="split-hint">Controllo <b>coil per coil</b>: per ogni lotto d'origine vedi quanto è entrato, quanto è uscito in pacchi, il rottame e lo scarto. I pacchi prendono fornitore, provenienza e costo <b>del proprio coil</b>. Un coil elencato nella resa ma senza pacchi <b>non viene toccato</b>; se la resa ne lavora solo una parte, puoi lasciare il residuo a magazzino. Prima di importare salvo un punto di ripristino: se qualcosa non torna, premi "Annulla" o vai su ⟲ Versioni.</p>
       <div class="field-row">
         <div class="field"><label>Costo €/t di riserva (usato solo per i lotti d'origine NON trovati a magazzino)</label><input type="number" id="rFallbackCosto" value="0" oninput="renderResaPreview()"></div>
         <div class="field"><label>Fornitore di riserva (usato se non deducibile dai lotti consumati)</label><input type="text" id="rFallbackFornitore" placeholder="es. TITAN"></div>
@@ -854,7 +757,22 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
   </div>
 </div>
 
-<div class="toast" id="toast"><span class="tick">✓</span><span id="toastMsg"></span></div>
+<div class="toast" id="toast"><span class="tick">✓</span><span id="toastMsg"></span><button id="toastUndo" style="display:none;margin-left:8px;background:#fff;color:var(--ink);border:0;border-radius:6px;padding:4px 10px;font-weight:700;cursor:pointer;font-family:inherit">Annulla</button></div>
+
+<!-- ============ PUNTI DI RIPRISTINO ============ -->
+<div class="overlay" id="versOverlay">
+  <div class="modal xwide">
+    <div class="modal-head">
+      <div><h2>Punti di ripristino</h2><div class="sub">Copie automatiche del magazzino, salvate sul cloud prima di ogni operazione delicata e ogni giorno. Tengo le ultime 40.</div></div>
+      <button class="x" onclick="closeVersioni()">×</button>
+    </div>
+    <div class="modal-body"><div id="versList"></div></div>
+    <div class="modal-foot">
+      <button class="btn-ghost" onclick="createVersionNow()">Crea adesso</button>
+      <button class="btn-ghost" onclick="closeVersioni()">Chiudi</button>
+    </div>
+  </div>
+</div>
 
 <!-- ============ FIREBASE SETUP OVERLAY ============ -->
 <div class="overlay" id="setupOverlay">
@@ -1155,6 +1073,7 @@ function attachListener(){
   docRef.onSnapshot(snap=>{
     if(snap.exists){
       state=snap.data();
+      lastCloudJSON=JSON.stringify(state);
       if(!state.stock) state.stock=[];
       if(!state.sailing) state.sailing=[];
       if(!state.sold) state.sold=[];
@@ -1165,13 +1084,93 @@ function attachListener(){
     render();
   }, err=>{ console.error(err); setSyncStatus('error'); });
 }
-function saveState(){
-  if(!docRef) return; // non ancora connesso al cloud
+// saveState(motivo): se c'è un motivo, prima salva un punto di ripristino con il magazzino com'era PRIMA della modifica.
+// Senza motivo, crea comunque un punto di ripristino automatico al primo salvataggio del giorno.
+// opts.onlyVersion: crea solo il punto di ripristino (da chiamare prima di modificare "state").
+async function saveState(motivo,opts){
+  if(!docRef) return null; // non ancora connesso al cloud
+  let ver=null;
+  try{
+    if(motivo) ver=await createVersion(motivo, opts&&opts.onlyVersion?JSON.stringify(state):null);
+    else{
+      if(!versIndex) await loadVersIndex().catch(()=>{ versIndex=[]; });
+      const today=oggi();
+      if(!versIndex.some(v=>(v.ts||'').slice(0,10)===today)) ver=await createVersion('Automatico (inizio giornata)');
+    }
+  }catch(e){ console.error(e); }
+  if(opts&&opts.onlyVersion) return ver;
   docRef.set(state).catch(err=>{
     console.error(err); setSyncStatus('error');
     alert('Errore nel salvataggio su cloud:\n'+err.message);
   });
+  return ver;
 }
+/* ---------- PUNTI DI RIPRISTINO (versioni automatiche sul cloud) ----------
+   Prima di ogni operazione delicata (import resa, import backup, taglio, eliminazione, ripristino)
+   e comunque al primo salvataggio di ogni giorno, l'app salva una copia completa del magazzino
+   com'era PRIMA della modifica. Le copie stanno nella stessa collezione Firebase, documenti "ver_…". */
+const VERS_INDEX_DOC='versioni_indice', VERS_PREFIX='ver_', VERS_MAX=40, VERS_CHUNK=700000;
+let lastCloudJSON=null, versIndex=null, versWarned=false;
+function versCol(){ return db.collection(FIRESTORE_COLLECTION); }
+async function loadVersIndex(){ const s=await versCol().doc(VERS_INDEX_DOC).get(); versIndex=s.exists?(s.data().list||[]):[]; return versIndex; }
+async function createVersion(motivo,json){
+  json=json||lastCloudJSON; if(!json||!db) return null;
+  try{
+    await loadVersIndex();
+    const ts=new Date(); const id=VERS_PREFIX+ts.getTime();
+    const parts=[]; for(let i=0;i<json.length;i+=VERS_CHUNK) parts.push(json.slice(i,i+VERS_CHUNK));
+    await Promise.all(parts.map((p,i)=>versCol().doc(id+'_'+i).set({p})));
+    let info={}; try{ const d=JSON.parse(json); info={nStock:(d.stock||[]).length,nSold:(d.sold||[]).length,pesoStock:(d.stock||[]).reduce((a,c)=>a+(c.peso||0),0)}; }catch(e){}
+    const entry={id,ts:ts.toISOString(),motivo,parts:parts.length,...info};
+    const all=[entry,...versIndex]; versIndex=all.slice(0,VERS_MAX);
+    await versCol().doc(VERS_INDEX_DOC).set({list:versIndex});
+    all.slice(VERS_MAX).forEach(o=>{ for(let i=0;i<(o.parts||1);i++) versCol().doc(o.id+'_'+i).delete().catch(()=>{}); });
+    return entry;
+  }catch(err){
+    console.error(err);
+    if(!versWarned){ versWarned=true; alert('Attenzione: non riesco a salvare il punto di ripristino sul cloud ('+err.message+').\nLe modifiche vengono salvate lo stesso, ma per sicurezza fai "Esporta" prima di operazioni importanti.'); }
+    return null;
+  }
+}
+async function readVersion(v){
+  const snaps=await Promise.all([...Array(v.parts||1)].map((_,i)=>versCol().doc(v.id+'_'+i).get()));
+  return JSON.parse(snaps.map(s=>s.exists?s.data().p:'').join(''));
+}
+const fmtDataOra=iso=>{ const d=new Date(iso); return d.toLocaleDateString('it-IT',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'})+' '+d.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}); };
+async function openVersioni(){
+  document.getElementById('versOverlay').classList.add('show');
+  const w=document.getElementById('versList'); w.innerHTML='<p class="split-hint">Carico…</p>';
+  try{ await loadVersIndex(); }catch(e){ w.innerHTML='<p class="split-hint" style="color:var(--rust)">Non riesco a leggere i punti di ripristino: '+e.message+'</p>'; return; }
+  if(!versIndex.length){ w.innerHTML='<p class="split-hint">Ancora nessun punto di ripristino. Il primo verrà creato alla prossima modifica, oppure premi "Crea adesso".</p>'; return; }
+  w.innerHTML=`<div style="overflow-x:auto"><table class="rtab"><thead><tr><th>Quando</th><th>Motivo</th><th class="num">Coil a mag.</th><th class="num">Peso mag.</th><th class="num">Vendite</th><th></th></tr></thead><tbody>${
+    versIndex.map(v=>`<tr><td class="mono" style="white-space:nowrap">${fmtDataOra(v.ts)}</td><td>${v.motivo||''}</td>
+      <td class="num mono">${v.nStock??'—'}</td><td class="num mono">${v.pesoStock!=null?fmtT(v.pesoStock)+' t':'—'}</td><td class="num mono">${v.nSold??'—'}</td>
+      <td style="white-space:nowrap"><button class="mini-btn" onclick="restoreVersion('${v.id}')">Ripristina</button> <button class="mini-btn" onclick="downloadVersion('${v.id}')">Scarica</button></td></tr>`).join('')
+  }</tbody></table></div>`;
+}
+function closeVersioni(){ document.getElementById('versOverlay').classList.remove('show'); }
+async function createVersionNow(){ const v=await createVersion('Creato a mano',JSON.stringify(state)); if(v){ showToast('Punto di ripristino creato'); openVersioni(); } }
+async function restoreVersion(id){
+  if(!versIndex) await loadVersIndex();
+  const v=versIndex.find(x=>x.id===id); if(!v){ alert('Punto di ripristino non trovato.'); return; }
+  if(!confirm(`Riportare il magazzino a com'era ${fmtDataOra(v.ts)}?\n(${v.motivo})\n\nPrima di farlo salvo comunque la situazione attuale, così puoi tornare indietro.`)) return;
+  try{
+    const d=await readVersion(v);
+    if(!d||!d.stock) throw new Error('copia vuota o illeggibile');
+    await saveState(`Prima del ripristino alla versione del ${fmtDataOra(v.ts)}`,{onlyVersion:true});
+    state={...d,stock:d.stock||[],sailing:d.sailing||[],sold:d.sold||[],tagli:d.tagli||[]};
+    await saveState(); clearSel(); closeVersioni(); render();
+    showToast('Magazzino ripristinato al '+fmtDataOra(v.ts));
+  }catch(e){ console.error(e); alert('Ripristino non riuscito: '+e.message); }
+}
+async function downloadVersion(id){
+  const v=versIndex.find(x=>x.id===id); if(!v) return;
+  const d=await readVersion(v);
+  const blob=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob); const a=document.createElement('a');
+  a.href=url; a.download=`steelco_magazzino_${v.ts.slice(0,16).replace(/[:T]/g,'-')}.json`; a.click(); URL.revokeObjectURL(url);
+}
+
 function nextId(){ return Math.max(0,...state.stock.concat(state.sailing,state.sold,state.tagli).map(c=>c.id||0))+1; }
 function findAnywhere(id){ return state.stock.find(c=>c.id===id)||state.sailing.find(c=>c.id===id)||state.sold.find(c=>c.id===id); }
 
@@ -1186,10 +1185,9 @@ function switchTab(t){
   document.getElementById('kpiAnalisi').style.display = t==='analisi'?'grid':'none';
   document.getElementById('kpiCbam').style.display = t==='cbam'?'grid':'none';
   const isScarti = t==='scarti', isAnalisi = t==='analisi'||t==='cbam'||t==='guida';
-  ['supplierFilter','thickFilter','widthFilter','coatFilter','sceltaFilter','ubicFilter','mfReset','addCoilBtn'].forEach(id=>{
-    const e=document.getElementById(id); if(e) e.style.display = (isScarti||isAnalisi)?'none':'';
+  ['supplierFilter','thickFilter','widthFilter','coatFilter','sceltaFilter','addCoilBtn'].forEach(id=>{
+    document.getElementById(id).style.display = (isScarti||isAnalisi)?'none':'';
   });
-  document.getElementById('summary').style.display = (isScarti||isAnalisi)?'none':'';
   document.getElementById('tableWrap').style.display = isAnalisi?'none':'';
   document.getElementById('analisiWrap').style.display = t==='analisi'?'':'none';
   document.getElementById('cbamWrap').style.display = t==='cbam'?'':'none';
@@ -1210,122 +1208,35 @@ function refreshDatalists(){
   dl('ubicazioniList',all.map(c=>c.ubicazione));
 }
 
-/* ---------- FILTERS (multi-selezione, stile Excel) ---------- */
-const NONE_KEY=' vuoto';
-const MF = {
-  supplierFilter:{field:'fornitore',   all:'Tutti i fornitori', one:'fornitore',   many:'fornitori',    num:false, sel:new Set(), q:''},
-  thickFilter:   {field:'spessore',    all:'Ogni spessore',     one:'spessore',    many:'spessori',     num:true,  sel:new Set(), q:''},
-  widthFilter:   {field:'larghezza',   all:'Ogni larghezza',    one:'larghezza',   many:'larghezze',    num:true,  sel:new Set(), q:''},
-  coatFilter:    {field:'rivestimento',all:'Ogni rivestimento', one:'rivestimento',many:'rivestimenti', num:false, sel:new Set(), q:''},
-  sceltaFilter:  {field:'scelta',      all:'Ogni scelta',       one:'scelta',      many:'scelte',       num:false, sel:new Set(), q:''},
-  ubicFilter:    {field:'ubicazione',  all:'Ogni ubicazione',   one:'ubicazione',  many:'ubicazioni',   num:false, sel:new Set(), q:''}
-};
-const MF_IDS = Object.keys(MF);
-function mfVal(c,field){ const v=c[field]; return (v===undefined||v===null||v==='')?NONE_KEY:String(v); }
-function mfLabel(id,v){
-  if(v===NONE_KEY) return '— non indicato —';
-  if(id==='sceltaFilter') return sceltaLabel(v);
-  return v;
+/* ---------- FILTERS ---------- */
+function refreshFilterOptions(){
+  const all = state.stock.concat(state.sailing,state.sold);
+  fill('supplierFilter','Tutti i fornitori',[...new Set(all.map(c=>c.fornitore))].filter(Boolean).sort());
+  fill('thickFilter','Ogni spessore',[...new Set(all.map(c=>c.spessore))].filter(v=>v).sort((a,b)=>a-b));
+  fill('widthFilter','Ogni larghezza',[...new Set(all.map(c=>c.larghezza))].filter(v=>v).sort((a,b)=>a-b));
+  fill('coatFilter','Ogni rivestimento',[...new Set(all.map(c=>c.rivestimento))].filter(Boolean).sort());
 }
-/* conteggi calcolati sulla lista attiva già filtrata dagli ALTRI filtri (come Excel) */
-function mfCounts(id){
-  const f=MF[id]; const m=new Map();
-  activeList().filter(c=>mfPass(c,id)).forEach(c=>{ const v=mfVal(c,f.field); m.set(v,(m.get(v)||0)+1); });
-  return m;
+function fill(id,first,opts){
+  const sel=document.getElementById(id); const cur=sel.value;
+  sel.innerHTML=`<option value="">${first}</option>`+opts.map(o=>`<option value="${o}">${o}</option>`).join('');
+  if(opts.map(String).includes(cur)) sel.value=cur;
 }
-function mfPass(c,skipId){
-  for(const id of MF_IDS){
-    if(id===skipId) continue;
-    const f=MF[id];
-    if(f.sel.size && !f.sel.has(mfVal(c,f.field))) return false;
-  }
-  return true;
-}
-function refreshFilterOptions(){ MF_IDS.forEach(id=>renderMF(id)); syncResetBtn(); }
-function renderMF(id){
-  const box=document.getElementById(id); if(!box) return;
-  const f=MF[id];
-  const counts=mfCounts(id);
-  /* mantiene visibili anche i valori selezionati che al momento hanno conteggio 0 */
-  const vals=[...new Set([...counts.keys(),...f.sel])];
-  vals.sort((a,b)=>{
-    if(a===NONE_KEY) return 1; if(b===NONE_KEY) return -1;
-    if(f.num) return parseFloat(a)-parseFloat(b);
-    return String(mfLabel(id,a)).localeCompare(String(mfLabel(id,b)),'it',{numeric:true});
-  });
-  const q=f.q.toLowerCase().trim();
-  const shown=q?vals.filter(v=>String(mfLabel(id,v)).toLowerCase().includes(q)):vals;
-  const n=f.sel.size;
-  const lbl = n===0 ? f.all : (n===1 ? String(mfLabel(id,[...f.sel][0])) : f.many);
-  const wasOpen=box.classList.contains('open');
-  box.classList.toggle('on',n>0);
-  box.innerHTML=`
-    <button type="button" class="mf-btn" onclick="mfToggleOpen('${id}',event)">
-      ${n>1?`<span class="mf-n">${n}</span>`:''}
-      <span class="mf-lbl">${esc(lbl)}</span>
-      <svg class="mf-car" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M6 9l6 6 6-6"/></svg>
-    </button>
-    <div class="mf-pop" onclick="event.stopPropagation()">
-      <input class="mf-search" placeholder="Cerca ${esc(f.one)}…" value="${esc(f.q)}" oninput="mfSearch('${id}',this.value)">
-      <div class="mf-acts">
-        <a onclick="mfSetAll('${id}',true)">Seleziona tutto</a>
-        <a onclick="mfSetAll('${id}',false)">Nessuno</a>
-        <span class="sp"></span>
-        <span style="opacity:.5;font-weight:600">${shown.length} valori</span>
-      </div>
-      <div class="mf-list">${
-        shown.length? shown.map(v=>`<label>
-          <input type="checkbox" ${f.sel.has(v)?'checked':''} onchange="mfPick('${id}',this.dataset.v,this.checked)" data-v="${esc(v)}">
-          <span class="mf-v">${esc(mfLabel(id,v))}</span>
-          <span class="mf-c">${counts.get(v)||0}</span>
-        </label>`).join('') : '<div class="mf-empty">Nessun valore</div>'
-      }</div>
-    </div>`;
-  if(wasOpen){ box.classList.add('open'); const s=box.querySelector('.mf-search'); if(s){ s.focus(); s.setSelectionRange(s.value.length,s.value.length); } }
-}
-function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function mfToggleOpen(id,ev){
-  if(ev) ev.stopPropagation();
-  const box=document.getElementById(id); const wasOpen=box.classList.contains('open');
-  document.querySelectorAll('.mfilter.open').forEach(b=>b.classList.remove('open'));
-  if(!wasOpen){ box.classList.add('open'); const s=box.querySelector('.mf-search'); if(s) s.focus(); }
-}
-function mfSearch(id,v){ MF[id].q=v; renderMF(id); }
-function mfPick(id,v,on){
-  const f=MF[id];
-  if(on) f.sel.add(v); else f.sel.delete(v);
-  render();
-}
-function mfSetAll(id,on){
-  const f=MF[id];
-  if(!on){ f.sel.clear(); }
-  else {
-    const counts=mfCounts(id);
-    const q=f.q.toLowerCase().trim();
-    [...counts.keys()].filter(v=>!q||String(mfLabel(id,v)).toLowerCase().includes(q)).forEach(v=>f.sel.add(v));
-  }
-  render();
-}
-function mfResetAll(){ MF_IDS.forEach(id=>{ MF[id].sel.clear(); MF[id].q=''; }); const s=document.getElementById('searchBox'); if(s) s.value=''; render(); }
-function syncResetBtn(){
-  const b=document.getElementById('mfReset'); if(!b) return;
-  const any=MF_IDS.some(id=>MF[id].sel.size)||!!document.getElementById('searchBox').value.trim();
-  b.style.opacity=any?'1':'.45';
-  b.textContent=any?'Azzera filtri':'Nessun filtro';
-}
-document.addEventListener('click',()=>{ document.querySelectorAll('.mfilter.open').forEach(b=>b.classList.remove('open')); });
-document.addEventListener('keydown',e=>{ if(e.key==='Escape') document.querySelectorAll('.mfilter.open').forEach(b=>b.classList.remove('open')); });
-
 function filtered(list){
   const q=document.getElementById('searchBox').value.toLowerCase().trim();
+  const sup=document.getElementById('supplierFilter').value;
+  const th=document.getElementById('thickFilter').value;
+  const wd=document.getElementById('widthFilter').value;
+  const co=document.getElementById('coatFilter').value;
+  const sc=document.getElementById('sceltaFilter').value;
   return list.filter(c=>{
-    for(const id of MF_IDS){
-      const f=MF[id];
-      if(f.sel.size && !f.sel.has(mfVal(c,f.field))) return false;
-    }
+    if(sup&&c.fornitore!==sup) return false;
+    if(th&&String(c.spessore)!==th) return false;
+    if(wd&&String(c.larghezza)!==wd) return false;
+    if(co&&c.rivestimento!==co) return false;
+    if(sc&&c.scelta!==sc) return false;
     if(!q) return true;
     return [c.fornitore,c.collo,c.origineCoil,c.rivestimento,c.durezza,c.scelta,c.nota,c.cliente,c.fatturaVendita,
-            c.ordineCliente,c.ordineAcquisto,c.ubicazione,paeseLabel(c.origine),canaleLabel(canaleDiRiga(c)),
+            c.ordineCliente,c.ordineAcquisto,c.ubicazione,c.lottoCentro,c.origineCoil,paeseLabel(c.origine),canaleLabel(canaleDiRiga(c)),
             c.spessore,c.larghezza,c.lunghezza,
             `${c.spessore||''}x${c.larghezza||''}x${c.lunghezza||''}`,
             `${c.spessore||''}×${c.larghezza||''}×${c.lunghezza||''}`]
@@ -1417,82 +1328,8 @@ function render(){
   else if(currentTab==='sold') renderSold(t);
   else if(currentTab==='scarti') renderScarti(t);
   else renderInv(t);
-  renderSummary();
   updateBulkbar();
 }
-
-/* ---------- RIEPILOGO QUANTITATIVI ---------- */
-let sumOpen = true, sumRows = [];
-function toggleSummary(){
-  sumOpen=!sumOpen;
-  document.getElementById('sumBody').style.display=sumOpen?'':'none';
-  document.getElementById('sumToggle').textContent=sumOpen?'Nascondi':'Mostra dettaglio';
-}
-function sumPeso(c){ return currentTab==='sold' ? (c.pesoVenduto||0) : (c.peso||0); }
-function sumValore(c){ return currentTab==='sold' ? (c.ricavo||0) : (c.valoreTotale||0); }
-function groupKeyOf(c,gb){
-  const d=v=>(v===undefined||v===null||v==='')?'—':v;
-  if(gb==='misura')  return `${d(c.spessore)} × ${d(c.larghezza)}`;
-  if(gb==='misura3') return `${d(c.spessore)} × ${d(c.larghezza)} × ${d(c.lunghezza)}`;
-  if(gb==='scelta')  return c.scelta?sceltaLabel(c.scelta):'—';
-  return d(c[gb]);
-}
-function renderSummary(){
-  const wrap=document.getElementById('summary');
-  if(currentTab==='scarti'||currentTab==='analisi'||currentTab==='cbam'||currentTab==='guida'){ wrap.style.display='none'; return; }
-  wrap.style.display='';
-  const list=filtered(activeList());
-  const tot=list.reduce((a,c)=>{a.n++;a.p+=sumPeso(c);a.v+=sumValore(c);return a;},{n:0,p:0,v:0});
-  const totAll=activeList().length;
-  const filtri=MF_IDS.filter(id=>MF[id].sel.size).length + (document.getElementById('searchBox').value.trim()?1:0);
-  document.getElementById('sumTot').innerHTML=`
-    <div class="st"><span class="l">Coil a video</span><span class="v">${tot.n}${filtri?` <span style="font-size:12px;font-weight:600;opacity:.5">su ${totAll}</span>`:''}</span></div>
-    <div class="st"><span class="l">${currentTab==='sold'?'Peso venduto':'Peso totale'}</span><span class="v">${fmtT(tot.p)} t</span></div>
-    <div class="st"><span class="l">${currentTab==='sold'?'Ricavo':'Valore'}</span><span class="v">${fmtEur(tot.v)}</span></div>
-    ${filtri?`<div class="st"><span class="l">Filtri attivi</span><span class="v" style="color:var(--steel)">${filtri}</span></div>`:''}`;
-
-  const gb=document.getElementById('groupBy').value;
-  const body=document.getElementById('sumBody');
-  body.style.display=sumOpen?'':'none';
-  if(gb==='none'){ body.innerHTML=''; return; }
-  if(!list.length){ body.innerHTML='<div class="mf-empty" style="padding:14px 15px">Nessun coil con i filtri attuali.</div>'; return; }
-
-  const g=new Map();
-  list.forEach(c=>{
-    const k=groupKeyOf(c,gb);
-    if(!g.has(k)) g.set(k,{k,n:0,p:0,v:0,ids:[]});
-    const r=g.get(k); r.n++; r.p+=sumPeso(c); r.v+=sumValore(c); r.ids.push(c.id);
-  });
-  const numeric=(gb==='spessore'||gb==='larghezza');
-  const rows=[...g.values()].sort((a,b)=> numeric ? (parseFloat(a.k)||0)-(parseFloat(b.k)||0) : b.p-a.p );
-  const gbLabel={ubicazione:'Ubicazione',spessore:'Spessore',larghezza:'Larghezza',misura:'Spess. × Largh.',misura3:'Spess. × Largh. × Lungh.',rivestimento:'Rivestimento',durezza:'Durezza',scelta:'Scelta',fornitore:'Fornitore'}[gb]||gb;
-  const selectable=(currentTab==='stock'||currentTab==='sailing');
-  body.innerHTML=`<table class="sumtab">
-    <thead><tr>
-      <th>${gbLabel}</th><th class="num">Coil</th><th class="num">Peso (t)</th><th class="num">% peso</th><th class="num">Valore</th>${selectable?'<th></th>':''}
-    </tr></thead><tbody>
-    ${rows.map((r,i)=>{
-      const allSel=r.ids.every(id=>selected.has(id));
-      return `<tr class="sum-row ${allSel?'picked':''}" ${selectable?`onclick="pickGroup(${i})"`:''} title="${selectable?'Clicca per selezionare / deselezionare tutti i coil di questa riga':''}">
-        <td class="g">${esc(r.k)}</td>
-        <td class="num">${r.n}</td>
-        <td class="num"><b>${fmtT(r.p)}</b></td>
-        <td class="num" style="opacity:.6">${tot.p?((r.p/tot.p)*100).toFixed(1):'0.0'}%</td>
-        <td class="num">${fmtEur(r.v)}</td>
-        ${selectable?`<td class="num"><span class="sum-pick">${allSel?'deseleziona':'seleziona'}</span></td>`:''}
-      </tr>`;
-    }).join('')}
-    <tr class="sum-tot-row"><td>TOTALE — ${rows.length} ${rows.length===1?'gruppo':'gruppi'}</td><td class="num">${tot.n}</td><td class="num">${fmtT(tot.p)}</td><td class="num">100%</td><td class="num">${fmtEur(tot.v)}</td>${selectable?'<td></td>':''}</tr>
-    </tbody></table>`;
-  sumRows=rows;
-}
-function pickGroup(i){
-  const r=sumRows[i]; if(!r) return;
-  const allSel=r.ids.every(id=>selected.has(id));
-  r.ids.forEach(id=>{ if(allSel) selected.delete(id); else selected.add(id); });
-  render();
-}
-
 function renderInv(t){
   const list=applySort(filtered(activeList()));
   const isStock=currentTab==='stock';
@@ -1505,7 +1342,7 @@ function renderInv(t){
     <tr class="${selected.has(c.id)?'sel':''}">
       <td class="chk"><input type="checkbox" ${selected.has(c.id)?'checked':''} onchange="toggleOne(${c.id},this)"></td>
       <td><span class="supplier sup-${c.fornitore}">${c.fornitore||'—'}</span>${c.ordineAcquisto?`<span class="origine-tag" title="Ordine di acquisto">${c.ordineAcquisto}</span>`:''}</td>
-      <td class="collo mono">${c.collo||'—'}${c.tipo==='semilavorato'?' <span class="scelta" style="background:var(--sail-bg);color:var(--sail)" title="Semilavorato: in attesa di rifilo/lavorazione successiva">SEMI</span>':''}${c.origineCoil?`<span class="origine-tag" title="Ricavato dal coil ${c.origineCoil}">da ${c.origineCoil}</span>`:''}</td>
+      <td class="collo mono">${c.collo||'—'}${c.tipo==='semilavorato'?' <span class="scelta" style="background:var(--sail-bg);color:var(--sail)" title="Semilavorato: in attesa di rifilo/lavorazione successiva">SEMI</span>':''}${c.origineCoil?`<span class="origine-tag" title="Ricavato da: ${c.origineCoil}">da ${origineDi(c)}</span>`:''}</td>
       <td class="dim" title="${canaleLabel(canaleDiRiga(c))}">${paeseLabel(c.origine)||'—'}</td>
       <td class="num mono dim">${c.spessore||'—'}</td>
       <td class="num mono">${c.larghezza||'—'}</td>
@@ -1542,7 +1379,7 @@ function renderSold(t){
       <td style="font-weight:600">${c.cliente||'—'}</td>
       <td class="mono">${c.ordineCliente||'<span class="dim">—</span>'}</td>
       <td><span class="supplier sup-${c.fornitore}">${c.fornitore}</span></td>
-      <td class="collo mono">${c.collo||'—'}${c.origineCoil?`<span class="origine-tag" title="Ricavato dal coil ${c.origineCoil}">da ${c.origineCoil}</span>`:''}</td>
+      <td class="collo mono">${c.collo||'—'}${c.origineCoil?`<span class="origine-tag" title="Ricavato da: ${c.origineCoil}">da ${origineDi(c)}</span>`:''}</td>
       <td class="dim" title="${canaleLabel(canaleDiRiga(c))}">${paeseLabel(c.origine)||'—'}</td>
       <td class="num mono dim">${c.spessore||'—'}</td>
       <td class="num mono">${c.larghezza||'—'}${c.larghezzaRifilo?`<span class="rifilo-tag" title="Venduto rifilato a ${c.larghezzaRifilo} mm">→${c.larghezzaRifilo}</span>`:''}</td>
@@ -1563,29 +1400,60 @@ function renderSold(t){
       </td>
     </tr>`).join('')}</tbody>`;
 }
+// Specifica di una lavorazione: usa i dati salvati nella riga; per le righe vecchie la ricava dai pacchi generati.
+function tagliSpec(r){
+  const idx=window._colloIdx||{};
+  let pk=(r.pacchiColli||[]).map(c=>idx[normCollo(c)]).filter(Boolean);
+  if(!pk.length&&r.collo){ const n=normCollo(r.collo); pk=Object.values(idx).filter(c=>c.origineCoil&&normCollo(c.origineCoil)===n); }
+  const first=pk[0]||{};
+  let att=r.attivita||'';
+  if(!att&&r.nota&&/^Resa /i.test(r.nota)) att=r.nota.replace(/^Resa /i,'').split('·')[0].trim();
+  if(!att) att='TAGLIO MANUALE';
+  att=att.toUpperCase();
+  const formati=[...new Set(pk.filter(p=>p.larghezza).map(p=>`${p.larghezza}×${p.lunghezza||'—'}`))];
+  const larghCoil=r.larghezza||null;
+  const larghPacchi=first.larghezza||null;
+  const rifilato=larghCoil&&larghPacchi&&larghPacchi<larghCoil-1;
+  const kind=/RIFIL/.test(att)?'RIFILO':(/SELEZ/.test(att)?'SELEZIONE':(/MANUAL/.test(att)?'MANUALE':'TAGLIO'));
+  return {att,kind,spessore:r.spessore||first.spessore||null,larghCoil,formato:r.formatoPacchi||formati.join(', '),
+    rivestimento:r.rivestimento||first.rivestimento||'',durezza:r.durezza||first.durezza||'',rifilato,
+    fornitore:r.fornitore||first.fornitore||''};
+}
+const SOGLIA_SCARTO={TAGLIO:4,MANUALE:4,RIFILO:10,SELEZIONE:15};
 function renderScarti(t){
+  window._colloIdx={}; state.stock.concat(state.sailing,state.sold).forEach(c=>{ if(c.collo) window._colloIdx[normCollo(c.collo)]=c; });
   const q=document.getElementById('searchBox').value.toLowerCase().trim();
-  let list=state.tagli.slice().sort((a,b)=>(b.data||'').localeCompare(a.data||'')||(b.id||0)-(a.id||0));
-  if(q) list=list.filter(r=>[r.collo,r.fornitore].filter(Boolean).some(f=>String(f).toLowerCase().includes(q)));
-  if(!list.length){ t.innerHTML=emptyRow('Nessun taglio registrato','Quando trasformi un coil in pacchi da Modifica, lo storico dei tagli e degli scarti comparirà qui.'); return; }
+  let list=state.tagli.slice().sort((a,b)=>(b.data||'').localeCompare(a.data||'')||(b.id||0)-(a.id||0)).map(r=>({r,sp:tagliSpec(r)}));
+  if(q) list=list.filter(({r,sp})=>[r.collo,sp.fornitore,sp.att,sp.spessore,sp.larghCoil,sp.formato,sp.rivestimento,sp.durezza,r.fileResa,(r.pacchiColli||[]).join(' ')].filter(v=>v!=null&&v!=='').some(f=>String(f).toLowerCase().includes(q)));
+  if(!list.length){ t.innerHTML=emptyRow('Nessuna lavorazione registrata','Quando tagli un coil da Modifica o importi una resa, qui compare il bilancio di ogni coil lavorato.'); return; }
   t.innerHTML=`<thead><tr>
-    <th>Data</th><th>Fornitore</th><th>Collo coil</th><th class="num">Peso coil (t)</th><th class="num">Peso pacchi (t)</th>
-    <th class="num">Scarto (kg)</th><th class="num">Scarto %</th><th class="num">Costo/t originale</th><th class="num">Costo/t pacchi</th><th>N. pacchi</th>
-  </tr></thead><tbody>${list.map(r=>{
+    <th>Data</th><th>Lavorazione</th><th>Collo lavorato</th><th>Fornitore</th><th class="num">Spess.</th><th class="num">Largh. coil</th><th>Formato pacchi</th><th>Rivest. / tempra</th>
+    <th class="num" title="Peso del coil (o della parte di coil) entrato in lavorazione">Peso lavorato (t)</th><th class="num">Peso pacchi (t)</th><th class="num">Rottame (kg)</th>
+    <th class="num">Scarto (kg)</th><th class="num">Scarto %</th><th class="num">Costo/t coil</th><th class="num">Costo/t pacchi</th><th>Pacchi</th>
+  </tr></thead><tbody>${list.map(({r,sp})=>{
     const scartoKg=(r.scartoT||0)*1000;
-    const col=scartoKg<0?'var(--steel)':(r.scartoPct>8?'var(--rust)':'var(--green)');
+    const soglia=SOGLIA_SCARTO[sp.kind]||8;
+    const gOk=r.scartoGruppoPct!=null&&r.nCoilGruppo>1&&r.scartoGruppoPct>=-0.5&&r.scartoGruppoPct<=soglia;
+    const anom=gOk?'':scartoKg<-1?'I pacchi pesano PIÙ del coil lavorato: un peso è stato inserito male':(r.scartoPct>soglia?`Scarto sopra il ${soglia}% atteso per ${sp.kind.toLowerCase()}`:'');
+    const col=anom?'var(--rust)':'var(--green)';
     return `
-    <tr>
+    <tr${anom?' style="background:var(--rust-bg)"':''} title="${anom}">
       <td class="mono dim">${r.data||'—'}</td>
-      <td><span class="supplier sup-${r.fornitore}">${r.fornitore||'—'}</span></td>
+      <td><span class="lav-tag lav-${sp.kind}">${sp.att}</span>${sp.rifilato?' <span class="lav-tag lav-RIFILO">rifilato</span>':''}${r.fileResa?`<div class="dim" style="font-size:10px">${r.fileResa}</div>`:''}</td>
       <td class="collo mono">${r.collo||'—'}</td>
+      <td>${sp.fornitore?`<span class="supplier sup-${sp.fornitore}">${sp.fornitore}</span>`:'—'}</td>
+      <td class="num mono">${sp.spessore||'—'}</td>
+      <td class="num mono">${sp.larghCoil||'<span class="dim">—</span>'}</td>
+      <td class="mono">${sp.formato||'—'}</td>
+      <td>${[sp.rivestimento,sp.durezza].filter(Boolean).join(' · ')||'—'}</td>
       <td class="num mono">${fmtT(r.pesoOriginale||0)}</td>
       <td class="num mono">${fmtT(r.pesoPacchi||0)}</td>
-      <td class="num mono" style="color:${col};font-weight:700">${scartoKg.toLocaleString('it-IT',{maximumFractionDigits:1})}</td>
-      <td class="num mono" style="color:${col};font-weight:700">${(r.scartoPct||0).toFixed(1)}%</td>
+      <td class="num mono dim">${r.rottameT?Math.round(r.rottameT*1000).toLocaleString('it-IT'):'—'}</td>
+      <td class="num mono" style="color:${col};font-weight:700">${anom?'⚠ ':''}${scartoKg.toLocaleString('it-IT',{maximumFractionDigits:0})}</td>
+      <td class="num mono" style="color:${col};font-weight:700">${(r.scartoPct||0).toFixed(1)}%${r.scartoGruppoPct!=null?`<div class="dim" style="font-size:10px;font-weight:400" title="Coil della stessa specifica tagliati di seguito: conta lo scarto della specifica">specifica (${r.nCoilGruppo} coil): ${r.scartoGruppoPct.toFixed(1)}%</div>`:''}</td>
       <td class="num mono dim">${fmtEur(r.costoOriginaleT||0)}</td>
       <td class="num mono">${fmtEur(r.nuovoCostoT||0)}</td>
-      <td class="mono">${r.nPacchi||0}</td>
+      <td class="mono" title="${(r.pacchiColli||[]).join(', ')}">${r.nPacchi||0}</td>
     </tr>`;}).join('')}</tbody>`;
 }
 function emptyRow(title,sub){
@@ -2041,8 +1909,13 @@ const GUIDA=[
 
 {id:'file',t:'Le tre importazioni da file',lead:'Cosa fa ciascuna e da dove si lancia.',html:`
 <div class="gd-row"><div class="k">Importa distinta</div><div>Carica il packing list. <b>Conta la scheda da cui parti</b>: da "A magazzino" i pacchi entrano nazionalizzati e disponibili, da "In navigazione" entrano come merce in arrivo. Legge spessore, larghezza, lunghezza, rivestimento, durezza, peso in chili, collo, e l'origine se c'è nel file. Se l'origine manca te la chiede e non procede senza.</div></div>
-<div class="gd-row"><div class="k">Importa resa taglio</div><div>Carica il file di Combas con taglio, rifilo e selezione, anche incatenati. Consuma i lotti d'origine dal magazzino e crea i pacchi risultanti, registrando lo scarto di ogni fase.</div></div>
-<div class="gd-row"><div class="k">Esporta / Importa backup</div><div>"Esporta" scarica tutto il database in un file. "Importa" lo rimette. Fallo ogni tanto: è la tua rete di sicurezza.</div></div>
+<div class="gd-row"><div class="k">Importa resa taglio</div><div>Carica il file di Combas (taglio, rifilo, selezione, anche incatenati). Prima di importare vedi il bilancio <b>coil per coil</b> e scegli per ognuno: coil finito, lavorato in parte (il residuo resta a magazzino) o non importare. I pacchi prendono fornitore e costo del proprio coil. I coil della resa senza pacchi non vengono toccati.</div></div>
+<div class="gd-row"><div class="k">Resa: numeri Combass</div><div>Se Combass usa un suo numero di coil, l'app riconosce il nostro coil dal peso e dallo spessore; puoi sempre cambiarlo dall'elenco. I pacchi prendono il nostro numero (es. X260613F-005.P001) e il numero Combass resta nelle note: la ricerca trova entrambi.</div></div>
+<div class="gd-row"><div class="k">Resa: costi di lavorazione</div><div>Nella finestra della resa aggiungi i costi addebitati da Combass (taglio, consegna, rifilo, selezione, altro), in €/t o come totale fattura, e scegli a quali pacchi si applicano: tutti, tutti tranne la botola, solo i rifilati, una scelta, un coil. Entrano nel costo del pacco; al momento della vendita l'app ti ricorda di non reinserirli.</div></div>
+<div class="gd-row"><div class="k">Vendita: prezzi per specifica</div><div>Se vendi insieme colli di specifiche diverse, compare una tabella con un prezzo per ogni specifica. Dove lasci vuoto vale il prezzo generale.</div></div>
+<div class="gd-row"><div class="k">⟲ Versioni</div><div>Punti di ripristino automatici sul cloud: prima di ogni import resa, import backup, taglio, eliminazione e comunque una volta al giorno. Da qui torni a com'era il magazzino in quel momento con un clic. Dopo un import resa compare anche il pulsante "Annulla".</div></div>
+<div class="gd-row"><div class="k">Scarti</div><div>Una riga per ogni coil lavorato, con tipo di lavorazione, specifica (spessore, larghezza coil, formato pacchi, rivestimento), peso lavorato, pacchi, rottame e scarto. Le righe in rosso sono anomale: pacchi più pesanti del coil, oppure scarto oltre il normale per quel tipo di lavorazione (taglio 4%, rifilo 10%, selezione 15%).</div></div>
+<div class="gd-row"><div class="k">Esporta / Importa backup</div><div>"Esporta" scarica tutto il database in un file. "Importa" lo rimette. Con le Versioni non è più indispensabile, ma una copia sul computer ogni tanto resta una buona abitudine.</div></div>
 <div class="gd-note">Nella scheda Storico vendite c'è anche <b>Esporta storico</b>, che scarica in Excel tutte le vendite con specifiche, origine, canale, giorni di giacenza, costi e margini.</div>`},
 
 {id:'cbam',t:'Il CBAM in pratica',lead:'Cosa devi fare e cosa fa l\'app.',html:`
@@ -2196,42 +2069,6 @@ function confirmBulkOrigine(){
   render();
 }
 
-/* ---------- UBICAZIONE MASSIVA ---------- */
-let ubicIds=[];
-function openBulkUbic(){
-  const coils=selezionatiCorrenti();
-  if(!coils.length){ alert('Seleziona prima i coil a cui vuoi assegnare l\'ubicazione.'); return; }
-  ubicIds=coils.map(c=>c.id);
-  const peso=coils.reduce((a,c)=>a+(c.peso||0),0);
-  const vuoti=coils.filter(c=>!c.ubicazione).length;
-  const gia=[...new Set(coils.map(c=>c.ubicazione).filter(Boolean))];
-  document.getElementById('ubicSub').textContent=`${coils.length} coil · ${fmtT(peso)} t`;
-  document.getElementById('buAvviso').innerHTML = gia.length
-    ? `${vuoti} senza ubicazione, ${coils.length-vuoti} già ubicati in <b>${gia.map(esc).join(', ')}</b>: verranno tutti sovrascritti con il valore che inserisci.`
-    : `Tutti e ${coils.length} sono senza ubicazione.`;
-  /* scorciatoie sulle ubicazioni già usate, per non riscriverle a mano e non creare doppioni */
-  const usate=[...new Set(state.stock.concat(state.sailing,state.sold).map(c=>c.ubicazione).filter(Boolean))].sort();
-  document.getElementById('buSuggeriti').innerHTML = usate.length
-    ? `<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><span style="font-size:11.5px;opacity:.55;font-weight:700">GIÀ USATE:</span>${
-        usate.map(u=>`<button type="button" class="mini-btn" onclick="document.getElementById('buUbicazione').value=this.dataset.u" data-u="${esc(u)}">${esc(u)}</button>`).join('')}</div>`
-    : '';
-  document.getElementById('buUbicazione').value = usate.length===1 ? usate[0] : '';
-  document.getElementById('ubicOverlay').classList.add('show');
-  setTimeout(()=>document.getElementById('buUbicazione').focus(),60);
-}
-function closeBulkUbic(){ document.getElementById('ubicOverlay').classList.remove('show'); ubicIds=[]; }
-function confirmBulkUbic(){
-  const v=document.getElementById('buUbicazione').value.trim();
-  if(!v){ const el=document.getElementById('buUbicazione'); el.style.outline='2px solid var(--rust)'; el.focus(); setTimeout(()=>el.style.outline='',1400); return; }
-  let n=0;
-  ['stock','sailing'].forEach(lista=>{
-    state[lista].forEach(c=>{ if(ubicIds.includes(c.id)){ c.ubicazione=v; n++; } });
-  });
-  saveState(); closeBulkUbic(); clearSel();
-  showToast(`${n} coil ubicati in ${v}`);
-  render();
-}
-
 function exportSelezione(){
   const ids=[...selected].filter(id=>state.stock.some(c=>c.id===id));
   if(!ids.length){ alert('Seleziona almeno un coil a magazzino da esportare.'); return; }
@@ -2294,7 +2131,7 @@ function exportStorico(){
     'CANALE':canaleLabel(canaleDiRiga(c)),
     'GG GIACENZA':c.giacenzaGiorni!=null?c.giacenzaGiorni:'',
     'COLLO':c.collo||'',
-    'COIL ORIGINE':c.origineCoil||'',
+    'COIL ORIGINE':origineDi(c),
     'SPESSORE':c.spessore||'',
     'LARGHEZZA':c.larghezza||'',
     'LARGH. RIFILATA':c.larghezzaRifilo||'',
@@ -2339,6 +2176,11 @@ function openSell(ids){
       <div class="r"><span>Peso</span><span class="mono">${fmtT(c.peso||0)} t</span></div>
       <div class="r"><span>Costo acquisto</span><span class="mono">${fmtEur(c.prezzoAcqFinale||0)}/t · ${fmtEur(c.valoreTotale||0)}</span></div></div>`;
   }
+  const conLav=coils.filter(c=>c.costoLavorazioneT>0);
+  if(conLav.length){
+    const avg=conLav.reduce((a,c)=>a+c.costoLavorazioneT*(c.peso||0),0)/conLav.reduce((a,c)=>a+(c.peso||0),0);
+    document.getElementById('sellRecapWrap').innerHTML+=`<div class="calc-preview" style="background:var(--amber-bg);border-color:#e8d3ad;margin:0 0 14px"><div class="r"><span>${conLav.length===coils.length?'Questi pacchi':conLav.length+' pacchi su '+coils.length} hanno già nel costo i costi di lavorazione Combass (${fmtEur2(avg)}/t in media: ${[...new Set(conLav.flatMap(c=>(c.costiLavorazione||[]).map(x=>x.voce)))].join(', ')}). <b>Non reinserirli</b> qui sotto, altrimenti li conti due volte.</span></div></div>`;
+  }
   document.getElementById('fCliente').value='';
   document.getElementById('fFattura').value='';
   document.getElementById('fData').value=new Date().toISOString().slice(0,10);
@@ -2348,6 +2190,14 @@ function openSell(ids){
   document.getElementById('fSelezione').value=0;
   document.getElementById('fCostoRifilo').value=0;
   document.getElementById('fRifiloLarghezza').value='';
+  // specifiche diverse = prezzi diversi: se i colli selezionati hanno più specifiche, un prezzo per ognuna
+  const groups={}; coils.forEach(c=>{ const k=sellSpecKey(c); (groups[k]=groups[k]||[]).push(c); });
+  const gk=Object.keys(groups);
+  document.getElementById('sellSpecWrap').innerHTML=gk.length>1?`<div class="section-label" style="margin-top:4px">Prezzo per specifica (€/t)</div>
+    <p class="split-hint" style="margin-bottom:6px">Hai selezionato ${gk.length} specifiche diverse. Metti il prezzo di ognuna; dove lasci vuoto uso il "Prezzo vendita" qui sopra.</p>
+    <table class="rtab" style="margin-bottom:14px"><thead><tr><th>Specifica</th><th class="num">Colli</th><th class="num">Peso</th><th class="num">Prezzo €/t</th></tr></thead><tbody>${gk.map(k=>{ const g=groups[k], c=g[0];
+      return `<tr><td class="mono">${c.spessore}×${c.larghezza}${c.lunghezza?'×'+c.lunghezza:''} ${c.rivestimento||''} ${c.durezza||''} ${c.scelta?'· '+sceltaLabel(c.scelta):''}</td><td class="num mono">${g.length}</td><td class="num mono">${fmtT(g.reduce((a,x)=>a+(x.peso||0),0))} t</td>
+      <td class="num"><input type="number" class="spec-price" data-key="${encodeURIComponent(k)}" oninput="calcMargin()" style="width:100px;text-align:right;padding:5px"></td></tr>`;}).join('')}</tbody></table>`:'';
   calcMargin();
   document.getElementById('sellOverlay').classList.add('show');
 }
@@ -2358,6 +2208,13 @@ function closeSell(){ document.getElementById('sellOverlay').classList.remove('s
 function scartoDaRifilo(larghezzaOrig,larghezzaRifilo){
   if(!(larghezzaRifilo>0) || !(larghezzaOrig>0)) return 0;
   return Math.max(0,((larghezzaOrig-larghezzaRifilo)/larghezzaOrig)*100);
+}
+function sellSpecKey(c){ return [c.spessore,c.larghezza,c.lunghezza||'',c.rivestimento||'',c.durezza||'',c.scelta||''].join('|'); }
+// prezzo di vendita di un collo: quello della sua specifica, se indicato, altrimenti quello generale
+function sellPrezzoFor(c){
+  const el=[...document.querySelectorAll('#sellSpecWrap .spec-price')].find(i=>decodeURIComponent(i.dataset.key)===sellSpecKey(c));
+  const v=el&&el.value!==''?+el.value:null;
+  return v!=null?v:(+document.getElementById('fPrezzo').value||0);
 }
 function calcMargin(){
   const coils=sellingIds.map(id=>state.stock.find(c=>c.id===id)).filter(Boolean);
@@ -2376,7 +2233,7 @@ function calcMargin(){
     peso+=p; pesoNetto+=p*(1-sc/100);
   });
   const scartoMedio=peso>0?((peso-pesoNetto)/peso)*100:0;
-  const ricavo=prezzo*pesoNetto;
+  const ricavo=coils.reduce((a,c)=>a+sellPrezzoFor(c)*(c.peso||0)*(1-scartoDaRifilo(c.larghezza,rifiloLarghezza)/100),0);
   const costoAcq=coils.reduce((a,c)=>a+(c.prezzoAcqFinale||0)*(c.peso||0),0);
   const costoAcqOrigT=peso>0?costoAcq/peso:0;
   const costoAcqEffT=pesoNetto>0?costoAcq/pesoNetto:0;
@@ -2405,12 +2262,13 @@ function confirmSell(){
   if(!coils.length) return;
   const cliente=document.getElementById('fCliente').value.trim();
   if(!cliente){ const el=document.getElementById('fCliente'); el.style.outline='2px solid var(--rust)'; el.focus(); setTimeout(()=>el.style.outline='',1200); return; }
-  const prezzo=+document.getElementById('fPrezzo').value||0;
   const taglio=+document.getElementById('fTaglio').value||0;
   const consegna=+document.getElementById('fConsegna').value||0;
   const selezione=+document.getElementById('fSelezione').value||0;
   const costoRifilo=+document.getElementById('fCostoRifilo').value||0;
   const rifiloLarghezza=+document.getElementById('fRifiloLarghezza').value||0;
+  const senzaPrezzo=coils.filter(c=>!sellPrezzoFor(c));
+  if(senzaPrezzo.length&&!confirm(`${senzaPrezzo.length} colli hanno prezzo 0. Registrare lo stesso la vendita?`)) return;
   const fattura=document.getElementById('fFattura').value.trim();
   const data=document.getElementById('fData').value;
   const ordine=document.getElementById('fOrdine').value.trim();
@@ -2421,13 +2279,14 @@ function confirmSell(){
     const peso=c.peso||0;
     const scarto=scartoDaRifilo(c.larghezza,rifiloLarghezza);
     const pesoNetto=peso*(1-scarto/100);
-    const ricavo=prezzo*pesoNetto;
+    const prezzoC=sellPrezzoFor(c);
+    const ricavo=prezzoC*pesoNetto;
     const costoTot=(c.prezzoAcqFinale||0)*peso+(taglio+consegna+selezione+costoRifilo)*peso;
     const margine=ricavo-costoTot;
     const rec={...c,status:'sold',cliente,ordineCliente:ordine,fatturaVendita:fattura,dataVendita:data,
       dataConsegna:dataConsegna||null,giorniPagamento:giorniPag||null,
       giacenzaGiorni:(c.dataCarico&&data)?Math.max(0,Math.round((Date.parse(data+'T00:00:00')-Date.parse(c.dataCarico+'T00:00:00'))/86400000)):null,
-      prezzoVendita:prezzo,pesoVenduto:pesoNetto,scartoPct:scarto,
+      prezzoVendita:prezzoC,pesoVenduto:pesoNetto,scartoPct:scarto,
       larghezzaRifilo:rifiloLarghezza||null,
       costoTaglioVendita:taglio,costoConsegnaVendita:consegna,
       costoSelezioneVendita:selezione,costoRifiloVendita:costoRifilo,
@@ -2727,6 +2586,7 @@ function confirmSplit(){
   const scartoT=pesoOriginale-pesoPacchiT;
   const scartoPct=pesoOriginale>0?(scartoT/pesoOriginale)*100:0;
   const nuovoCostoT=valoreTotaleCoil/pesoPacchiT;
+  const kSc=costoOriginaleT>0?nuovoCostoT/costoOriginaleT:1;
 
   if(!confirm(`Il coil ${coil.collo||''} verrà eliminato e sostituito da ${valid.length} pacchi.\nScarto: ${(scartoT*1000).toLocaleString('it-IT',{maximumFractionDigits:1})} kg (${scartoPct.toFixed(1)}%)\nNuovo costo/t pacchi: ${fmtEur2(nuovoCostoT)}\n\nContinuare?`)) return;
 
@@ -2740,8 +2600,9 @@ function confirmSplit(){
     const rec={
       id:base+i, status:'stock', fornitore:forn, collo:r.collo.trim(),
       spessore, larghezza, lunghezza, rivestimento, durezza, scelta, peso:pesoT,
-      prezzoFatturaRaw:fattRaw, valuta, cambio, prezzoFattura:fattEur,
-      dazioCambio:dazio, trasporto, taglio, cbam, altro,
+      // componenti riproporzionate sul peso reale dei pacchi: la somma torna uguale al nuovo costo/t
+      prezzoFatturaRaw:fattRaw*kSc, valuta, cambio, prezzoFattura:fattEur*kSc,
+      dazioCambio:dazio*kSc, trasporto:trasporto*kSc, taglio:taglio*kSc, cbam:cbam*kSc, altro:altro*kSc,
       prezzoAcqFinale:nuovoCostoT, valoreTotale:nuovoCostoT*pesoT,
       nota, origineCoil:coil.collo||''
     };
@@ -2755,10 +2616,12 @@ function confirmSplit(){
     id:base+valid.length, data:new Date().toISOString().slice(0,10),
     collo:coil.collo||'', fornitore:forn,
     pesoOriginale, pesoPacchi:pesoPacchiT, scartoT, scartoPct,
-    nPacchi:valid.length, pacchiColli, costoOriginaleT, nuovoCostoT
+    nPacchi:valid.length, pacchiColli, costoOriginaleT, nuovoCostoT,
+    attivita:'TAGLIO MANUALE', spessore, larghezza:+coil.larghezza||larghezza, rivestimento, durezza,
+    formatoPacchi:lunghezza?`${larghezza}×${lunghezza}`:''
   });
 
-  saveState();
+  saveState('Prima del taglio del coil '+(coil.collo||''));
   showToast(`Coil ${coil.collo||''} trasformato in ${valid.length} pacchi · scarto ${scartoPct.toFixed(1)}%`);
   closeEdit(); render();
 }
@@ -2778,7 +2641,7 @@ function deleteCoil(id){
   if(!confirm(`Eliminare definitivamente il coil ${c.collo||'(senza numero collo)'} da ${listName}? L'operazione non è reversibile.`)) return;
   ['stock','sailing','sold'].forEach(list=>{ state[list]=state[list].filter(x=>x.id!==id); });
   selected.delete(id);
-  saveState(); showToast(`Coil ${c.collo||''} eliminato`); render();
+  saveState('Prima di eliminare '+(c.collo||'un coil')); showToast(`Coil ${c.collo||''} eliminato`); render();
 }
 
 /* ---------- RESTORE ---------- */
@@ -2806,8 +2669,10 @@ function importData(e){
     const d=JSON.parse(ev.target.result);
     if(!d.stock) throw 0;
     if(!confirm('Sostituire tutti i dati attuali con quelli del file?')) return;
-    state={stock:d.stock||[],sailing:d.sailing||[],sold:d.sold||[],tagli:d.tagli||[],cbam:d.cbam||null};
-    saveState(); render(); showToast('Dati importati');
+    saveState('Prima dell\'import del backup '+file.name,{onlyVersion:true}).then(ver=>{
+      state={stock:d.stock||[],sailing:d.sailing||[],sold:d.sold||[],tagli:d.tagli||[],cbam:d.cbam||null};
+      saveState(); render(); showToast('Dati importati', ver?()=>restoreVersion(ver.id):null);
+    });
   }catch(err){ alert('File non valido. Usa un backup esportato da questa app.'); } };
   r.readAsText(file); e.target.value='';
 }
@@ -3054,6 +2919,18 @@ function resaBuildHeaderMap(row){
     const hn=resaNormHead(cell); if(!hn) return;
     for(const field in RESA_HEAD_ALIASES){ if(RESA_HEAD_ALIASES[field].includes(hn)) map[field]=ci; }
   });
+  // colonne dei pesi in uscita, riconosciute in modo generico: qualsiasi "Peso … Scelta" (I, II, III, IV, V…),
+  // "Peso altre", semilavorato, botola, rottame. Prima venivano lette solo I e V scelta: la II scelta finiva in scarto.
+  map.weightCols=[];
+  (row||[]).forEach((cell,ci)=>{
+    const hn=resaNormHead(cell); if(!hn||hn==='disponibile'||/^diff/.test(hn)) return;
+    let kind=null;
+    if(/semilavorat/.test(hn)) kind='semilavorato';
+    else if(/rottame/.test(hn)) kind='rottame';
+    else if(/botola/.test(hn)) kind='botola';
+    else if(/^peso/.test(hn)||/scelta$/.test(hn)&&hn!=='scelta'||/^altre$/.test(hn)) kind='pacco';
+    if(kind) map.weightCols.push([kind,ci,String(cell).trim()]);
+  });
   return map;
 }
 function resaFindHeaderRow(rows){
@@ -3081,7 +2958,7 @@ function parseResaSheet(rows){
   if(!h) return {error:'Non trovo le colonne attese (LottoOrigine, Disponibile, Lotto PF). Verifica che sia un export Combass.', blocks:[]};
   const map=h.map;
   let curOrdine=null,curCliente=null,curAttivita=null,curOrigine=null,curDisponibile=null;
-  const rawOrigins=[], flatRows=[];
+  const rawOrigins=[], flatRows=[]; let totals=null;
   for(let i=h.idx+1;i<rows.length;i++){
     const row=rows[i]; if(!row) continue;
     const idOrdine=map.idOrdine!==undefined?row[map.idOrdine]:null;
@@ -3095,14 +2972,14 @@ function parseResaSheet(rows){
     if(attivita) curAttivita=attivita;
     if(lottoOrigineRaw){ curOrigine=lottoOrigineRaw; curDisponibile=disponibileRaw; rawOrigins.push({attivita:curAttivita,lottoOrigine:curOrigine,disponibile:curDisponibile}); }
     const isTotalsRow=!lottoPF&&!lottoOrigineRaw&&disponibileRaw!=null&&flatRows.length>0&&row.slice(0,3).every(c=>!c);
-    if(isTotalsRow) continue;
+    if(isTotalsRow){ totals={disponibile:disponibileRaw,out:map.weightCols.filter(([k])=>k!=='rottame').reduce((a,[k,ci])=>a+(resaNum(row[ci])||0),0)}; continue; }
     if(!lottoPF&&!lottoOrigineRaw&&disponibileRaw==null) continue;
     if(!curOrigine) continue;
     const scelta=map.scelta!==undefined?resaStr(row[map.scelta]):'';
     const note=map.note!==undefined?resaStr(row[map.note]):'';
     const formato=map.formato!==undefined?resaStr(row[map.formato]):'';
     const diffPeso=map.diffPeso!==undefined?resaNum(row[map.diffPeso]):null;
-    const weightCols=[['semilavorato',map.pesoSemilavorato],['pacco',map.pesoIScelta],['pacco',map.pesoVScelta],['pacco',map.pesoAltre],['botola',map.botola],['rottame',map.rottame]];
+    const weightCols=map.weightCols;
     const outputs=[];
     weightCols.forEach(([kind,ci])=>{ if(ci===undefined) return; const v=resaNum(row[ci]); if(v!=null) outputs.push({kind,pesoKg:v}); });
     if(!lottoPF&&!outputs.length) continue;
@@ -3120,12 +2997,30 @@ function parseResaSheet(rows){
     b.totRottame=b.rows.reduce((a,r)=>a+r.outputs.filter(o=>o.kind==='rottame').reduce((s,o)=>s+o.pesoKg,0),0);
     b.totDiff=b.rows.reduce((a,r)=>a+(r.diffPesoKg||0),0);
   });
-  return {ordine:curOrdine,cliente:curCliente,blocks};
+  return {ordine:curOrdine,cliente:curCliente,blocks,totals,flatRows};
 }
 
-let resaParsed=null, resaPlan=null;
+/* ---------- NORMALIZZAZIONE CODICI COLLO ----------
+   Combass scrive "122054-4", in magazzino il coil può essere "122054-004": sono lo stesso collo. */
+// Coil d'origine di un pacco. Le vecchie rese salvavano l'elenco di TUTTI i coil della fase:
+// qui si mostra solo quello del pacco (riconosciuto dal numero del pacco), altrimenti "resa di N coil".
+function origineDi(c){
+  const o=String(c.origineCoil||''); if(!o.includes(',')) return o;
+  const list=o.split(',').map(x=>x.trim()).filter(Boolean); const n=normCollo(c.collo);
+  return list.find(x=>n.startsWith(normCollo(x)))||`resa di ${list.length} coil`;
+}
+function normCollo(s){ return String(s||'').toLowerCase().replace(/\s+/g,'').replace(/-0+(?=\d)/g,'-'); }
+function findStockByCollo(code){ const n=normCollo(code); return state.stock.find(x=>normCollo(x.collo)===n)||null; }
+function existsAnywhereCollo(code){ const n=normCollo(code); return state.stock.concat(state.sailing,state.sold).some(x=>normCollo(x.collo)===n); }
+
+// campi del coil d'origine che i pacchi ereditano (i costi NO: il costo dei pacchi è ricalcolato sul peso reale)
+const RESA_INHERIT=['fornitore','origine','canale','durezza','dataCarico','ordineAcquisto','ubicazione','emissioniSpec','fonteEmissioni','valuta','cambio'];
+
+let resaParsed=null, resaPlan=null, resaFileName='', resaCosti=[], resaRename=true, resaCostMode='coil';
+const RESA_VOCI=['Taglio','Consegna','Rifilo','Selezione','Altro'];
 function handleResaFile(e){
   const file=e.target.files[0]; if(!file) return;
+  resaFileName=file.name;
   const r=new FileReader();
   r.onload=ev=>{
     try{
@@ -3140,7 +3035,15 @@ function handleResaFile(e){
       if(!best){ alert('Non ho riconosciuto una resa taglio valida in questo file (servono le colonne LottoOrigine, Disponibile, Lotto PF).'); e.target.value=''; return; }
       resaParsed=best;
       document.getElementById('resaSub').textContent=file.name+(best.ordine?` · Ordine ${best.ordine}`:'')+(best.cliente?` · ${best.cliente}`:'');
+      const saved=(state.impostazioni&&state.impostazioni.costiResa)||null;
+      resaCosti=saved?saved.map(c=>({...c,target:'tutti'})):[{voce:'Taglio',importo:0,unita:'t',target:'tutti'},{voce:'Consegna',importo:0,unita:'t',target:'tutti'}];
+      resaRename=true;
+      document.getElementById('rFallbackFornitore').value='';
       buildResaPlan();
+      // Se Combass ha "spostato" peso fra coil (pacchi di un coil più pesanti del coil stesso), conviene ripartire per gruppo
+      // Combass, quando finisce un coil, continua a riempire lo stesso pacco con il coil successivo della stessa
+      // specifica: il bilancio vero è per specifica, non per singolo coil.
+      resaCostMode='gruppo';
       renderResaPreview();
       document.getElementById('resaOverlay').classList.add('show');
     }catch(err){ console.error(err); alert('Impossibile leggere il file. Formati supportati: .xlsx, .xls, .csv'); }
@@ -3148,142 +3051,321 @@ function handleResaFile(e){
   };
   r.readAsArrayBuffer(file);
 }
-// Costruisce il piano di import: per ogni blocco, risolve le origini (magazzino / catena interna / non trovato)
-// e determina quali righe di output vanno a magazzino (terminali) e quali sono consumate da un blocco successivo.
+
+/* Piano di import, COIL PER COIL:
+   - ogni lotto d'origine ha il suo bilancio (entrato, pacchi, rottame, scarto) e il suo costo;
+   - se Combass usa un suo numero di coil, il coil viene riconosciuto dal PESO (e dallo spessore);
+   - un coil elencato nella resa ma senza pacchi NON viene toccato;
+   - se la resa copre solo una parte del coil, il residuo resta a magazzino. */
 function buildResaPlan(){
   const blocks=resaParsed.blocks;
-  // indicizza tutte le righe di output di TUTTI i blocchi per lottoPF, per capire quali vengono ri-consumate dopo
-  const allOutputRowsByCode={};
-  blocks.forEach((b,bi)=>b.rows.forEach(r=>{ if(r.lottoPF) allOutputRowsByCode[r.lottoPF]={row:r,blockIdx:bi}; }));
-
-  const plan={blocks:[]};
+  const outByCode={};
+  blocks.forEach((b,bi)=>b.rows.forEach(r=>{ if(r.lottoPF) outByCode[normCollo(r.lottoPF)]={row:r,blockIdx:bi}; }));
+  const reusedLater=(code,bi)=>blocks.some((b2,bi2)=>bi2>bi&&b2.origins.some(o=>normCollo(o.lottoOrigine)===normCollo(code)));
+  const plan={blocks:[],origins:[]};
+  const kgOf=(rows,kinds)=>rows.reduce((a,r)=>a+r.outputs.filter(x=>kinds.includes(x.kind)).reduce((s,x)=>s+x.pesoKg,0),0);
   blocks.forEach((b,bi)=>{
-    const bp={attivita:b.attivita,totIn:b.totIn,totOutStock:b.totOutStock,totRottame:b.totRottame,totDiff:b.totDiff,origins:[],terminals:[],fornitoreGuess:''};
-    // risolvi ogni origine
+    const bp={attivita:(b.attivita||'—').toUpperCase(),origins:[]};
     b.origins.forEach(o=>{
-      let match=null;
-      // 1) catena interna: questo codice è stato generato da un blocco precedente nello stesso file?
-      const chained=allOutputRowsByCode[o.lottoOrigine];
-      if(chained && chained.blockIdx<bi){ match={type:'chain',blockIdx:chained.blockIdx}; }
-      else{
-        // 2) magazzino reale (coil o semilavorato in sospeso da una resa precedente)
-        const stockItem=state.stock.find(x=>(x.collo||'').trim().toLowerCase()===o.lottoOrigine.trim().toLowerCase());
-        if(stockItem){ match={type:'stock',item:stockItem}; if(!bp.fornitoreGuess) bp.fornitoreGuess=stockItem.fornitore||''; }
-      }
-      bp.origins.push({lottoOrigine:o.lottoOrigine,disponibile:o.disponibile,match});
+      const f0=o.rows.find(r=>r.formato); const fmt0=f0?resaParseFormato(f0.formato):{};
+      const op={blockIdx:bi,attivita:bp.attivita,lottoOrigine:o.lottoOrigine,disponibileKg:o.disponibile,rows:o.rows,
+        outKg:kgOf(o.rows,['semilavorato','pacco','botola']),rotKg:kgOf(o.rows,['rottame']),diffKg:o.rows.reduce((a,r)=>a+(r.diffPesoKg||0),0),
+        spessoreFile:fmt0.spessore||0,match:null,matchedBy:'',action:'consuma',userAction:false};
+      const chained=outByCode[normCollo(o.lottoOrigine)];
+      if(chained&&chained.blockIdx<bi) op.match={type:'chain',blockIdx:chained.blockIdx,row:chained.row};
+      op.terminals=[];
+      o.rows.forEach(r=>{
+        if(!r.lottoPF||reusedLater(r.lottoPF,bi)) return;
+        r.outputs.filter(x=>x.kind!=='rottame').forEach(x=>op.terminals.push({lottoPF:r.lottoPF,kind:x.kind,pesoKg:x.pesoKg,scelta:r.scelta,note:r.note,formato:r.formato}));
+      });
+      bp.origins.push(op); plan.origins.push(op);
     });
     plan.blocks.push(bp);
   });
-  // seconda passata: per ogni blocco calcola il costo/t risultante (dipende dal valore delle origini, che per le
-  // origini "chain" dipende dal costo/t del blocco precedente — per questo servono in ordine)
-  plan.blocks.forEach((bp,bi)=>{
-    let valoreTotale=0, pesoIgnoto=0;
-    bp.origins.forEach(o=>{
-      const pesoT=(o.disponibile||0)/1000;
-      if(o.match&&o.match.type==='stock') valoreTotale+=pesoT*(o.match.item.prezzoAcqFinale||0);
-      else if(o.match&&o.match.type==='chain') valoreTotale+=pesoT*(plan.blocks[o.match.blockIdx].costoT||0);
-      else pesoIgnoto+=pesoT; // risolto dopo con il costo di riserva
-    });
-    bp._valoreTotaleParziale=valoreTotale; bp._pesoIgnoto=pesoIgnoto;
-    bp.costoT=null; // calcolato in renderResaPreview con il costo di riserva corrente (può cambiare a video)
-  });
   resaPlan=plan;
-  // ora popola i "terminali": righe di output il cui lottoPF NON viene ripreso come lottoOrigine da un blocco successivo
-  resaParsed.blocks.forEach((b,bi)=>{
-    const bp=resaPlan.blocks[bi];
-    b.rows.forEach(r=>{
-      if(!r.lottoPF) return;
-      const reusedLater=resaParsed.blocks.some((b2,bi2)=>bi2>bi&&b2.origins.some(o=>o.lottoOrigine===r.lottoPF));
-      if(reusedLater) return; // è un semilavorato che confluisce in una fase successiva nello stesso file: non materializzare
-      r.outputs.filter(o=>o.kind!=='rottame').forEach(o=>{
-        bp.terminals.push({lottoPF:r.lottoPF,kind:o.kind,pesoKg:o.pesoKg,scelta:r.scelta,note:r.note,formato:r.formato});
-      });
+  // 1) abbinamento per numero collo (anche 122054-4 = 122054-004)
+  const used=new Set();
+  plan.origins.forEach(op=>{ if(op.match) return; const it=findStockByCollo(op.lottoOrigine); if(it){ op.match={type:'stock',item:it}; op.matchedBy='numero'; used.add(it.id); } });
+  // 2) numero sconosciuto (numerazione Combass): abbina per peso (±2 kg) e spessore
+  plan.origins.forEach(op=>{
+    if(op.match||op.disponibileKg==null) return;
+    const cand=state.stock.filter(c=>!used.has(c.id)&&Math.abs((c.peso||0)*1000-op.disponibileKg)<=2&&(!op.spessoreFile||Math.abs((c.spessore||0)-op.spessoreFile)<=0.006));
+    if(cand.length){ op.match={type:'stock',item:cand[0]}; op.matchedBy='peso'; op.nCandPeso=cand.length; used.add(cand[0].id); }
+  });
+  plan.origins.forEach(op=>{ op.action=defaultResaAction(op); });
+}
+function defaultResaAction(op){
+  const inKg=op.disponibileKg!=null?op.disponibileKg:(op.match&&op.match.type==='stock'?(op.match.item.peso||0)*1000:0);
+  if(!op.rows.length||op.outKg<=0) return 'ignora';
+  if(op.match&&op.match.type==='stock'&&(op.match.item.peso||0)*1000-inKg>50) return 'residuo';
+  if(op.outKg+op.rotKg<inKg*0.8) return 'residuo';
+  return 'consuma';
+}
+function resaCandidates(op){
+  const inKg=op.disponibileKg||0;
+  return state.stock.filter(c=>!op.spessoreFile||Math.abs((c.spessore||0)-op.spessoreFile)<=0.011)
+    .sort((a,b)=>Math.abs(a.peso*1000-inKg)-Math.abs(b.peso*1000-inKg)).slice(0,15);
+}
+function setResaMatch(i,id){
+  const op=resaPlan.origins[i];
+  const it=id?state.stock.find(c=>c.id===+id):null;
+  op.match=it?{type:'stock',item:it}:null; op.matchedBy=it?'manuale':'';
+  if(!op.userAction) op.action=defaultResaAction(op);
+  renderResaPreview();
+}
+function setResaAction(i,v){ resaPlan.origins[i].action=v; resaPlan.origins[i].userAction=true; renderResaPreview(); }
+function fmtKg(kg){ return Math.round(kg||0).toLocaleString('it-IT')+' kg'; }
+function resaParent(op){ return op.match&&op.match.type==='chain'?resaPlan.origins.find(p=>p.blockIdx===op.match.blockIdx&&p.rows.includes(op.match.row)):null; }
+function resaRoot(op){ let cur=op,g=0; while(cur&&cur.match&&cur.match.type==='chain'&&g++<10){ const p=resaParent(cur); if(!p) break; cur=p; } return cur; }
+// nome definitivo del pacco: con il NOSTRO numero coil se Combass ne ha usato uno suo
+function resaPaccoName(op,t){
+  const root=resaRoot(op); const it=root&&root.match&&root.match.type==='stock'?root.match.item:null;
+  if(!resaRename||!it||normCollo(it.collo)===normCollo(root.lottoOrigine)) return t.lottoPF;
+  const code=root.lottoOrigine;
+  const suffix=t.lottoPF.startsWith(code)?t.lottoPF.slice(code.length):'.'+t.lottoPF;
+  return (it.collo||'')+suffix;
+}
+function resaCalcOrigin(op,fallbackCosto){
+  op.stockKg=op.match&&op.match.type==='stock'?(op.match.item.peso||0)*1000:null;
+  op.inKg=op.disponibileKg!=null?op.disponibileKg:(op.stockKg||0);
+  let costoCoilT;
+  if(op.match&&op.match.type==='stock') costoCoilT=op.match.item.prezzoAcqFinale||0;
+  else if(op.match&&op.match.type==='chain'){ const p=resaParent(op); costoCoilT=p?(p.costoPacchiT||0):fallbackCosto; }
+  else costoCoilT=fallbackCosto;
+  let usatoKg;
+  if(op.action==='ignora') usatoKg=0;
+  else if(op.action==='residuo') usatoKg=Math.min(op.outKg+op.rotKg,op.stockKg!=null?op.stockKg:op.inKg);
+  else usatoKg=op.inKg;
+  op.costoCoilT=costoCoilT; op.usatoKg=usatoKg; op.scartoKg=usatoKg-op.outKg;
+  op.scartoPct=usatoKg>0?op.scartoKg/usatoKg*100:0;
+  op.costoPacchiT=op.outKg>0?costoCoilT*usatoKg/op.outKg:costoCoilT;
+  op.residuoKg=(op.action==='residuo'&&op.stockKg!=null)?Math.max(0,op.stockKg-usatoKg):0;
+  op.warn=[];
+  if(!op.rows.length||op.outKg<=0) op.warn.push('Nella resa non ci sono pacchi per questo lotto: il coil NON viene toccato.');
+  else if(op.action==='residuo'&&op.stockKg!=null&&op.stockKg-op.inKg>50) op.warn.push(`A magazzino pesa ${fmtKg(op.stockKg)}, la resa ne lavora ${fmtKg(op.inKg)}: il resto rimane a magazzino.`);
+  else if(op.outKg+op.rotKg<op.inKg*0.8) op.warn.push(`I pacchi coprono solo il ${Math.round(op.outKg/op.inKg*100)}% del lotto: sembra lavorato in parte. Scegli tu se il resto è scarto o resta a magazzino.`);
+  if(op.inKg>0&&op.outKg>op.inKg*1.005) op.warn.push(`ATTENZIONE: i pacchi (${fmtKg(op.outKg)}) pesano più del lotto d'origine (${fmtKg(op.inKg)}). Controlla il file prima di importare.`);
+  if(!op.match) op.warn.push('Coil non trovato a magazzino né per numero né per peso: sceglilo dall\'elenco, altrimenti uso costo e fornitore di riserva.');
+  if(op.matchedBy==='peso'&&op.nCandPeso>1) op.warn.push(`Ci sono ${op.nCandPeso} coil con lo stesso peso e spessore: ne ho scelto uno (stessa specifica). Se vuoi cambialo dall'elenco.`);
+}
+// elenco definitivo dei pacchi con i costi di lavorazione applicati
+// Ricalcola tutti i lotti; in modalità "gruppo" lo scarto e il costo sono ripartiti sull'insieme dei coil
+// dello stesso fornitore, spessore e rivestimento (Combass a volte attribuisce a un coil pacchi di un altro).
+function resaCalcAll(fallbackCosto){
+  resaPlan.origins.forEach(op=>resaCalcOrigin(op,fallbackCosto));
+  if(resaCostMode!=='gruppo') return;
+  const groups={};
+  resaPlan.origins.forEach(op=>{
+    if(op.action==='ignora'||!(op.match&&op.match.type==='stock')||op.outKg<=0) return;
+    const it=op.match.item; const k=[it.fornitore,it.spessore,Math.round((it.larghezza||0)/10),it.rivestimento,it.durezza].join('|');
+    (groups[k]=groups[k]||[]).push(op);
+  });
+  Object.values(groups).forEach(g=>{
+    const val=g.reduce((a,o)=>a+o.costoCoilT*o.usatoKg,0), out=g.reduce((a,o)=>a+o.outKg,0), inn=g.reduce((a,o)=>a+o.usatoKg,0);
+    g.forEach(o=>{ o.costoPacchiT=out>0?val/out:o.costoCoilT; o.gruppo={n:g.length,inKg:inn,outKg:out,scartoPct:inn>0?(inn-out)/inn*100:0};
+      o.warn=o.warn.map(w=>w.startsWith('ATTENZIONE')?(g.length>1&&o.gruppo.scartoPct>=-0.5?w.replace('ATTENZIONE: ','Normale: ')+` Combass ha messo nei pacchi fogli di coil uguali tagliati di seguito: conta il bilancio della specifica (${g.length} coil, scarto ${o.gruppo.scartoPct.toFixed(1)}%).`:w+` Anche sommando i ${g.length} coil della stessa specifica i pacchi pesano più dei coil (${o.gruppo.scartoPct.toFixed(1)}%): chiedi a Combass.`):w); });
+  });
+  resaPlan.origins.forEach(op=>{ if(op.match&&op.match.type==='chain'){ const w=op.warn; resaCalcOrigin(op,fallbackCosto); } });
+}
+function resaComputePacchi(){
+  const pacchi=[];
+  resaPlan.origins.forEach((op,oi)=>{
+    if(op.action==='ignora') return;
+    const root=resaRoot(op); const src=root&&root.match&&root.match.type==='stock'?root.match.item:null;
+    const larghCoil=src?src.larghezza:0;
+    op.terminals.forEach(t=>{
+      const fmt=resaParseFormato(t.formato);
+      const name=resaPaccoName(op,t);
+      pacchi.push({oi,op,t,name,fmt,pesoKg:t.pesoKg,scelta:t.kind==='semilavorato'?'':t.scelta,kind:t.kind,
+        rifilato:!!(larghCoil&&fmt.larghezza&&fmt.larghezza<larghCoil-1),dup:existsAnywhereCollo(name),lav:{}});
     });
   });
+  resaCosti.forEach(c=>{
+    const imp=+c.importo||0; if(!imp) return;
+    const tg=pacchi.filter(p=>!p.dup&&resaTargetMatch(c.target,p));
+    const kg=tg.reduce((a,p)=>a+p.pesoKg,0); if(!kg) return;
+    const eurT=c.unita==='t'?imp:imp/(kg/1000);
+    tg.forEach(p=>{ p.lav[c.voce]=(p.lav[c.voce]||0)+eurT; });
+  });
+  pacchi.forEach(p=>{ p.lavT=Object.values(p.lav).reduce((a,b)=>a+b,0); p.costoT=p.op.costoPacchiT+p.lavT; });
+  return pacchi;
 }
+function resaTargetMatch(target,p){
+  if(!target||target==='tutti') return true;
+  if(target==='nobotola') return p.kind!=='botola'&&p.scelta!=='BOTOLA';
+  if(target==='rifilati') return p.rifilato;
+  if(target.startsWith('scelta:')) return p.scelta===target.slice(7);
+  if(target.startsWith('coil:')) return p.oi===+target.slice(5);
+  return true;
+}
+function resaTargetOptions(sel){
+  const opts=[['tutti','Tutti i pacchi'],['nobotola','Tutti tranne la botola'],['rifilati','Solo pacchi rifilati']];
+  const scelte=[...new Set(resaPlan.origins.flatMap(o=>o.terminals.map(t=>t.scelta)).filter(Boolean))];
+  scelte.forEach(s=>opts.push(['scelta:'+s,'Solo '+sceltaLabel(s).toLowerCase()]));
+  resaPlan.origins.forEach((o,i)=>{ if(o.action!=='ignora'&&o.outKg>0){ const it=o.match&&o.match.type==='stock'?o.match.item:null; opts.push(['coil:'+i,'Solo coil '+(it?it.collo:o.lottoOrigine)]); } });
+  return opts.map(([v,l])=>`<option value="${v}" ${v===sel?'selected':''}>${l}</option>`).join('');
+}
+function setResaCosto(i,k,v){ resaCosti[i][k]=k==='importo'?(+v||0):v; renderResaPreview(); }
+function addResaCosto(){ resaCosti.push({voce:'Rifilo',importo:0,unita:'t',target:'rifilati'}); renderResaPreview(); }
+function delResaCosto(i){ resaCosti.splice(i,1); renderResaPreview(); }
 function renderResaPreview(){
   const fallbackCosto=+document.getElementById('rFallbackCosto').value||0;
-  const fallbackFornitore=document.getElementById('rFallbackFornitore').value.trim();
+  resaCalcAll(fallbackCosto);
+  const pacchi=resaComputePacchi();
   const wrap=document.getElementById('resaBlocksWrap'); const warnWrap=document.getElementById('resaWarnWrap');
-  let warnings=[];
+  let alarms=0;
+  // costi di lavorazione
+  const costiHtml=`<div class="section-label" style="margin-top:6px">Costi di lavorazione addebitati da Combass</div>
+    <p class="split-hint" style="margin-bottom:8px">Si aggiungono al costo dei pacchi. Puoi metterli in €/t oppure come importo totale della fattura (lo divido sul peso dei pacchi a cui si applica). Scegli a quali pacchi si applica ogni voce: tutti, solo i rifilati, una scelta, un coil. Le voci restano memorizzate per la prossima resa.</p>
+    <table class="rtab"><thead><tr><th>Voce</th><th class="num">Importo</th><th>Unità</th><th>Si applica a</th><th class="num">Pacchi / peso</th><th></th></tr></thead><tbody>${resaCosti.map((c,i)=>{
+      const tg=pacchi.filter(p=>!p.dup&&resaTargetMatch(c.target,p)); const kg=tg.reduce((a,p)=>a+p.pesoKg,0);
+      const eurT=c.unita==='t'?(+c.importo||0):(kg?(+c.importo||0)/(kg/1000):0);
+      return `<tr><td><select onchange="setResaCosto(${i},'voce',this.value)" style="font-size:12px;padding:4px">${RESA_VOCI.map(v=>`<option ${v===c.voce?'selected':''}>${v}</option>`).join('')}</select></td>
+      <td class="num"><input type="number" step="0.01" value="${c.importo}" onchange="setResaCosto(${i},'importo',this.value)" style="width:90px;font-size:12px;padding:4px;text-align:right"></td>
+      <td><select onchange="setResaCosto(${i},'unita',this.value)" style="font-size:12px;padding:4px"><option value="t" ${c.unita==='t'?'selected':''}>€/t</option><option value="tot" ${c.unita==='tot'?'selected':''}>€ totale</option></select></td>
+      <td><select onchange="setResaCosto(${i},'target',this.value)" style="font-size:12px;padding:4px;max-width:220px">${resaTargetOptions(c.target)}</select></td>
+      <td class="num mono dim">${tg.length} · ${fmtKg(kg)}${c.unita==='tot'&&kg?`<br>= ${fmtEur2(eurT)}/t`:''}</td>
+      <td><button class="mini-btn danger" onclick="delResaCosto(${i})">×</button></td></tr>`;}).join('')}</tbody></table>
+    <button class="mini-btn" style="margin-top:6px" onclick="addResaCosto()">+ Aggiungi costo</button>`;
+  const modeHtml=`<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;font-size:12px;margin-top:12px"><b>Scarto e costo dei pacchi:</b>
+    <label><input type="radio" name="rcm" ${resaCostMode==='coil'?'checked':''} onchange="resaCostMode='coil';renderResaPreview()"> coil per coil</label>
+    <label><input type="radio" name="rcm" ${resaCostMode==='gruppo'?'checked':''} onchange="resaCostMode='gruppo';renderResaPreview()"> per specifica (coil uguali tagliati di seguito: Combass può mettere nello stesso pacco fogli di due coil)</label></div>`;
+  const anyRenamed=resaPlan.origins.some(op=>op.match&&op.match.type==='stock'&&normCollo(op.match.item.collo)!==normCollo(op.lottoOrigine));
+  const renameHtml=anyRenamed?`<label style="display:flex;gap:8px;align-items:center;font-size:12px;margin:14px 0 0"><input type="checkbox" ${resaRename?'checked':''} onchange="resaRename=this.checked;renderResaPreview()"> Chiama i pacchi con il <b>nostro</b> numero coil (es. X260613F-005.P001). Il numero Combass resta nelle note, e la ricerca lo trova lo stesso.</label>`:'';
   const html=resaPlan.blocks.map((bp,bi)=>{
-    bp.costoT = bp._pesoIgnoto>0
-      ? (bp._valoreTotaleParziale + bp._pesoIgnoto*fallbackCosto) / (bp.totOutStock/1000||1)
-      : bp._valoreTotaleParziale / (bp.totOutStock/1000||1);
-    const scartoKg=bp.totIn-bp.totOutStock-bp.totRottame;
-    const scartoPct=bp.totIn>0?((bp.totIn-bp.totOutStock)/bp.totIn*100):0;
-    const origRows=bp.origins.map(o=>{
-      let statusHtml;
-      if(o.match&&o.match.type==='stock') statusHtml=`<span style="color:var(--green)">✓ a magazzino</span> (${o.match.item.fornitore||'—'}, ${fmtEur(o.match.item.prezzoAcqFinale||0)}/t)`;
-      else if(o.match&&o.match.type==='chain') statusHtml=`<span style="color:var(--steel)">⛓ da fase precedente</span> (interno al file)`;
-      else { statusHtml=`<span style="color:var(--rust)">⚠ non trovato a magazzino</span> — userò il costo di riserva`; warnings.push(`Lotto "${o.lottoOrigine}" non trovato a magazzino (fase ${bp.attivita}): non verrà sottratto dallo stock, solo usato per il calcolo del costo.`); }
-      return `<div class="bi"><span class="mono">${o.lottoOrigine} · ${o.disponibile?o.disponibile.toLocaleString('it-IT'):'?'} kg</span><span class="mono">${statusHtml}</span></div>`;
+    const rows=bp.origins.map(op=>{
+      const i=resaPlan.origins.indexOf(op);
+      const it=op.match&&op.match.type==='stock'?op.match.item:null;
+      let stato;
+      if(op.match&&op.match.type==='chain') stato='<span style="color:var(--steel)">⛓ da fase precedente</span>';
+      else{
+        const cands=resaCandidates(op); if(it&&!cands.includes(it)) cands.unshift(it);
+        stato=`<select onchange="setResaMatch(${i},this.value)" style="font-size:11px;padding:3px;max-width:190px">
+          <option value="">— non a magazzino —</option>${cands.map(c=>`<option value="${c.id}" ${it&&c.id===it.id?'selected':''}>${c.collo} · ${fmtKg((c.peso||0)*1000)} · ${c.spessore}×${c.larghezza} ${c.scelta?sceltaLabel(c.scelta):''}</option>`).join('')}</select>
+          <div style="font-size:11px">${it?`<span style="color:var(--green)">✓ ${op.matchedBy==='peso'?'riconosciuto dal peso':op.matchedBy==='manuale'?'scelto a mano':'stesso numero'}</span> <span class="dim">· ${it.fornitore||'—'} ${it.rivestimento||''} ${it.durezza||''}</span>`:'<span style="color:var(--rust)">⚠ non trovato</span>'}</div>`;
+      }
+      const gOk=op.gruppo&&op.gruppo.n>1&&op.gruppo.scartoPct>=-0.5&&op.gruppo.scartoPct<=8;
+      const pctCol=op.action==='ignora'?'var(--ink-soft)':(gOk?'var(--ink-soft)':(op.scartoKg<-1||op.scartoPct>8?'var(--rust)':'var(--green)'));
+      const gHtml=op.gruppo&&op.gruppo.n>1?`<div style="font-size:10px;font-weight:700;color:${gOk?'var(--green)':'var(--rust)'}">spec. ${op.gruppo.scartoPct.toFixed(1)}%</div>`:'';
+      const myP=pacchi.filter(p=>p.op===op&&!p.dup);
+      const lavAvg=myP.length?myP.reduce((a,p)=>a+p.lavT*p.pesoKg,0)/myP.reduce((a,p)=>a+p.pesoKg,0):0;
+      if(op.warn.some(w=>w.startsWith('ATTENZIONE'))) alarms++;
+      return `<tr>
+        <td class="mono"><b>${op.lottoOrigine}</b></td><td>${stato}</td>
+        <td class="num mono">${fmtKg(op.inKg)}</td><td class="num mono">${fmtKg(op.outKg)}</td><td class="num mono">${op.rotKg?fmtKg(op.rotKg):'—'}</td>
+        <td class="num mono" style="color:${pctCol};font-weight:700">${op.action==='ignora'?'—':fmtKg(op.scartoKg)+'<br>'+op.scartoPct.toFixed(1)+'%'+gHtml}</td>
+        <td><select onchange="setResaAction(${i},this.value)" style="font-size:12px;padding:4px;max-width:200px">
+          <option value="consuma" ${op.action==='consuma'?'selected':''}>Coil finito (resto = scarto)</option>
+          <option value="residuo" ${op.action==='residuo'?'selected':''} ${it?'':'disabled'}>In parte (resta ${op.residuoKg?fmtKg(op.residuoKg):'il residuo'})</option>
+          <option value="ignora" ${op.action==='ignora'?'selected':''}>Non importare</option>
+        </select></td>
+        <td class="num mono">${op.action==='ignora'?'—':fmtEur2(op.costoPacchiT+lavAvg)+'/t'}<br><span class="dim">${lavAvg?`di cui lav. ${fmtEur2(lavAvg)}`:''} · ${myP.length} pacchi</span></td>
+      </tr>${op.warn.length?`<tr><td colspan="8" style="font-size:11px;color:${op.warn.some(w=>w.startsWith('ATTENZIONE'))?'var(--rust)':'var(--amber)'};padding-top:0">${op.warn.map(w=>'⚠ '+w).join('<br>')}</td></tr>`:''}`;
     }).join('');
-    const termRows=bp.terminals.map(t=>{
-      const kindLabel=t.kind==='semilavorato'?'<span class="scelta" style="background:var(--sail-bg);color:var(--sail)">SEMI</span>':`<span class="scelta scelta-${t.scelta||'PRIMA'}">${t.scelta?sceltaLabel(t.scelta):'—'}</span>`;
-      return `<div class="bi"><span class="mono">${t.lottoPF} ${kindLabel} ${t.note?`· <span class="dim">${t.note}</span>`:''}</span><span class="mono">${t.pesoKg.toLocaleString('it-IT')} kg · ${fmtEur(bp.costoT)}/t</span></div>`;
-    }).join('');
-    return `
-    <div class="section-label" style="margin-top:18px">Fase ${bi+1}: ${bp.attivita||'—'}</div>
-    <div class="calc-preview" style="margin-bottom:8px">
-      <div class="r"><span>Ingresso (lotti d'origine)</span><span class="mono">${bp.totIn.toLocaleString('it-IT')} kg</span></div>
-      <div class="r"><span>Uscita a magazzino</span><span class="mono">${bp.totOutStock.toLocaleString('it-IT')} kg</span></div>
-      ${bp.totRottame?`<div class="r"><span>Rottame (non a magazzino)</span><span class="mono">${bp.totRottame.toLocaleString('it-IT')} kg</span></div>`:''}
-      <div class="r total"><span>Scarto di fase</span><span class="mono" style="color:${scartoPct>8?'var(--rust)':'var(--green)'}">${scartoKg.toLocaleString('it-IT')} kg (${scartoPct.toFixed(1)}%)</span></div>
-      <div class="r"><span>Nuovo costo/t su questa fase</span><span class="mono">${fmtEur2(bp.costoT)}</span></div>
-    </div>
-    <div class="bulk-list" style="max-height:160px;margin-bottom:6px"><div class="bi" style="font-weight:700"><span>Lotti d'origine (${bp.origins.length})</span><span></span></div>${origRows}</div>
-    <div class="bulk-list" style="max-height:200px"><div class="bi" style="font-weight:700"><span>Verranno creati a magazzino (${bp.terminals.length})</span><span></span></div>${termRows||'<div class="bi"><span class="dim">— nessuno: tutto confluisce nella fase successiva —</span><span></span></div>'}</div>`;
+    return `<div class="section-label" style="margin-top:18px">Fase ${bi+1}: ${bp.attivita}</div>
+    <div style="overflow-x:auto"><table class="rtab"><thead><tr><th>Lotto Combass</th><th>Coil nostro</th><th class="num">Entrato</th><th class="num">Pacchi</th><th class="num">Rottame</th><th class="num">Scarto</th><th>Cosa faccio</th><th class="num">Costo pacchi</th></tr></thead><tbody>${rows}</tbody></table></div>`;
   }).join('');
-  wrap.innerHTML=html;
-  warnWrap.innerHTML=warnings.length?`<div class="calc-preview" style="margin-top:14px;border-color:var(--rust)">${warnings.map(w=>`<div class="r"><span style="color:var(--rust)">⚠ ${w}</span></div>`).join('')}</div>`:'';
-  if(!document.getElementById('rFallbackFornitore').value && resaPlan.blocks[0]) document.getElementById('rFallbackFornitore').value=resaPlan.blocks[0].fornitoreGuess||'';
-  const totNPacchi=resaPlan.blocks.reduce((a,b)=>a+b.terminals.length,0);
-  document.getElementById('resaConfirmBtn').textContent=`Importa (${totNPacchi} voci a magazzino)`;
+  const dups=pacchi.filter(p=>p.dup);
+  const pacchiHtml=`<details style="margin-top:14px"><summary style="cursor:pointer;font-size:12px;font-weight:700">Vedi i ${pacchi.length-dups.length} pacchi che creo</summary>
+    <div style="overflow-x:auto;max-height:320px;overflow-y:auto"><table class="rtab"><thead><tr><th>Pacco</th><th>Lotto Combass</th><th>Scelta</th><th>Formato</th><th class="num">Peso</th><th class="num">Costo coil</th><th class="num">Lavorazioni</th><th class="num">Costo pacco</th></tr></thead><tbody>${
+      pacchi.map(p=>`<tr${p.dup?' style="opacity:.45"':''}><td class="mono">${p.name}${p.dup?' <span style="color:var(--rust)">(già presente: salto)</span>':''}</td><td class="mono dim">${p.t.lottoPF}</td><td>${p.scelta?sceltaLabel(p.scelta):(p.kind==='semilavorato'?'SEMI':'—')}</td>
+        <td class="mono">${p.fmt.larghezza?p.fmt.larghezza+'×'+p.fmt.lunghezza:'—'}${p.rifilato?' <span class="lav-tag lav-RIFILO">rifilato</span>':''}</td><td class="num mono">${fmtKg(p.pesoKg)}</td>
+        <td class="num mono">${fmtEur2(p.op.costoPacchiT)}</td><td class="num mono" title="${Object.entries(p.lav).map(([k,v])=>k+' '+fmtEur2(v)).join(' + ')}">${p.lavT?fmtEur2(p.lavT):'—'}</td><td class="num mono"><b>${fmtEur2(p.costoT)}</b></td></tr>`).join('')
+    }</tbody></table></div></details>`;
+  wrap.innerHTML=renameHtml+modeHtml+html+pacchiHtml+`<div style="margin-top:18px">${costiHtml}</div>`;
+  const tot=resaPlan.origins.filter(o=>o.action!=='ignora');
+  const tin=tot.reduce((a,o)=>a+o.usatoKg,0), tout=tot.reduce((a,o)=>a+o.outKg,0);
+  const lavEur=pacchi.filter(p=>!p.dup).reduce((a,p)=>a+p.lavT*p.pesoKg/1000,0);
+  // controllo con la riga dei totali del file: se non torna, qualche colonna non è stata letta
+  const T=resaParsed.totals; const readOut=resaPlan.origins.reduce((a,o)=>a+o.outKg,0);
+  const totWarn=T&&Math.abs(T.out-readOut)>1?`<div class="r"><span style="color:var(--rust);font-weight:700">⚠ Il totale in fondo al file Combass (${fmtKg(T.out)}) non coincide con i pacchi letti (${fmtKg(readOut)}): qualche colonna non è stata riconosciuta. Non importare e mandami il file.</span></div>`:'';
+  warnWrap.innerHTML=`<div class="calc-preview" style="margin-top:14px">
+    <div class="r"><span>Coil tolti dal magazzino</span><span class="mono">${tot.filter(o=>o.match&&o.match.type==='stock'&&o.action==='consuma').length}</span></div>
+    <div class="r"><span>Coil che restano con il residuo</span><span class="mono">${tot.filter(o=>o.action==='residuo'&&o.residuoKg>0).length}</span></div>
+    <div class="r"><span>Lotti non toccati</span><span class="mono">${resaPlan.origins.length-tot.length}</span></div>
+    <div class="r"><span>Costi di lavorazione caricati sui pacchi</span><span class="mono">${fmtEur2(lavEur)}</span></div>
+    ${T?`<div class="r"><span>Controllo con il totale del file Combass</span><span class="mono">${Math.abs(T.out-readOut)<=1?'✓ torna':'✗ NON torna'}</span></div>`:''}
+    <div class="r total"><span>Lavorato ${fmtKg(tin)} → pacchi ${fmtKg(tout)}</span><span class="mono">scarto ${tin>0?((tin-tout)/tin*100).toFixed(1):'0'}%</span></div>
+  </div>${alarms||totWarn?`<div class="calc-preview" style="margin-top:10px;border-color:var(--rust);background:var(--rust-bg)">${totWarn}${alarms?`<div class="r"><span style="color:var(--rust);font-weight:700">⚠ ${alarms} lotti hanno pacchi più pesanti del coil: controlla la resa prima di importare.</span></div>`:''}</div>`:''}`;
+  const fb=document.getElementById('rFallbackFornitore'); if(!fb.value){ const s=resaPlan.origins.find(o=>o.match&&o.match.type==='stock'); fb.value=s?s.match.item.fornitore||'':''; }
+  document.getElementById('resaConfirmBtn').textContent=`Importa (${pacchi.length-dups.length} pacchi a magazzino)`;
 }
 function closeResa(){ document.getElementById('resaOverlay').classList.remove('show'); resaParsed=null; resaPlan=null; document.getElementById('resaFile').value=''; }
-function confirmResaImport(){
+async function confirmResaImport(){
   if(!resaPlan) return;
   const fallbackCosto=+document.getElementById('rFallbackCosto').value||0;
   const fallbackFornitore=document.getElementById('rFallbackFornitore').value.trim()||'—';
-  const consumedIds=new Set();
+  resaCalcAll(fallbackCosto);
+  const pacchi=resaComputePacchi();
+  const T=resaParsed.totals; const readOut=resaPlan.origins.reduce((a,o)=>a+o.outKg,0);
+  if(T&&Math.abs(T.out-readOut)>1&&!confirm('Il totale del file Combass non coincide con i pacchi letti. Importare lo stesso?')) return;
+  const fileName=resaFileName;
+  const ver=await saveState(`Prima dell'import resa ${fileName}`,{onlyVersion:true});
   let base=nextId();
-  const dataOggi=new Date().toISOString().slice(0,10);
-  resaPlan.blocks.forEach(bp=>{
-    // consuma le origini reali di magazzino
-    bp.origins.forEach(o=>{ if(o.match&&o.match.type==='stock') consumedIds.add(o.match.item.id); });
-    const fornitoreBlocco=bp.fornitoreGuess||fallbackFornitore;
-    const originColli=bp.origins.map(o=>o.lottoOrigine).join(', ');
-    bp.terminals.forEach(t=>{
-      const fmt=resaParseFormato(t.formato);
-      const rec={
-        id:base++, status:'stock', tipo:t.kind==='semilavorato'?'semilavorato':'pacco',
-        fornitore:fornitoreBlocco, collo:t.lottoPF,
-        spessore:fmt.spessore, larghezza:fmt.larghezza, lunghezza:fmt.lunghezza,
-        rivestimento:fmt.rivestimento, durezza:'',
-        scelta:t.kind==='semilavorato'?'':t.scelta,
-        peso:t.pesoKg/1000, prezzoAcqFinale:bp.costoT, valoreTotale:bp.costoT*(t.pesoKg/1000),
-        nota:[t.note,t.kind==='semilavorato'?'in attesa di lavorazione successiva':''].filter(Boolean).join(' · '),
-        origineCoil:originColli
-      };
+  const dataOggi=oggi();
+  const removeIds=new Set();
+  resaPlan.origins.forEach((op,oi)=>{
+    if(op.action==='ignora') return;
+    const root=resaRoot(op);
+    const src=root&&root.match&&root.match.type==='stock'?root.match.item:null;
+    const it=op.match&&op.match.type==='stock'?op.match.item:null;
+    if(it){
+      if(op.action==='residuo'&&op.residuoKg>0){ it.peso=op.residuoKg/1000; it.valoreTotale=(it.prezzoAcqFinale||0)*it.peso; it.nota=[it.nota,`residuo dopo resa ${dataOggi}`].filter(Boolean).join(' · '); }
+      else removeIds.add(it.id);
+    }
+    // componenti di costo del coil, riproporzionate sul peso reale dei pacchi (così "Modifica" ricalcola giusto)
+    const compOK=src&&Math.abs(((src.prezzoFattura||0)+(src.dazioCambio||0)+(src.trasporto||0)+(src.taglio||0)+(src.cbam||0)+(src.altro||0))-(src.prezzoAcqFinale||0))<0.5&&src.prezzoAcqFinale>0;
+    const myP=pacchi.filter(p=>p.oi===oi&&!p.dup);
+    myP.forEach(p=>{
+      const baseT=op.costoPacchiT; const k=compOK?baseT/src.prezzoAcqFinale:1;
+      const rec={id:base++,status:'stock',tipo:p.kind==='semilavorato'?'semilavorato':'pacco'};
+      if(src) RESA_INHERIT.forEach(key=>{ if(src[key]!==undefined&&src[key]!==null) rec[key]=src[key]; });
+      if(!rec.fornitore) rec.fornitore=fallbackFornitore;
+      const lav=p.lav;
+      const lavTaglio=(lav.Taglio||0)+(lav.Rifilo||0)+(lav.Selezione||0), lavTrasp=lav.Consegna||0, lavAltro=lav.Altro||0;
+      if(compOK) Object.assign(rec,{prezzoFatturaRaw:(src.prezzoFatturaRaw||0)*k,prezzoFattura:(src.prezzoFattura||0)*k,dazioCambio:(src.dazioCambio||0)*k,
+        trasporto:(src.trasporto||0)*k+lavTrasp,taglio:(src.taglio||0)*k+lavTaglio,cbam:(src.cbam||0)*k,altro:(src.altro||0)*k+lavAltro});
+      else Object.assign(rec,{valuta:'EUR',cambio:1,prezzoFatturaRaw:baseT,prezzoFattura:baseT,dazioCambio:0,trasporto:lavTrasp,taglio:lavTaglio,cbam:0,altro:lavAltro});
+      Object.assign(rec,{
+        collo:p.name, lottoCentro:p.t.lottoPF,
+        spessore:p.fmt.spessore||(src&&src.spessore)||0, larghezza:p.fmt.larghezza||(src&&src.larghezza)||0, lunghezza:p.fmt.lunghezza||0,
+        rivestimento:p.fmt.rivestimento||(src&&src.rivestimento)||'', scelta:p.scelta,
+        peso:p.pesoKg/1000, prezzoAcqFinale:p.costoT, valoreTotale:p.costoT*(p.pesoKg/1000),
+        costoLavorazioneT:p.lavT, costiLavorazione:Object.entries(lav).map(([voce,eurT])=>({voce,eurT})),
+        nota:[p.t.note,p.name!==p.t.lottoPF?`lotto Combass ${p.t.lottoPF}`:'',p.kind==='semilavorato'?'in attesa di lavorazione successiva':''].filter(Boolean).join(' · '),
+        origineCoil:src?src.collo:((root&&root.lottoOrigine)||op.lottoOrigine)
+      });
       state.stock.push(rec);
     });
+    const f0=myP[0]?myP[0].fmt:{};
+    const kgP=myP.reduce((a,p)=>a+p.pesoKg,0);
+    const lavAvg=kgP?myP.reduce((a,p)=>a+p.lavT*p.pesoKg,0)/kgP:0;
+    const formati=[...new Set(myP.filter(p=>p.fmt.larghezza).map(p=>p.fmt.larghezza+'×'+p.fmt.lunghezza))].join(', ');
     state.tagli.push({
-      id:base++, data:dataOggi, collo:originColli, fornitore:fornitoreBlocco,
-      pesoOriginale:bp.totIn/1000, pesoPacchi:bp.totOutStock/1000,
-      scartoT:(bp.totIn-bp.totOutStock)/1000, scartoPct:bp.totIn>0?((bp.totIn-bp.totOutStock)/bp.totIn*100):0,
-      nPacchi:bp.terminals.length, pacchiColli:bp.terminals.map(t=>t.lottoPF),
-      costoOriginaleT:bp._valoreTotaleParziale/((bp.totIn-bp._pesoIgnoto*1000)/1000||1), nuovoCostoT:bp.costoT,
-      nota:`Resa ${bp.attivita}${bp.totRottame?` · rottame recuperato ${bp.totRottame.toLocaleString('it-IT')} kg`:''}`
+      id:base++, data:dataOggi, attivita:op.attivita, fileResa:fileName, ordineResa:resaParsed.ordine||'',
+      collo:it?it.collo:op.lottoOrigine, lottoCentro:op.lottoOrigine, fornitore:(src&&src.fornitore)||fallbackFornitore,
+      spessore:(it&&it.spessore)||(src&&src.spessore)||f0.spessore||0, larghezza:(it&&it.larghezza)||(src&&src.larghezza)||0,
+      rivestimento:(src&&src.rivestimento)||'', durezza:(src&&src.durezza)||'', formatoPacchi:formati,
+      pesoOriginale:op.usatoKg/1000, pesoPacchi:op.outKg/1000, rottameT:op.rotKg/1000,
+      scartoT:op.scartoKg/1000, scartoPct:op.scartoPct, residuoT:op.residuoKg/1000,
+      nPacchi:myP.length, pacchiColli:myP.map(p=>p.name), costoOriginaleT:op.costoCoilT, nuovoCostoT:op.costoPacchiT+lavAvg,
+      scartoGruppoPct:op.gruppo?op.gruppo.scartoPct:null, nCoilGruppo:op.gruppo?op.gruppo.n:null,
+      costoLavorazioneT:lavAvg, costoLavorazioneEur:myP.reduce((a,p)=>a+p.lavT*p.pesoKg/1000,0),
+      nota:`Resa ${op.attivita}`
     });
   });
-  state.stock=state.stock.filter(x=>!consumedIds.has(x.id));
-  saveState(); closeResa(); clearSel();
-  showToast('Resa importata: magazzino aggiornato');
+  state.stock=state.stock.filter(x=>!removeIds.has(x.id));
+  state.impostazioni={...(state.impostazioni||{}),costiResa:resaCosti.map(c=>({voce:c.voce,importo:+c.importo||0,unita:c.unita}))};
+  await saveState(); closeResa(); clearSel();
+  showToast('Resa importata: magazzino aggiornato', ver?()=>restoreVersion(ver.id):null);
   render();
 }
 
-function showToast(msg){ document.getElementById('toastMsg').textContent=msg; const t=document.getElementById('toast'); t.classList.add('show'); clearTimeout(window._tt); window._tt=setTimeout(()=>t.classList.remove('show'),3200); }
+function showToast(msg,undoFn){
+  document.getElementById('toastMsg').textContent=msg; const t=document.getElementById('toast');
+  const u=document.getElementById('toastUndo'); u.style.display=undoFn?'':'none'; u.onclick=()=>{ t.classList.remove('show'); undoFn&&undoFn(); };
+  t.classList.add('show'); clearTimeout(window._tt); window._tt=setTimeout(()=>t.classList.remove('show'),undoFn?15000:3200);
+}
 
 document.getElementById('sellOverlay').addEventListener('click',e=>{if(e.target.id==='sellOverlay')closeSell()});
 document.getElementById('editSaleOverlay').addEventListener('click',e=>{if(e.target.id==='editSaleOverlay')closeEditSale()});
