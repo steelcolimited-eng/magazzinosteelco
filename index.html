@@ -61,6 +61,8 @@ main{max-width:1500px;margin:0 auto;padding:22px 20px 60px}
 .kpi{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:15px 16px;box-shadow:var(--shadow)}
 .kpi .label{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:7px}
 .kpi .val{font-size:24px;font-weight:800;letter-spacing:-.02em;line-height:1}
+.kpi .kpi-acq{font-size:12px;color:var(--ink-soft);margin-top:7px;line-height:1.35}
+.kpi .kpi-acq a{color:var(--steel);cursor:pointer;text-decoration:underline;white-space:nowrap}
 .kpi .val small{font-size:14px;font-weight:600;color:var(--ink-soft);margin-left:3px}
 .kpi.accent-steel{border-top:3px solid var(--steel)}
 .kpi.accent-amber{border-top:3px solid var(--amber)}
@@ -332,7 +334,7 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
   <div class="kpis" id="kpiStock">
     <div class="kpi accent-steel"><div class="label">Coil a magazzino</div><div class="val" id="kCount">0</div></div>
     <div class="kpi accent-ink"><div class="label">Peso totale</div><div class="val" id="kWeight">0<small>t</small></div></div>
-    <div class="kpi accent-amber"><div class="label">Valore magazzino</div><div class="val" id="kValue">€0</div></div>
+    <div class="kpi accent-amber"><div class="label">Valore magazzino</div><div class="val" id="kValue">€0</div><div class="kpi-acq">solo merce: <b id="kValueAcq">€0</b> · <a onclick="esportaValoreOggi()" title="Excel con il valore al prezzo d'acquisto, senza oneri doganali e accessori">Excel commercialista ↓</a></div></div>
     <div class="kpi accent-green"><div class="label">Costo medio /t</div><div class="val" id="kAvg">€0</div></div>
     <div class="kpi accent-rust"><div class="label">Fornitori</div><div class="val" id="kSuppliers">0</div></div>
   </div>
@@ -1149,7 +1151,7 @@ async function openVersioni(){
   w.innerHTML=`<div style="overflow-x:auto"><table class="rtab"><thead><tr><th>Quando</th><th>Motivo</th><th class="num">Coil a mag.</th><th class="num">Peso mag.</th><th class="num">Vendite</th><th></th></tr></thead><tbody>${
     versIndex.map(v=>`<tr><td class="mono" style="white-space:nowrap">${fmtDataOra(v.ts)}</td><td>${v.motivo||''}</td>
       <td class="num mono">${v.nStock??'—'}</td><td class="num mono">${v.pesoStock!=null?fmtT(v.pesoStock)+' t':'—'}</td><td class="num mono">${v.nSold??'—'}</td>
-      <td style="white-space:nowrap"><button class="mini-btn" onclick="restoreVersion('${v.id}')">Ripristina</button> <button class="mini-btn" onclick="downloadVersion('${v.id}')">Scarica</button></td></tr>`).join('')
+      <td style="white-space:nowrap"><button class="mini-btn" onclick="restoreVersion('${v.id}')">Ripristina</button> <button class="mini-btn" onclick="downloadVersion('${v.id}')">Scarica</button> <button class="mini-btn" onclick="esportaValoreVersione('${v.id}')" title="Excel con il valore d'acquisto del magazzino in quel momento">Valore ↓</button></td></tr>`).join('')
   }</tbody></table></div>`;
 }
 function closeVersioni(){ document.getElementById('versOverlay').classList.remove('show'); }
@@ -1277,6 +1279,70 @@ function sortTh(label,key,extraClass){
   return `<th class="sortable ${extraClass||''} ${active?'sorted':''}" onclick="setSort('${key}')" title="Ordina per ${label}">${label}${arrow}</th>`;
 }
 
+/* ---------- VALORE MAGAZZINO AL PREZZO D'ACQUISTO (per il commercialista) ---------- */
+// valore d'acquisto = solo prezzo fattura della merce (in €), senza dazio, trasporto, taglio, CBAM, altro.
+// Sui pacchi tagliati il prezzo fattura è già riproporzionato sul peso dei pacchi, quindi lo scarto è compreso.
+function prezzoAcqMerce(c){ return +c.prezzoFattura||0; }
+function valoreAcqMerce(c){ return prezzoAcqMerce(c)*(+c.peso||0); }
+function righeValore(lista){
+  return (lista||[]).map(c=>{
+    const pA=prezzoAcqMerce(c), pF=+c.prezzoAcqFinale||pA, peso=+c.peso||0;
+    return {
+      'FORNITORE':c.fornitore||'', 'ORDINE ACQUISTO':c.ordineAcquisto||'', 'COLLO':c.collo||'',
+      'SPESSORE':c.spessore||'', 'LARGHEZZA':c.larghezza||'', 'LUNGHEZZA':c.lunghezza||'',
+      'RIVESTIMENTO':c.rivestimento||'', 'DUREZZA':c.durezza||'',
+      'PESO (t)':+peso.toFixed(3),
+      'PREZZO ACQUISTO (€/t)':+pA.toFixed(2),
+      'VALORE ACQUISTO (€)':+(pA*peso).toFixed(2),
+      'ONERI ACCESSORI (€/t)':+(pF-pA).toFixed(2),
+      'COSTO PIENO (€/t)':+pF.toFixed(2),
+      'VALORE COSTO PIENO (€)':+(pF*peso).toFixed(2)
+    };
+  }).sort((a,b)=>(a.FORNITORE+a['ORDINE ACQUISTO']+a.COLLO).localeCompare(b.FORNITORE+b['ORDINE ACQUISTO']+b.COLLO));
+}
+function foglioValore(righe,titolo){
+  const tot=k=>righe.reduce((a,r)=>a+(+r[k]||0),0);
+  const head=[[titolo],[]];
+  const ws=XLSX.utils.aoa_to_sheet(head);
+  XLSX.utils.sheet_add_json(ws,righe,{origin:'A3'});
+  const pT=tot('PESO (t)'), vA=tot('VALORE ACQUISTO (€)'), vP=tot('VALORE COSTO PIENO (€)');
+  XLSX.utils.sheet_add_aoa(ws,[['TOTALE','','','','','','','',+pT.toFixed(3),pT>0?+(vA/pT).toFixed(2):0,+vA.toFixed(2),pT>0?+((vP-vA)/pT).toFixed(2):0,pT>0?+(vP/pT).toFixed(2):0,+vP.toFixed(2)]],{origin:-1});
+  ws['!cols']=[{wch:12},{wch:16},{wch:20},{wch:9},{wch:10},{wch:10},{wch:13},{wch:9},{wch:10},{wch:14},{wch:16},{wch:14},{wch:13},{wch:17}];
+  return {ws,pT,vA,vP};
+}
+function esportaValoreAcquisto(d,quando){
+  const dataTxt=quando?new Date(quando).toLocaleDateString('it-IT'):new Date().toLocaleDateString('it-IT');
+  const mag=foglioValore(righeValore(d.stock),`STEEL CO LIMITED S.R.L. — Valore magazzino al ${dataTxt} (merce a magazzino)`);
+  const nav=foglioValore(righeValore(d.sailing),`STEEL CO LIMITED S.R.L. — Merce in viaggio al ${dataTxt}`);
+  const perForn={};
+  (d.stock||[]).forEach(c=>{ const f=c.fornitore||'—'; perForn[f]=perForn[f]||{p:0,v:0}; perForn[f].p+=+c.peso||0; perForn[f].v+=valoreAcqMerce(c); });
+  const rias=[
+    [`STEEL CO LIMITED S.R.L. — Valore d'acquisto del magazzino al ${dataTxt}`],[],
+    ['','Peso (t)','Valore d\'acquisto merce (€)','Valore a costo pieno (€)'],
+    ['Merce a magazzino',+mag.pT.toFixed(3),+mag.vA.toFixed(2),+mag.vP.toFixed(2)],
+    ['Merce in viaggio',+nav.pT.toFixed(3),+nav.vA.toFixed(2),+nav.vP.toFixed(2)],
+    ['TOTALE',+(mag.pT+nav.pT).toFixed(3),+(mag.vA+nav.vA).toFixed(2),+(mag.vP+nav.vP).toFixed(2)],
+    [],['Merce a magazzino per fornitore','Peso (t)','Valore d\'acquisto merce (€)'],
+    ...Object.keys(perForn).sort().map(f=>[f,+perForn[f].p.toFixed(3),+perForn[f].v.toFixed(2)]),
+    [],['Valore d\'acquisto = prezzo di fattura della merce in euro × peso. Esclusi dazi, spese doganali, trasporto, taglio, CBAM e altri oneri accessori (indicati a parte nelle colonne "costo pieno").']
+  ];
+  const wsR=XLSX.utils.aoa_to_sheet(rias); wsR['!cols']=[{wch:34},{wch:12},{wch:26},{wch:24}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,wsR,'Riepilogo');
+  XLSX.utils.book_append_sheet(wb,mag.ws,'Magazzino');
+  if((d.sailing||[]).length) XLSX.utils.book_append_sheet(wb,nav.ws,'In viaggio');
+  const iso=(quando?new Date(quando):new Date()).toISOString().slice(0,10);
+  XLSX.writeFile(wb,`Valore_magazzino_acquisto_${iso}.xlsx`);
+  showToast(`Valore d'acquisto al ${dataTxt}: ${fmtEur(mag.vA)}`);
+}
+function esportaValoreOggi(){ esportaValoreAcquisto(state,null); }
+async function esportaValoreVersione(id){
+  if(!versIndex) await loadVersIndex();
+  const v=versIndex.find(x=>x.id===id); if(!v) return;
+  try{ const d=await readVersion(v); esportaValoreAcquisto(d||{},v.ts); }
+  catch(e){ console.error(e); alert('Non riesco a leggere questo punto di ripristino: '+e.message); }
+}
+
 /* ---------- KPIs ---------- */
 function updateKPIs(){
   const s=state.stock;
@@ -1285,6 +1351,7 @@ function updateKPIs(){
   document.getElementById('kWeight').innerHTML=fmtT(w)+'<small>t</small>';
   document.getElementById('kValue').textContent=fmtEur(v);
   document.getElementById('kAvg').textContent=w>0?fmtEur(v/w):'€0';
+  document.getElementById('kValueAcq').textContent=fmtEur(s.reduce((a,c)=>a+valoreAcqMerce(c),0));
   document.getElementById('kSuppliers').textContent=new Set(s.map(c=>c.fornitore)).size;
 
   const n=state.sailing;
