@@ -108,6 +108,7 @@ main{max-width:1500px;margin:0 auto;padding:22px 20px 60px}
 .bulkbar .b-clear:hover{background:rgba(255,255,255,.22)}
 .bulkbar .b-export{background:var(--steel-2);color:#fff}
 .bulkbar .b-export:hover{background:var(--steel)}
+#editOverlay .bulk-changed{background:#fff6d6 !important;border-color:var(--amber) !important}
 
 .table-wrap{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}
 .table-scroll{overflow-x:auto}
@@ -401,6 +402,7 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:poi
     <span class="bw" id="bulkW"></span>
     <div class="sp"></div>
     <button class="b-clear" onclick="clearSel()">Deseleziona</button>
+    <button class="b-export" id="bulkEditBtn" onclick="openBulkEdit()" title="Modifica gli stessi campi su tutti i coil selezionati">Modifica selezionati</button>
     <button class="b-export" id="bulkOriginBtn" onclick="openBulkOrigine()">Imposta origine</button>
     <button class="b-export" id="bulkExportBtn" onclick="exportSelezione()">Esporta selezione ↓</button>
     <button class="b-export" id="bulkTaglioBtn" onclick="openOrdineTaglio()" title="Genera l'Excel da mandare al centro servizi">Ordine di taglio ↓</button>
@@ -929,13 +931,14 @@ function calcCbamRiga(){
   const box=document.getElementById('cbamRigaPreview'); if(!box) return;
   const o=document.getElementById('eOrigine').value;
   const hint=document.getElementById('cbamHint');
+  if(o===MIX){ box.innerHTML='<div class="r"><span>I coil selezionati hanno origini diverse: il CBAM resta quello di ciascun coil, a meno che tu non cambi origine o costo CBAM.</span></div>'; if(hint) hint.innerHTML=''; return; }
   if(!o){ box.innerHTML='<div class="r"><span>Seleziona il paese di origine per calcolare il CBAM.</span></div>'; if(hint) hint.innerHTML=''; return; }
   if(o==='IT'||o==='UE'){ box.innerHTML='<div class="r"><span>Origine UE</span><span class="mono">nessun CBAM dovuto</span></div>'; if(hint) hint.innerHTML=''; return; }
   const finto={origine:o,fonteEmissioni:document.getElementById('eFonteEmis').value,
     emissioniSpec:+document.getElementById('eEmissioni').value||0,
     carbonPagato:+document.getElementById('eCarbonPag').value||0,
     dataCarico:document.getElementById('eDataCarico').value||oggi(),
-    peso:+document.getElementById('ePeso').value||0};
+    peso:bulkEditIds.length?bulkEditIds.reduce((t,id)=>t+((findAnywhere(id)||{}).peso||0),0):(+document.getElementById('ePeso').value||0)};
   const r=cbamCoil(finto);
   const mkTxt=r.markup>0?` (base ${fi3(r.base)} + mark-up ${Math.round(r.markup*100)}%)`:' (dato fornitore, nessun mark-up)';
   box.innerHTML=`
@@ -947,10 +950,11 @@ function calcCbamRiga(){
     <div class="r total"><span>Costo CBAM</span><span class="mono">${fmtEur2(r.costoT)}/t · ${fmtEur2(r.costo)} totali</span></div>`;
   if(hint) hint.innerHTML=r.costoT>0?`Calcolato: <b>€${r.costoT.toFixed(2)}/t</b> · <a onclick="applicaCbam(${r.costoT.toFixed(2)})">applica al costo</a>`:'';
 }
-function applicaCbam(v){ document.getElementById('eCbam').value=v; calcValue(); }
+function applicaCbam(v){ document.getElementById('eCbam').value=v; if(bulkEditIds.length){ bulkDirty.add('eCbam'); document.getElementById('eCbam').classList.add('bulk-changed'); } calcValue(); }
 const fi3=n=>(+n||0).toLocaleString('it-IT',{minimumFractionDigits:3,maximumFractionDigits:3});
 function onOrigineChange(){
   const o=document.getElementById('eOrigine').value;
+  if(o===MIX){ document.getElementById('eCanale').value=''; calcCbamRiga(); return; }
   document.getElementById('eCanale').value=canaleLabel(canaleDa(o))||'';
   const hint=document.getElementById('cbamHint');
   const emEl=document.getElementById('eEmissioni');
@@ -967,7 +971,7 @@ function onOrigineChange(){
   }
   calcCbamRiga();
 }
-function applicaCbam(v){ document.getElementById('eCbam').value=v; calcValue(); }
+function applicaCbam(v){ document.getElementById('eCbam').value=v; if(bulkEditIds.length){ bulkDirty.add('eCbam'); document.getElementById('eCbam').classList.add('bulk-changed'); } calcValue(); }
 const oggi=()=>new Date().toISOString().slice(0,10);
 function giorniDa(d){
   if(!d) return null;
@@ -2395,6 +2399,7 @@ function confirmEditSale(){
 
 /* ---------- ADD / EDIT ---------- */
 function openAdd(){
+  endBulkMode();
   document.getElementById('editTitle').textContent='Aggiungi coil';
   document.getElementById('editSub').textContent = currentTab==='sailing'?'Entra in navigazione (merce in arrivo)':'Entra a magazzino';
   ['eFornitore','eCollo','eSpessore','eLarghezza','eLunghezza','eRivestimento','eDurezza','ePeso','ePrezzoFattura','eCambio','eNota','eOrdineAcq','eUbicazione'].forEach(id=>document.getElementById(id).value='');
@@ -2417,6 +2422,7 @@ function openAdd(){
 }
 function openEdit(id){
   const c=findAnywhere(id); if(!c) return;
+  endBulkMode();
   document.getElementById('editTitle').textContent='Modifica coil';
   document.getElementById('editSub').textContent=c.fornitore+' · '+(c.collo||'');
   const set=(k,v)=>document.getElementById(k).value=v??'';
@@ -2448,13 +2454,14 @@ function openEdit(id){
   calcValue();
   document.getElementById('editOverlay').classList.add('show');
 }
-function closeEdit(){ document.getElementById('editOverlay').classList.remove('show'); }
+function closeEdit(){ document.getElementById('editOverlay').classList.remove('show'); endBulkMode(); }
 function toggleValuta(){
-  const usd=document.getElementById('eValuta').value==='USD';
+  const vv=document.getElementById('eValuta').value, usd=(vv==='USD'||vv===MIX);
   document.getElementById('cambioWrap').style.display=usd?'block':'none';
   calcValue();
 }
 function calcValue(){
+  if(bulkEditIds.length){ renderBulkEditPreview(); calcCbamRiga(); return; }
   const g=id=>+document.getElementById(id).value||0;
   const usd=document.getElementById('eValuta').value==='USD';
   const cambio=g('eCambio');
@@ -2474,6 +2481,7 @@ function calcValue(){
   calcCbamRiga();
 }
 function saveEdit(){
+  if(bulkEditIds.length){ saveBulkEdit(); return; }
   const g=id=>document.getElementById(id).value;
   const gn=id=>+document.getElementById(id).value||0;
   const forn=g('eFornitore').trim();
@@ -2506,6 +2514,147 @@ function saveEdit(){
     showToast(status==='sailing'?'Coil aggiunto in navigazione':'Coil aggiunto a magazzino');
   }
   saveState(); closeEdit(); render();
+}
+
+/* ---------- MODIFICA MASSIVA (stessi campi su più coil) ---------- */
+var MIX='__MIX__';
+var bulkEditIds=[], bulkDirty=new Set();
+// campo del modulo -> proprietà del coil e tipo
+var BULK_FIELDS=[
+  ['eFornitore','fornitore','s'],['eOrigine','origine','sel'],['eOrdineAcq','ordineAcquisto','s'],
+  ['eDataCarico','dataCarico','d'],['eUbicazione','ubicazione','s'],
+  ['eFonteEmis','fonteEmissioni','sel'],['eEmissioni','emissioniSpec','nn'],['eCarbonPag','carbonPagato','n'],
+  ['eSpessore','spessore','n'],['eLarghezza','larghezza','n'],['eLunghezza','lunghezza','n'],
+  ['eRivestimento','rivestimento','s'],['eDurezza','durezza','s'],['eScelta','scelta','sel'],
+  ['ePrezzoFattura','prezzoFatturaRaw','n'],['eValuta','valuta','sel'],['eCambio','cambio','n'],
+  ['eDazio','dazioCambio','n'],['eTrasporto','trasporto','n'],['eTaglio','taglio','n'],
+  ['eCbam','cbam','n'],['eAltro','altro','n'],['eNota','nota','s']
+];
+var BULK_LOCKED=['eCollo','ePeso'];
+function valCoil(c,key){
+  if(key==='prezzoFatturaRaw') return c.prezzoFatturaRaw!=null?c.prezzoFatturaRaw:c.prezzoFattura;
+  if(key==='valuta') return c.valuta||'EUR';
+  if(key==='fonteEmissioni') return c.fonteEmissioni||'DEFAULT';
+  return c[key];
+}
+function normV(v){ return (v===undefined||v===null)?'':String(v); }
+function bulkMarkDirty(e){
+  if(!bulkEditIds.length||!e.target||!e.target.id) return;
+  const id=e.target.id;
+  if(!BULK_FIELDS.some(f=>f[0]===id)) return;
+  if(e.target.value===MIX || (e.target.value==='' && e.target.dataset.mix==='1')) bulkDirty.delete(id); else bulkDirty.add(id);
+  e.target.classList.toggle('bulk-changed',bulkDirty.has(id));
+  if(id==='eOrigine' && e.target.value!==MIX){
+    // l'origine può aver riempito in automatico fonte ed emissioni: valgono anche loro
+    ['eFonteEmis','eEmissioni'].forEach(k=>{ const el=document.getElementById(k); if(el.value!==MIX && el.value!==''){ bulkDirty.add(k); el.classList.add('bulk-changed'); } });
+  }
+  calcValue();
+}
+(function(){
+  const ov=document.getElementById('editOverlay');
+  if(ov){ ov.addEventListener('input',bulkMarkDirty); ov.addEventListener('change',bulkMarkDirty); }
+})();
+function addMixOption(sel){
+  if(sel.querySelector('option[value="'+MIX+'"]')) return;
+  const o=document.createElement('option'); o.value=MIX; o.textContent='— valori diversi (non modificare) —'; o.dataset.bulk='1';
+  sel.insertBefore(o,sel.firstChild);
+}
+function endBulkMode(){
+  bulkEditIds=[]; bulkDirty.clear();
+  document.querySelectorAll('#editOverlay option[data-bulk="1"]').forEach(o=>o.remove());
+  document.querySelectorAll('#editOverlay .bulk-changed').forEach(el=>el.classList.remove('bulk-changed'));
+  BULK_FIELDS.concat(BULK_LOCKED.map(id=>[id])).forEach(([id])=>{
+    const el=document.getElementById(id); if(!el) return;
+    el.disabled=false; delete el.dataset.mix;
+    if(el.dataset.ph!==undefined){ el.placeholder=el.dataset.ph; delete el.dataset.ph; }
+  });
+  const h=document.getElementById('bulkEditHint'); if(h) h.remove();
+}
+function openBulkEdit(){
+  const coils=selezionatiCorrenti();
+  if(!coils.length){ alert('Seleziona prima i coil da modificare.'); return; }
+  if(coils.length===1){ openEdit(coils[0].id); return; }
+  endBulkMode();
+  const peso=coils.reduce((a,c)=>a+(c.peso||0),0);
+  document.getElementById('editTitle').textContent=`Modifica ${coils.length} coil insieme`;
+  document.getElementById('editSub').textContent=`${fmtT(peso)} t · ${[...new Set(coils.map(c=>c.fornitore))].join(', ')}`;
+  BULK_FIELDS.forEach(([id,key,tipo])=>{
+    const el=document.getElementById(id);
+    const vals=[...new Set(coils.map(c=>normV(valCoil(c,key))))];
+    if(tipo==='sel'){
+      if(vals.length===1) el.value=vals[0]; else { addMixOption(el); el.value=MIX; }
+    } else {
+      el.dataset.ph=el.placeholder||'';
+      if(vals.length===1){ el.value=vals[0]; }
+      else { el.value=''; el.placeholder='valori diversi'; el.dataset.mix='1'; }
+    }
+  });
+  BULK_LOCKED.forEach(id=>{ const el=document.getElementById(id); el.dataset.ph=el.placeholder||''; el.value=''; el.placeholder='diverso per ogni coil'; el.disabled=true; });
+  document.getElementById('eCanale').value='';
+  document.getElementById('eId').value='';
+  document.getElementById('splitSectionLabel').style.display='none';
+  document.getElementById('splitSection').style.display='none';
+  splitCoilId=null; splitRows=[];
+  const body=document.querySelector('#editOverlay .modal-body');
+  const hint=document.createElement('p'); hint.id='bulkEditHint'; hint.className='split-hint';
+  hint.innerHTML='Cambia solo i campi che vuoi uguali per tutti: vengono applicati a tutti i coil selezionati, <b>gli altri campi restano come sono su ogni coil</b>. Dove leggi "valori diversi", se lasci vuoto non cambia niente. I campi che tocchi si colorano di giallo. Il costo finale viene ricalcolato coil per coil.';
+  body.insertBefore(hint,body.firstChild);
+  document.getElementById('editSaveBtn').textContent=`Applica a ${coils.length} coil`;
+  bulkEditIds=coils.map(c=>c.id);
+  const usd=document.getElementById('eValuta').value;
+  document.getElementById('cambioWrap').style.display=(usd==='USD'||usd===MIX)?'block':'none';
+  onOrigineChange();
+  calcValue();
+  document.getElementById('editOverlay').classList.add('show');
+}
+function bulkValore(id,tipo){
+  const v=document.getElementById(id).value;
+  if(tipo==='n') return +v||0;
+  if(tipo==='nn') return +v||null;
+  if(tipo==='d') return v||null;
+  if(tipo==='s') return v.trim();
+  return v;
+}
+function ricalcCosti(c){
+  const raw=c.prezzoFatturaRaw!=null?+c.prezzoFatturaRaw:(+c.prezzoFattura||0);
+  const fattEur=(c.valuta==='USD'&&+c.cambio>0)?raw/c.cambio:raw;
+  c.prezzoFattura=fattEur;
+  c.prezzoAcqFinale=fattEur+(+c.dazioCambio||0)+(+c.trasporto||0)+(+c.taglio||0)+(+c.cbam||0)+(+c.altro||0);
+  c.valoreTotale=c.prezzoAcqFinale*(c.peso||0);
+  return c;
+}
+function applicaBulk(c){
+  const n={...c};
+  BULK_FIELDS.forEach(([id,key,tipo])=>{ if(bulkDirty.has(id)) n[key]=bulkValore(id,tipo); });
+  if(bulkDirty.has('eOrigine')) n.canale=canaleDa(n.origine);
+  if(bulkDirty.size===0) return n; // niente da cambiare: non ricalcolare
+  return ricalcCosti(n);
+}
+function renderBulkEditPreview(){
+  const coils=bulkEditIds.map(id=>findAnywhere(id)).filter(Boolean);
+  const dopo=coils.map(applicaBulk);
+  const peso=coils.reduce((a,c)=>a+(c.peso||0),0);
+  const vPrima=coils.reduce((a,c)=>a+(+c.valoreTotale||0),0), vDopo=dopo.reduce((a,c)=>a+(+c.valoreTotale||0),0);
+  const rng=l=>{const v=l.map(c=>+c.prezzoAcqFinale||0); const mi=Math.min(...v), ma=Math.max(...v); return Math.abs(ma-mi)<0.005?fmtEur2(mi):fmtEur2(mi)+' – '+fmtEur2(ma);};
+  document.getElementById('ePrezzoFinale').value='';
+  document.getElementById('valuePreview').innerHTML=`
+    <div class="r"><span>Campi che verranno cambiati</span><span class="mono">${bulkDirty.size||'nessuno'}</span></div>
+    <div class="r"><span>Costo finale €/t prima</span><span class="mono">${rng(coils)}</span></div>
+    <div class="r"><span>Costo finale €/t dopo</span><span class="mono" style="font-weight:700">${rng(dopo)}</span></div>
+    <div class="r total"><span>Valore totale (${fmtT(peso)} t)</span><span class="mono">${fmtEur2(vPrima)} → ${fmtEur2(vDopo)}</span></div>`;
+}
+function saveBulkEdit(){
+  if(!bulkDirty.size){ alert('Non hai modificato nessun campo.'); return; }
+  if(bulkDirty.has('eFornitore') && !document.getElementById('eFornitore').value.trim()){
+    const el=document.getElementById('eFornitore'); el.style.outline='2px solid var(--rust)'; el.focus(); setTimeout(()=>el.style.outline='',1200); return;
+  }
+  let n=0;
+  ['stock','sailing'].forEach(lista=>{
+    state[lista]=state[lista].map(c=>{ if(!bulkEditIds.includes(c.id)) return c; n++; return applicaBulk(c); });
+  });
+  saveState(`Modifica massiva di ${n} coil`); closeEdit(); clearSel();
+  showToast(`${n} coil aggiornati`);
+  render();
 }
 
 /* ---------- TAGLIA IN PACCHI (dentro Modifica) ---------- */
