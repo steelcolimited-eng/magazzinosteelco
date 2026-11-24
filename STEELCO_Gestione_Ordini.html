@@ -1553,6 +1553,13 @@ function normalizzaDati(state){
     o.docs=o.docs||[]; o.allegati=o.allegati||[]; o.costi=o.costi||[]; o.fileLocali=o.fileLocali||[];
     if(o.tipo!=='V' && o.fase==='OFFERTA') o.fase='AGGIUDICATO'; });
   if(!state.nextId) state.nextId=Math.max(0,...tutti().map(o=>o.id||0))+1;
+  /* il 24/11 un difetto ha ricopiato decine di volte le spese e le offerte: se una lista ha
+     molte righe identiche, si tiene una sola copia di ciascuna */
+  ['contanti','offerte','conti','allegatiStaccati'].forEach(k=>{
+    const visti=new Set(), puliti=[];
+    state[k].forEach(x=>{ const j=stab(x); if(!visti.has(j)){ visti.add(j); puliti.push(x); } });
+    if(state[k].length-puliti.length>=5) state[k]=puliti;
+  });
   return state;
 }
 function salva(){
