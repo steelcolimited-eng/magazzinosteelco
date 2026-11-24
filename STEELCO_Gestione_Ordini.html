@@ -1438,6 +1438,11 @@ function bootstrap(){
     else ascolta();
   }).catch(e=>{ console.error(e); setSync('error'); mostraErrore(e); ascolta(); });
 }
+function stab(x){
+  if(x===null || typeof x!=='object') return JSON.stringify(x===undefined?null:x);
+  if(Array.isArray(x)) return '['+x.map(stab).join(',')+']';
+  return '{'+Object.keys(x).filter(k=>x[k]!==undefined).sort().map(k=>JSON.stringify(k)+':'+stab(x[k])).join(',')+'}';
+}
 /* ============ SALVATAGGIO SICURO FRA PIU' PC ============
    Prima ogni salvataggio ricopiava nel cloud tutto l'archivio come lo vedeva quel PC:
    una finestra rimasta aperta da prima (o un PC offline) cancellava cosi' gli ordini
@@ -1448,10 +1453,10 @@ let salvataggioInCorso=false, salvataggioRichiesto=false;
 function ascolta(){
   docRef.onSnapshot(s=>{
     if(s.exists){
-      const cloud=normalizzaDati(s.data()), cj=JSON.stringify(cloud);
+      const cloud=normalizzaDati(s.data()), cj=stab(cloud);
       if(base===null){ state=cloud; base=cj; }
       else if(cj!==base){
-        if(JSON.stringify(state)!==base){                 // modifiche qui non ancora nel cloud
+        if(stab(state)!==base){                 // modifiche qui non ancora nel cloud
           state=unisci(JSON.parse(base), state, cloud); base=cj; salva();
         } else { state=cloud; base=cj; }
       }
@@ -1463,7 +1468,7 @@ const LISTE_ORDINI=['vendite','acquisti','lavorazione','cestino'];
 function chiaveOrdine(o){ return o.id!=null ? 'i'+o.id : 'n'+(o.tipo||'')+'|'+(o.anno||'')+'|'+(o.num||''); }
 function mappaOrdini(s){
   const m=new Map();
-  LISTE_ORDINI.forEach(k=>(s[k]||[]).forEach(o=>m.set(chiaveOrdine(o),{k,o,j:k+'\u00a7'+JSON.stringify(o)})));
+  LISTE_ORDINI.forEach(k=>(s[k]||[]).forEach(o=>m.set(chiaveOrdine(o),{k,o,j:k+'\u00a7'+stab(o)})));
   return m;
 }
 /* unione a tre vie: B = base comune, L = questo PC, C = cloud.
@@ -1484,7 +1489,7 @@ function unisci(B,L,C){
     else if(!b && l && c){
       /* creato su due PC con lo stesso numero interno: si tengono tutti e due */
       scelto.set(x,c);
-      const copia=JSON.parse(JSON.stringify(l.o)), vecchio=copia.id; copia.id=nid++;
+      const copia=JSON.parse(stab(l.o)), vecchio=copia.id; copia.id=nid++;
       if(editId===vecchio) editId=copia.id;
       extra.push({k:l.k,o:copia});
     }
@@ -1494,7 +1499,7 @@ function unisci(B,L,C){
   const messo=new Set();
   [C,L].forEach(s=>LISTE_ORDINI.forEach(k=>(s[k]||[]).forEach(o=>{
     const x=chiaveOrdine(o), v=scelto.get(x);
-    if(v && v.k===k && !messo.has(x)){ messo.add(x); out[k].push(JSON.parse(JSON.stringify(v.o))); }
+    if(v && v.k===k && !messo.has(x)){ messo.add(x); out[k].push(JSON.parse(stab(v.o))); }
   })));
   extra.forEach(e=>out[e.k].push(e.o));
   new Set([...Object.keys(B),...Object.keys(L),...Object.keys(C)]).forEach(k=>{
@@ -1502,23 +1507,23 @@ function unisci(B,L,C){
     const b=B[k], l=L[k], c=C[k];
     if(Array.isArray(l)||Array.isArray(c)) out[k]=unisciListe(b||[], l||[], c||[]);
     else{
-      const bj=JSON.stringify(b), lj=JSON.stringify(l);
+      const bj=stab(b), lj=stab(l);
       const v = lj===bj ? c : l;
-      if(v!==undefined) out[k]=JSON.parse(JSON.stringify(v));
+      if(v!==undefined) out[k]=JSON.parse(stab(v));
     }
   });
   out.nextId=Math.max(nid, L.nextId||0, C.nextId||0);
   return out;
 }
 function unisciListe(b,l,c){
-  const conta=a=>{ const m=new Map(); a.forEach(x=>{ const j=JSON.stringify(x); m.set(j,(m.get(j)||0)+1); }); return m; };
+  const conta=a=>{ const m=new Map(); a.forEach(x=>{ const j=stab(x); m.set(j,(m.get(j)||0)+1); }); return m; };
   const mb=conta(b), ml=conta(l), mc=conta(c), obiettivo=new Map();
   new Set([...mb.keys(),...ml.keys(),...mc.keys()]).forEach(j=>{
     const nb=mb.get(j)||0, nl=ml.get(j)||0, nc=mc.get(j)||0;
     obiettivo.set(j, nl===nb ? nc : nl);
   });
   const out=[];
-  [c,l].forEach(a=>a.forEach(x=>{ const j=JSON.stringify(x), n=obiettivo.get(j)||0;
+  [c,l].forEach(a=>a.forEach(x=>{ const j=stab(x), n=obiettivo.get(j)||0;
     if(n>0){ out.push(JSON.parse(j)); obiettivo.set(j,n-1); } }));
   return out;
 }
@@ -1556,37 +1561,39 @@ function salva(){
   if(salvataggioInCorso){ salvataggioRichiesto=true; return; }
   salvataggioInCorso=true;
   state.aggiornato=new Date().toISOString();
-  const L0=JSON.stringify(state), B0=base;
+  const L0=stab(state), B0=base;
+  if(L0.length>950000){ setSync('error'); salvataggioInCorso=false;
+    alert('Il gestionale è troppo pieno per il cloud ('+Math.round(L0.length/1024)+' KB su 1024).\nNon salvo per non perdere dati: avvisa Claude.'); return; }
   let scritto=null;
   db.runTransaction(async t=>{
     const snap=await t.get(docRef);
     let finale=JSON.parse(L0);
     if(snap.exists){
       const cloud=normalizzaDati(snap.data());
-      if(JSON.stringify(cloud)!==B0) finale=unisci(JSON.parse(B0), finale, cloud);
+      if(stab(cloud)!==B0) finale=unisci(JSON.parse(B0), finale, cloud);
     }
     t.set(docRef, finale); scritto=finale;
   }).then(()=>{
-    const wj=JSON.stringify(scritto);
-    state = JSON.stringify(state)===L0 ? JSON.parse(wj) : unisci(JSON.parse(L0), state, JSON.parse(wj));
+    const wj=stab(scritto);
+    state = stab(state)===L0 ? JSON.parse(wj) : unisci(JSON.parse(L0), state, JSON.parse(wj));
     base=wj; setSync('synced'); render(); backupOrario();
   }).catch(e=>{
     console.error(e); setSync('error'); salvataggioRichiesto=true;
     const m=String(e&&e.message||e);
-    if(/offline|unavailable|network|deadline|failed-precondition|aborted/i.test(m)) setTimeout(()=>{ if(JSON.stringify(state)!==base) salva(); }, 15000);
+    if(/offline|unavailable|network|deadline|failed-precondition|aborted/i.test(m)) setTimeout(()=>{ if(stab(state)!==base) salva(); }, 15000);
     else mostraErrore(e);
   }).finally(()=>{
     salvataggioInCorso=false;
-    if(salvataggioRichiesto){ salvataggioRichiesto=false; if(base!==null && JSON.stringify(state)!==base) salva(); }
+    if(salvataggioRichiesto){ salvataggioRichiesto=false; if(base!==null && stab(state)!==base) salva(); }
   });
 }
-window.addEventListener('online', ()=>{ if(base!==null && state && JSON.stringify(state)!==base) salva(); });
+window.addEventListener('online', ()=>{ if(base!==null && state && stab(state)!==base) salva(); });
 /* copia di sicurezza automatica: al massimo una all'ora (nome AAAA-MM-GG_HH), si tengono 30 giorni */
 function backupOrario(){
   if(!db) return;
   const ora=new Date().toISOString().slice(0,13).replace('T','_');
   if(localStorage.getItem('steelco_ordini_bk')===ora) return;
-  db.collection(COLL_BK).doc(ora).set({quando:new Date().toISOString(),dati:JSON.stringify(state)})
+  db.collection(COLL_BK).doc(ora).set({quando:new Date().toISOString(),dati:stab(state)})
     .then(()=>{
       localStorage.setItem('steelco_ordini_bk',ora);
       const oggi=ora.slice(0,10);
