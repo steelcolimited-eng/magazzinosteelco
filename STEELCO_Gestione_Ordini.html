@@ -661,11 +661,13 @@ tbody tr.clickable:hover{background:var(--steel-bg)}
         <button class="btn-primary btn-ghost" onclick="scaricaBackup()">Scarica backup completo</button>
         <button class="btn-primary btn-ghost" onclick="document.getElementById('fileRipristino').click()">Ripristina da backup</button>
         <button class="btn-primary btn-ghost" onclick="mostraBackupCloud()">Copie nel cloud</button>
+        <button class="btn-primary" onclick="cercaOrdiniPersi()">Recupera ordini spariti</button>
         <button class="btn-primary btn-ghost" onclick="esportaExcel()">Genera l'Excel per l'ISO</button>
         <button class="btn-primary btn-ghost" onclick="esportaArchivio()">Scarica tutto l'archivio (cartella completa)</button>
         <input type="file" id="fileRipristino" accept=".json" style="display:none" onchange="ripristina(this)">
       </div>
       <div id="listaBackupCloud" style="margin-top:12px;font-size:12.5px"></div>
+      <div id="boxRecupero" style="margin-top:12px;font-size:12.5px"></div>
       <div id="statoArchivio" style="margin-top:10px;font-size:12.5px"></div>
 
       <div class="sec-title">Dispositivo</div>
@@ -1436,11 +1438,89 @@ function bootstrap(){
     else ascolta();
   }).catch(e=>{ console.error(e); setSync('error'); mostraErrore(e); ascolta(); });
 }
+/* ============ SALVATAGGIO SICURO FRA PIU' PC ============
+   Prima ogni salvataggio ricopiava nel cloud tutto l'archivio come lo vedeva quel PC:
+   una finestra rimasta aperta da prima (o un PC offline) cancellava cosi' gli ordini
+   creati nel frattempo altrove. Ora si ricorda l'ultima versione ricevuta dal cloud
+   ("base") e al salvataggio si scrive solo la differenza, unita a quello che c'e' nel cloud. */
+let base=null;                        // JSON dell'ultima versione ricevuta dal cloud
+let salvataggioInCorso=false, salvataggioRichiesto=false;
 function ascolta(){
   docRef.onSnapshot(s=>{
-    if(s.exists){ state=s.data(); normalizza(); }
+    if(s.exists){
+      const cloud=normalizzaDati(s.data()), cj=JSON.stringify(cloud);
+      if(base===null){ state=cloud; base=cj; }
+      else if(cj!==base){
+        if(JSON.stringify(state)!==base){                 // modifiche qui non ancora nel cloud
+          state=unisci(JSON.parse(base), state, cloud); base=cj; salva();
+        } else { state=cloud; base=cj; }
+      }
+    }
     hideSetup(); setSync('synced'); render();
   }, e=>{ console.error(e); setSync('error'); mostraErrore(e); });
+}
+const LISTE_ORDINI=['vendite','acquisti','lavorazione','cestino'];
+function chiaveOrdine(o){ return o.id!=null ? 'i'+o.id : 'n'+(o.tipo||'')+'|'+(o.anno||'')+'|'+(o.num||''); }
+function mappaOrdini(s){
+  const m=new Map();
+  LISTE_ORDINI.forEach(k=>(s[k]||[]).forEach(o=>m.set(chiaveOrdine(o),{k,o,j:k+'\u00a7'+JSON.stringify(o)})));
+  return m;
+}
+/* unione a tre vie: B = base comune, L = questo PC, C = cloud.
+   Per ogni ordine (e per ogni riga delle altre liste): se qui non e' cambiato vale il cloud,
+   se nel cloud non e' cambiato vale questo PC. Un ordine non si perde mai in silenzio. */
+function unisci(B,L,C){
+  const out={};
+  const mb=mappaOrdini(B), ml=mappaOrdini(L), mc=mappaOrdini(C);
+  let maxId=0;
+  [B,L,C].forEach(s=>LISTE_ORDINI.forEach(k=>(s[k]||[]).forEach(o=>{ if(typeof o.id==='number'&&o.id>maxId) maxId=o.id; })));
+  let nid=Math.max(L.nextId||0, C.nextId||0, maxId+1);
+  const scelto=new Map(), extra=[];
+  new Set([...mb.keys(),...ml.keys(),...mc.keys()]).forEach(x=>{
+    const b=mb.get(x), l=ml.get(x), c=mc.get(x);
+    const bj=b&&b.j, lj=l&&l.j, cj=c&&c.j;
+    if(lj===bj || lj===cj){ if(c) scelto.set(x,c); }
+    else if(cj===bj){ if(l) scelto.set(x,l); }
+    else if(!b && l && c){
+      /* creato su due PC con lo stesso numero interno: si tengono tutti e due */
+      scelto.set(x,c);
+      const copia=JSON.parse(JSON.stringify(l.o)), vecchio=copia.id; copia.id=nid++;
+      if(editId===vecchio) editId=copia.id;
+      extra.push({k:l.k,o:copia});
+    }
+    else scelto.set(x, l||c);              // cambiato da tutte e due le parti: vince questo PC, mai cancellato
+  });
+  LISTE_ORDINI.forEach(k=>out[k]=[]);
+  const messo=new Set();
+  [C,L].forEach(s=>LISTE_ORDINI.forEach(k=>(s[k]||[]).forEach(o=>{
+    const x=chiaveOrdine(o), v=scelto.get(x);
+    if(v && v.k===k && !messo.has(x)){ messo.add(x); out[k].push(JSON.parse(JSON.stringify(v.o))); }
+  })));
+  extra.forEach(e=>out[e.k].push(e.o));
+  new Set([...Object.keys(B),...Object.keys(L),...Object.keys(C)]).forEach(k=>{
+    if(LISTE_ORDINI.includes(k)||k==='nextId') return;
+    const b=B[k], l=L[k], c=C[k];
+    if(Array.isArray(l)||Array.isArray(c)) out[k]=unisciListe(b||[], l||[], c||[]);
+    else{
+      const bj=JSON.stringify(b), lj=JSON.stringify(l);
+      const v = lj===bj ? c : l;
+      if(v!==undefined) out[k]=JSON.parse(JSON.stringify(v));
+    }
+  });
+  out.nextId=Math.max(nid, L.nextId||0, C.nextId||0);
+  return out;
+}
+function unisciListe(b,l,c){
+  const conta=a=>{ const m=new Map(); a.forEach(x=>{ const j=JSON.stringify(x); m.set(j,(m.get(j)||0)+1); }); return m; };
+  const mb=conta(b), ml=conta(l), mc=conta(c), obiettivo=new Map();
+  new Set([...mb.keys(),...ml.keys(),...mc.keys()]).forEach(j=>{
+    const nb=mb.get(j)||0, nl=ml.get(j)||0, nc=mc.get(j)||0;
+    obiettivo.set(j, nl===nb ? nc : nl);
+  });
+  const out=[];
+  [c,l].forEach(a=>a.forEach(x=>{ const j=JSON.stringify(x), n=obiettivo.get(j)||0;
+    if(n>0){ out.push(JSON.parse(j)); obiettivo.set(j,n-1); } }));
+  return out;
 }
 let erroreMostrato=false;
 function mostraErrore(e){
@@ -1460,32 +1540,113 @@ function mostraErrore(e){
     aiuto='Il database Firestore non è ancora stato creato.\n\nApri console.firebase.google.com → Firestore Database → "Crea database" → modalità produzione.';
   alert('Errore di connessione al cloud:\n'+m+(aiuto?('\n\n— COME SI RISOLVE —\n'+aiuto):''));
 }
-function normalizza(){
+function normalizza(){ normalizzaDati(state); }
+function normalizzaDati(state){
+  const tutti=()=>state.vendite.concat(state.acquisti,state.lavorazione);
   ['vendite','acquisti','lavorazione','offerte','contanti','conti','cestino','allegatiStaccati'].forEach(k=>{ if(!state[k]) state[k]=[]; });
   tutti().forEach(o=>{ o.righe=o.righe||[]; o.fatture=o.fatture||[]; o.scadenze=o.scadenze||[];
     o.docs=o.docs||[]; o.allegati=o.allegati||[]; o.costi=o.costi||[]; o.fileLocali=o.fileLocali||[];
     if(o.tipo!=='V' && o.fase==='OFFERTA') o.fase='AGGIUDICATO'; });
   if(!state.nextId) state.nextId=Math.max(0,...tutti().map(o=>o.id||0))+1;
+  return state;
 }
 function salva(){
   if(!docRef){ setSync('locale'); render(); return; }
+  if(base===null){ salvataggioRichiesto=true; return; }       // il cloud non ha ancora risposto: si salva appena arriva
+  if(salvataggioInCorso){ salvataggioRichiesto=true; return; }
+  salvataggioInCorso=true;
   state.aggiornato=new Date().toISOString();
-  docRef.set(state).then(backupGiornaliero)
-    .catch(e=>{ console.error(e); setSync('error'); mostraErrore(e); });
+  const L0=JSON.stringify(state), B0=base;
+  let scritto=null;
+  db.runTransaction(async t=>{
+    const snap=await t.get(docRef);
+    let finale=JSON.parse(L0);
+    if(snap.exists){
+      const cloud=normalizzaDati(snap.data());
+      if(JSON.stringify(cloud)!==B0) finale=unisci(JSON.parse(B0), finale, cloud);
+    }
+    t.set(docRef, finale); scritto=finale;
+  }).then(()=>{
+    const wj=JSON.stringify(scritto);
+    state = JSON.stringify(state)===L0 ? JSON.parse(wj) : unisci(JSON.parse(L0), state, JSON.parse(wj));
+    base=wj; setSync('synced'); render(); backupOrario();
+  }).catch(e=>{
+    console.error(e); setSync('error'); salvataggioRichiesto=true;
+    const m=String(e&&e.message||e);
+    if(/offline|unavailable|network|deadline|failed-precondition|aborted/i.test(m)) setTimeout(()=>{ if(JSON.stringify(state)!==base) salva(); }, 15000);
+    else mostraErrore(e);
+  }).finally(()=>{
+    salvataggioInCorso=false;
+    if(salvataggioRichiesto){ salvataggioRichiesto=false; if(base!==null && JSON.stringify(state)!==base) salva(); }
+  });
 }
-/* copia di sicurezza automatica: una al giorno, ne tiene 30 */
-function backupGiornaliero(){
+window.addEventListener('online', ()=>{ if(base!==null && state && JSON.stringify(state)!==base) salva(); });
+/* copia di sicurezza automatica: al massimo una all'ora (nome AAAA-MM-GG_HH), si tengono 30 giorni */
+function backupOrario(){
   if(!db) return;
-  const gg=new Date().toISOString().slice(0,10);
-  if(localStorage.getItem('steelco_ordini_bk')===gg) return;
-  db.collection(COLL_BK).doc(gg).set({quando:new Date().toISOString(),dati:JSON.stringify(state)})
+  const ora=new Date().toISOString().slice(0,13).replace('T','_');
+  if(localStorage.getItem('steelco_ordini_bk')===ora) return;
+  db.collection(COLL_BK).doc(ora).set({quando:new Date().toISOString(),dati:JSON.stringify(state)})
     .then(()=>{
-      localStorage.setItem('steelco_ordini_bk',gg);
-      db.collection(COLL_BK).get().then(q=>{
-        const ids=q.docs.map(d=>d.id).sort();
-        ids.slice(0,Math.max(0,ids.length-30)).forEach(id=>db.collection(COLL_BK).doc(id).delete());
-      });
+      localStorage.setItem('steelco_ordini_bk',ora);
+      const oggi=ora.slice(0,10);
+      if(localStorage.getItem('steelco_ordini_bk_pulizia')===oggi) return;
+      localStorage.setItem('steelco_ordini_bk_pulizia',oggi);
+      const limite=new Date(Date.now()-30*86400000).toISOString().slice(0,10);
+      db.collection(COLL_BK).where(firebase.firestore.FieldPath.documentId(),'<',limite).get()
+        .then(q=>q.docs.forEach(d=>d.ref.delete())).catch(()=>{});
     }).catch(e=>console.warn('backup non riuscito',e));
+}
+/* ============ RECUPERO ORDINI SPARITI (senza toccare il resto) ============ */
+let ordiniRecuperabili=[];
+async function cercaOrdiniPersi(){
+  const box=el('boxRecupero');
+  if(!db){ box.innerHTML='<span style="color:var(--rust)">Cloud non collegato.</span>'; return; }
+  box.textContent='Cerco in tutte le copie nel cloud… (può volerci qualche secondo)';
+  try{
+    const q=await db.collection(COLL_BK).get();
+    const docs=q.docs.slice().sort((a,b)=>a.id.localeCompare(b.id));   // dalla piu' vecchia alla piu' recente
+    const presenti=mappaOrdini(state), presentiNum=new Set();
+    LISTE_ORDINI.forEach(k=>(state[k]||[]).forEach(o=>{ if(o.num) presentiNum.add((o.tipo||'')+'|'+o.num); }));
+    const trovati=new Map();
+    docs.forEach(d=>{
+      let dati; try{ dati=JSON.parse(d.data().dati); }catch(e){ return; }
+      LISTE_ORDINI.forEach(k=>(dati[k]||[]).forEach(o=>{
+        const x=chiaveOrdine(o);
+        if(presenti.has(x)) return;
+        if(o.num && presentiNum.has((o.tipo||'')+'|'+o.num)) return;
+        trovati.set(x,{k,o,copia:d.id});                                  // vince la versione piu' recente
+      }));
+    });
+    ordiniRecuperabili=[...trovati.values()].sort((a,b)=>String(b.copia).localeCompare(String(a.copia)));
+    if(!ordiniRecuperabili.length){
+      box.innerHTML='<b>Nessun ordine mancante</b> nelle '+docs.length+' copie nel cloud. '+
+        'Gli ordini spariti non sono mai finiti in una copia: vanno ricreati (le cartelle su OneDrive vengono ritrovate da sole).';
+      return;
+    }
+    const nomi={vendite:'Vendite',acquisti:'Acquisti',lavorazione:'Lavorazione',cestino:'era nel cestino'};
+    box.innerHTML='<b>'+ordiniRecuperabili.length+' ordini</b> sono nelle copie ma non ci sono più. '+
+      'Spunta quelli da rimettere: verranno <b>aggiunti</b>, senza cambiare niente del resto.'+
+      '<table style="margin-top:8px;font-size:12.5px"><tr><th></th><th>N.</th><th>Cliente / fornitore</th><th>Oggetto</th><th>Dove</th><th>Ultima copia</th></tr>'+
+      ordiniRecuperabili.map((r,i)=>`<tr><td><input type="checkbox" class="chkRecupero" data-i="${i}" ${r.k==='cestino'?'':'checked'}></td>
+        <td class="mono">${esc(r.o.num||'')}</td><td><b>${esc(parteDi(r.o))}</b></td>
+        <td>${esc((r.o.oggetto||'').slice(0,50))}</td><td>${nomi[r.k]||r.k}</td><td class="mono">${esc(r.copia)}</td></tr>`).join('')+
+      '</table><button class="btn-primary" style="margin-top:10px" onclick="rimettiOrdiniPersi()">Rimetti gli ordini spuntati</button>';
+  }catch(e){ box.innerHTML='<span style="color:var(--rust)">Errore: '+esc(e.message)+'</span>'; }
+}
+function rimettiOrdiniPersi(){
+  const sel=[...document.querySelectorAll('.chkRecupero')].filter(c=>c.checked).map(c=>ordiniRecuperabili[+c.dataset.i]);
+  if(!sel.length) return;
+  const usati=new Set(); LISTE_ORDINI.forEach(k=>(state[k]||[]).forEach(o=>usati.add(o.id)));
+  sel.forEach(r=>{
+    const o=JSON.parse(JSON.stringify(r.o));
+    if(o.id==null || usati.has(o.id)) o.id=state.nextId++;
+    usati.add(o.id); if(o.id>=state.nextId) state.nextId=o.id+1;
+    state[r.k].push(o);
+  });
+  salva(); render();
+  el('boxRecupero').innerHTML='<b>Rimessi '+sel.length+' ordini.</b> Li trovi di nuovo nella loro lista.';
+  ordiniRecuperabili=[];
 }
 function mostraBackupCloud(){
   const box=el('listaBackupCloud');
@@ -3079,6 +3240,18 @@ async function collegaCartella(){
   }
   try{
     const h=await window.showDirectoryPicker({mode:'readwrite'});
+    /* la radice giusta e' STEEL CO LIMITED: se si sceglie una sottocartella il gestionale
+       ricrea S_O VENDITE/S_O VENDITE 2026 dentro di lei e gli ordini finiscono annidati */
+    if(/^(S_O\s|CONTO LAVORAZIONE|CESTINO)/i.test(h.name)){
+      alert('Hai scelto "'+h.name+'", che è una sottocartella dell\'archivio.\n\n'+
+            'Scegli la cartella che sta sopra, STEEL CO LIMITED, quella che contiene '+
+            'S_O VENDITE, S_O ACQUISTI e CONTO LAVORAZIONE.\n\nNon ho collegato niente.');
+      return;
+    }
+    let haVendite=false;
+    try{ await h.getDirectoryHandle('S_O VENDITE'); haVendite=true; }catch(e){}
+    if(!haVendite && !confirm('Dentro "'+h.name+'" non c\'è la cartella S_O VENDITE.\n\n'+
+        'La cartella giusta è STEEL CO LIMITED. Sei sicuro di voler collegare "'+h.name+'"?')) return;
     cartellaRadice=h; await salvaHandle(h);
     await scansionaCartella();
   }catch(e){ if(e.name!=='AbortError') alert('Non sono riuscito ad aprire la cartella:\n'+e.message); }
